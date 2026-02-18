@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Menu, X, Flag } from "lucide-react";
+import { Menu, X } from "lucide-react";
+import gsrLogo from "@/assets/gsr-logo.png";
 
 const navItems = [
   { label: "Αρχική", href: "#" },
@@ -22,9 +23,9 @@ const Navbar = () => {
     >
       <div className="container mx-auto flex items-center justify-between px-4 py-4">
         <a href="#" className="flex items-center gap-2">
-          <Flag className="h-6 w-6 text-primary" />
+          <img src={gsrLogo} alt="Greek SimRacers" className="h-10 w-10 object-contain" />
           <span className="font-display text-lg font-bold tracking-wider text-foreground">
-            GR<span className="text-primary">SIM</span>RACING
+            Greek<span className="text-primary">SimRacers</span>
           </span>
         </a>
 

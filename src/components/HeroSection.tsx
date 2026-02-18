@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { ChevronRight, Users, Trophy } from "lucide-react";
 import heroImage from "@/assets/hero-racing.jpg";
+import gsrLogo from "@/assets/gsr-logo.png";
 
 const HeroSection = () => {
   return (
