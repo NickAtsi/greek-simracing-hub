@@ -1,4 +1,4 @@
-import { Flag } from "lucide-react";
+import gsrLogo from "@/assets/gsr-logo.png";
 
 const Footer = () => {
   return (
@@ -7,9 +7,9 @@ const Footer = () => {
         <div className="grid gap-8 md:grid-cols-4">
           <div>
             <div className="mb-4 flex items-center gap-2">
-              <Flag className="h-5 w-5 text-primary" />
+              <img src={gsrLogo} alt="Greek SimRacers" className="h-8 w-8 object-contain" />
               <span className="font-display text-sm font-bold tracking-wider text-foreground">
-                GR<span className="text-primary">SIM</span>RACING
+                Greek<span className="text-primary">SimRacers</span>
               </span>
             </div>
             <p className="font-body text-xs leading-relaxed text-muted-foreground">
