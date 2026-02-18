@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LogIn, LogOut, User } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import gsrLogo from "@/assets/gsr-logo.png";
 
 const navItems = [
@@ -13,6 +15,7 @@ const navItems = [
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user, signOut } = useAuth();
 
   return (
     <motion.nav
@@ -40,12 +43,28 @@ const Navbar = () => {
               {item.label}
             </a>
           ))}
-          <a
-            href="#community"
-            className="bg-gradient-racing rounded-md px-5 py-2 font-display text-xs font-semibold tracking-wider text-primary-foreground transition-shadow hover:shadow-racing"
-          >
-            ΕΓΓΡΑΦΗ
-          </a>
+          {user ? (
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-muted-foreground">
+                {user.user_metadata?.full_name || user.email}
+              </span>
+              <button
+                onClick={signOut}
+                className="flex items-center gap-1 rounded-md border border-border px-3 py-2 text-xs text-muted-foreground transition-colors hover:text-primary"
+              >
+                <LogOut className="h-4 w-4" />
+                Έξοδος
+              </button>
+            </div>
+          ) : (
+            <Link
+              to="/auth"
+              className="bg-gradient-racing rounded-md px-5 py-2 font-display text-xs font-semibold tracking-wider text-primary-foreground transition-shadow hover:shadow-racing flex items-center gap-2"
+            >
+              <LogIn className="h-4 w-4" />
+              ΣΥΝΔΕΣΗ
+            </Link>
+          )}
         </div>
 
         {/* Mobile Toggle */}
@@ -75,12 +94,22 @@ const Navbar = () => {
                 {item.label}
               </a>
             ))}
-            <a
-              href="#community"
-              className="bg-gradient-racing rounded-md px-5 py-2 text-center font-display text-xs font-semibold tracking-wider text-primary-foreground"
-            >
-              ΕΓΓΡΑΦΗ
-            </a>
+            {user ? (
+              <button
+                onClick={() => { signOut(); setIsOpen(false); }}
+                className="rounded-md border border-border px-5 py-2 text-center font-display text-xs font-semibold tracking-wider text-muted-foreground"
+              >
+                ΕΞΟΔΟΣ
+              </button>
+            ) : (
+              <Link
+                to="/auth"
+                onClick={() => setIsOpen(false)}
+                className="bg-gradient-racing rounded-md px-5 py-2 text-center font-display text-xs font-semibold tracking-wider text-primary-foreground"
+              >
+                ΣΥΝΔΕΣΗ
+              </Link>
+            )}
           </div>
         </motion.div>
       )}
