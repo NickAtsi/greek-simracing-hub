@@ -1,5 +1,7 @@
 import { motion } from "framer-motion";
 import { MessageSquare, TrendingUp, Users } from "lucide-react";
+import { Link } from "react-router-dom";
+import RacingBackground from "@/components/RacingBackground";
 
 const topics = [
   { title: "Καλύτερο τιμόνι κάτω από 300€;", replies: 45, views: 320, category: "Hardware" },
@@ -10,8 +12,9 @@ const topics = [
 
 const CommunitySection = () => {
   return (
-    <section id="community" className="relative border-t border-border py-24">
-      <div className="container mx-auto px-4">
+    <section id="community" className="relative border-t border-border py-24 overflow-hidden">
+      <div className="absolute inset-0 carbon-texture opacity-10" />
+      <div className="container relative z-10 mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -35,7 +38,7 @@ const CommunitySection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.08 }}
-              className="group flex items-center justify-between rounded-xl border border-border bg-gradient-card px-5 py-4 transition-all hover:border-primary/30 hover:shadow-glow"
+              className="group flex items-center justify-between rounded-xl border border-border bg-card/80 backdrop-blur-sm px-5 py-4 transition-all hover:border-primary/30 hover:shadow-glow"
             >
               <div className="flex items-start gap-3">
                 <MessageSquare className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
@@ -69,17 +72,24 @@ const CommunitySection = () => {
           viewport={{ once: true }}
           className="mt-16 text-center"
         >
-          <div className="mx-auto max-w-lg rounded-2xl border border-primary/20 bg-gradient-card p-8">
-            <Users className="mx-auto mb-4 h-8 w-8 text-primary" />
-            <h3 className="mb-2 font-display text-xl font-bold text-foreground">
-              Γίνε μέλος σήμερα
-            </h3>
-            <p className="mb-6 font-body text-sm text-muted-foreground">
-              Δημιούργησε το προφίλ σου και ξεκίνα να αγωνίζεσαι
-            </p>
-            <button className="bg-gradient-racing animate-pulse-glow rounded-lg px-8 py-3 font-display text-sm font-semibold tracking-wider text-primary-foreground transition-transform hover:scale-105">
-              ΕΓΓΡΑΦΗ ΔΩΡΕΑΝ
-            </button>
+          <div className="relative mx-auto max-w-lg overflow-hidden rounded-2xl border border-primary/20 bg-card p-8">
+            <RacingBackground />
+            <div className="absolute inset-0 carbon-texture opacity-20" />
+            <div className="relative z-10">
+              <Users className="mx-auto mb-4 h-8 w-8 text-primary" />
+              <h3 className="mb-2 font-display text-xl font-bold text-foreground">
+                Γίνε μέλος σήμερα
+              </h3>
+              <p className="mb-6 font-body text-sm text-muted-foreground">
+                Δημιούργησε το προφίλ σου και ξεκίνα να αγωνίζεσαι
+              </p>
+              <Link
+                to="/auth"
+                className="bg-gradient-racing inline-block rounded-lg px-8 py-3 font-display text-sm font-semibold tracking-wider text-primary-foreground transition-transform hover:scale-105 hover:shadow-racing"
+              >
+                ΕΓΓΡΑΦΗ ΔΩΡΕΑΝ
+              </Link>
+            </div>
           </div>
         </motion.div>
       </div>

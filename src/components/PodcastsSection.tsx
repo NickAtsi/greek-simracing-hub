@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { Play, Clock, Headphones } from "lucide-react";
+import { Play, Clock } from "lucide-react";
+import Particles from "@/components/Particles";
 
 const podcasts = [
   {
@@ -24,9 +25,11 @@ const podcasts = [
 
 const PodcastsSection = () => {
   return (
-    <section id="podcasts" className="relative border-t border-border py-24">
+    <section id="podcasts" className="relative border-t border-border py-24 overflow-hidden">
+      <Particles />
+      <div className="absolute inset-0 carbon-texture opacity-10" />
       <div className="absolute left-0 top-1/2 h-72 w-72 -translate-y-1/2 rounded-full bg-accent/5 blur-[100px]" />
-      <div className="container mx-auto px-4">
+      <div className="container relative z-10 mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -49,7 +52,7 @@ const PodcastsSection = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="group flex items-center gap-4 rounded-xl border border-border bg-gradient-card p-4 transition-all hover:border-primary/30 hover:shadow-glow sm:p-5"
+              className="group flex items-center gap-4 rounded-xl border border-border bg-card/80 backdrop-blur-sm p-4 transition-all hover:border-primary/30 hover:shadow-glow sm:p-5"
             >
               <button className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 transition-colors group-hover:bg-primary/20">
                 <Play className="h-5 w-5 text-primary" />
