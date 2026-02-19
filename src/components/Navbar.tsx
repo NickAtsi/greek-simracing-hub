@@ -8,7 +8,7 @@ import SocialIcon from "@/components/SocialIcon";
 import { supabase } from "@/integrations/supabase/client";
 
 const navItems = [
-  { label: "Αρχική", href: "/" },
+  { label: "Αρχική", href: "/home" },
   { label: "Άρθρα", href: "/articles" },
   { label: "Forum", href: "/forum" },
   { label: "Games Hub", href: "/games-hub" },
@@ -82,8 +82,8 @@ const Navbar = () => {
   }, [user]);
 
   const isActive = (href: string) => {
-    if (href === "/") return location.pathname === "/";
-    if (href.startsWith("/#")) return location.pathname === "/" && location.hash === href.slice(1);
+    if (href === "/home") return location.pathname === "/home" || location.pathname === "/";
+    if (href.startsWith("/#")) return location.pathname === "/home" && location.hash === href.slice(1);
     return location.pathname === href;
   };
 
@@ -95,7 +95,7 @@ const Navbar = () => {
       className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-2xl"
     >
       <div className="container mx-auto flex items-center justify-between px-4 py-3">
-        <Link to="/" className="group relative flex items-center gap-2.5">
+        <Link to="/home" className="group relative flex items-center gap-2.5">
           <motion.div whileHover={{ scale: 1.05 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="relative flex items-center gap-2.5">
             <span className="absolute -inset-2 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-primary/0 via-primary/20 to-accent/0 blur-md" />
             <span className="absolute -left-5 top-1/2 -translate-y-1/2 flex flex-col gap-1 opacity-0 group-hover:opacity-70 transition-all duration-300 group-hover:-translate-x-1">
