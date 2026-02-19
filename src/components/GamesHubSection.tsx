@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 
 const games = [
-  { name: "Assetto Corsa Competizione", abbr: "ACC", players: "850+", color: "from-primary to-racing-orange" },
+  { name: "Assetto Corsa Competizione", abbr: "ACC", players: "850+", color: "from-primary to-accent" },
   { name: "iRacing", abbr: "iR", players: "420+", color: "from-blue-600 to-blue-400" },
   { name: "F1 24", abbr: "F1", players: "380+", color: "from-red-700 to-red-500" },
   { name: "Assetto Corsa", abbr: "AC", players: "300+", color: "from-green-600 to-green-400" },
@@ -16,9 +16,10 @@ const GamesHubSection = () => {
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-96 w-96 rounded-full bg-accent/5 blur-[120px]" />
       <div className="container relative z-10 mx-auto px-4">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
           className="mb-12"
         >
           <h2 className="font-display text-3xl font-bold uppercase tracking-tight text-foreground sm:text-4xl">
@@ -34,10 +35,10 @@ const GamesHubSection = () => {
             <motion.a
               key={i}
               href="#"
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.05 }}
+              initial={{ opacity: 0, scale: 0.85, y: 30 }}
+              whileInView={{ opacity: 1, scale: 1, y: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ delay: i * 0.08, duration: 0.5, ease: "easeOut" }}
               whileHover={{ y: -4 }}
               className="group flex flex-col items-center gap-3 rounded-xl border border-border bg-card/80 backdrop-blur-sm p-6 text-center transition-all hover:border-primary/30 hover:shadow-glow"
             >

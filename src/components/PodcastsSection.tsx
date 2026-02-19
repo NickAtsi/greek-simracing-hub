@@ -29,9 +29,10 @@ const PodcastsSection = () => {
       <div className="absolute left-0 top-1/2 h-72 w-72 -translate-y-1/2 rounded-full bg-accent/5 blur-[100px]" />
       <div className="container relative z-10 mx-auto px-4">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
           className="mb-12"
         >
           <h2 className="font-display text-3xl font-bold uppercase tracking-tight text-foreground sm:text-4xl">
@@ -46,10 +47,10 @@ const PodcastsSection = () => {
           {podcasts.map((ep, i) => (
             <motion.div
               key={i}
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: -40 }}
               whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ delay: i * 0.15, duration: 0.6, ease: "easeOut" }}
               className="group flex items-center gap-4 rounded-xl border border-border bg-card/80 backdrop-blur-sm p-4 transition-all hover:border-primary/30 hover:shadow-glow sm:p-5"
             >
               <button className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-primary/10 transition-colors group-hover:bg-primary/20">

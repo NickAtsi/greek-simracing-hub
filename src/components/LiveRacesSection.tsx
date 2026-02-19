@@ -38,9 +38,10 @@ const LiveRacesSection = () => {
       <div className="absolute right-0 top-0 h-72 w-72 rounded-full bg-primary/5 blur-[100px]" />
       <div className="container relative z-10 mx-auto px-4">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
           className="mb-12"
         >
           <h2 className="font-display text-3xl font-bold uppercase tracking-tight text-foreground sm:text-4xl">
@@ -55,10 +56,10 @@ const LiveRacesSection = () => {
           {races.map((race, i) => (
             <motion.div
               key={i}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
+              initial={{ opacity: 0, y: 40, scale: 0.95 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ delay: i * 0.15, duration: 0.6, ease: "easeOut" }}
               className="group relative overflow-hidden rounded-xl border border-border bg-card/80 backdrop-blur-sm p-6 transition-all hover:border-primary/30 hover:shadow-glow"
             >
               {race.status === "live" && (

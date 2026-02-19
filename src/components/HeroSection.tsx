@@ -34,7 +34,7 @@ const HeroSection = () => {
             Greek{" "}
             <span className="text-gradient-racing">SimRacers</span>
           </h1>
-          <p className="mt-2 font-display text-lg tracking-[0.3em] text-primary/60 uppercase sm:text-xl">
+          <p className="mt-2 font-display text-lg tracking-[0.3em] text-accent/60 uppercase sm:text-xl">
             H U B
           </p>
         </motion.div>
