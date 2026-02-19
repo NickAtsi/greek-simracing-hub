@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import {
   Users, FileText, MessageSquare, Headphones, BarChart3, Settings,
   Trash2, Edit, Plus, Shield, Pin, Lock, Eye, TrendingUp, Activity,
-  ChevronRight, Check, X, RefreshCw, BookOpen
+  ChevronRight, Check, X, RefreshCw, BookOpen, Ticket, CheckCircle, Clock, AlertCircle, Send
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
-type AdminTab = "dashboard" | "users" | "articles" | "forum" | "podcasts" | "categories" | "settings";
+type AdminTab = "dashboard" | "users" | "articles" | "forum" | "podcasts" | "categories" | "support" | "settings";
 
 const StatCard = ({ icon: Icon, label, value, color }: any) => (
   <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
@@ -45,6 +45,11 @@ const Admin = () => {
   const [podcasts, setPodcasts] = useState<any[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [forumCats, setForumCats] = useState<any[]>([]);
+  const [supportTickets, setSupportTickets] = useState<any[]>([]);
+  const [selectedTicket, setSelectedTicket] = useState<any>(null);
+  const [ticketMessages, setTicketMessages] = useState<any[]>([]);
+  const [adminReply, setAdminReply] = useState("");
+  const [ticketFilter, setTicketFilter] = useState<string>("all");
 
   // Form states
   const [showPodcastForm, setShowPodcastForm] = useState(false);
@@ -53,6 +58,7 @@ const Admin = () => {
   const [catForm, setCatForm] = useState({ name: "", slug: "", color: "#1565C0", type: "article" });
   const [editProfile, setEditProfile] = useState<any>(null);
   const [profileForm, setProfileForm] = useState({ display_name: "", username: "", favorite_sim: "", favorite_track: "", setup_type: "" });
+  const [siteSettings, setSiteSettings] = useState<Record<string, string>>({ discord_server_id: "", discord_invite: "", contact_email: "" });
 
   useEffect(() => {
     if (!loading && user) checkAdmin();
@@ -66,6 +72,8 @@ const Admin = () => {
       if (tab === "forum") fetchThreads();
       if (tab === "podcasts") fetchPodcasts();
       if (tab === "categories") { fetchCategories(); fetchForumCats(); }
+      if (tab === "support") fetchSupportTickets();
+      if (tab === "settings") fetchSiteSettings();
     }
   }, [isAdmin, tab]);
 
@@ -99,6 +107,44 @@ const Admin = () => {
   const fetchThreads = async () => {
     const { data } = await supabase.from("forum_threads" as any).select("*, forum_categories(name)").order("created_at", { ascending: false });
     setThreads((data as any[]) || []);
+  };
+
+  const fetchSupportTickets = async () => {
+    const { data } = await supabase.from("support_tickets" as any).select("*, profiles!user_id(display_name, username, avatar_url)").order("updated_at", { ascending: false });
+    setSupportTickets((data as any[]) || []);
+  };
+
+  const fetchTicketMessages = async (ticketId: string) => {
+    const { data } = await supabase.from("support_messages" as any).select("*, profiles!sender_id(display_name, username)").eq("ticket_id", ticketId).order("created_at");
+    setTicketMessages((data as any[]) || []);
+  };
+
+  const fetchSiteSettings = async () => {
+    const { data } = await supabase.from("site_settings" as any).select("*");
+    const map: Record<string, string> = {};
+    ((data as any[]) || []).forEach((s: any) => { map[s.key] = s.value || ""; });
+    setSiteSettings(prev => ({ ...prev, ...map }));
+  };
+
+  const saveSiteSetting = async (key: string, value: string) => {
+    await supabase.from("site_settings" as any).upsert({ key, value, updated_at: new Date().toISOString() } as any, { onConflict: "key" });
+    toast({ title: "Ρύθμιση αποθηκεύτηκε!" });
+  };
+
+  const handleAdminReply = async () => {
+    if (!user || !selectedTicket || !adminReply.trim()) return;
+    await supabase.from("support_messages" as any).insert({ ticket_id: selectedTicket.id, sender_id: user.id, content: adminReply.trim(), is_admin: true });
+    await supabase.from("support_tickets" as any).update({ status: "in_progress", updated_at: new Date().toISOString() } as any).eq("id", selectedTicket.id);
+    setAdminReply("");
+    fetchTicketMessages(selectedTicket.id);
+    fetchSupportTickets();
+  };
+
+  const updateTicketStatus = async (ticketId: string, status: string) => {
+    await supabase.from("support_tickets" as any).update({ status } as any).eq("id", ticketId);
+    fetchSupportTickets();
+    if (selectedTicket?.id === ticketId) setSelectedTicket((p: any) => ({ ...p, status }));
+    toast({ title: "Κατάσταση ενημερώθηκε!" });
   };
 
   const fetchPodcasts = async () => {
@@ -235,6 +281,7 @@ const Admin = () => {
     { key: "forum", icon: MessageSquare, label: "Forum" },
     { key: "podcasts", icon: Headphones, label: "Podcasts" },
     { key: "categories", icon: BookOpen, label: "Κατηγορίες" },
+    { key: "support", icon: Ticket, label: "Support Tickets" },
     { key: "settings", icon: Settings, label: "Ρυθμίσεις" },
   ];
 
@@ -506,23 +553,114 @@ const Admin = () => {
             </div>
           )}
 
+          {/* Support Tickets */}
+          {tab === "support" && (
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                <h1 className="font-display text-2xl font-black text-foreground">Support Tickets ({supportTickets.length})</h1>
+                <Button onClick={fetchSupportTickets} variant="outline" size="sm"><RefreshCw className="h-3.5 w-3.5" /></Button>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-2 max-h-[600px] overflow-y-auto">
+                  {["all","open","in_progress","resolved","closed"].map(f => (
+                    <span key={f} onClick={() => setTicketFilter(f)} className={`inline-flex mr-1 cursor-pointer rounded-full px-3 py-1 text-xs font-medium transition-colors ${ticketFilter===f?"bg-primary text-primary-foreground":"bg-secondary text-muted-foreground hover:text-foreground"}`}>
+                      {f==="all"?"Όλα":f==="open"?"Ανοιχτά":f==="in_progress"?"Σε Εξέλιξη":f==="resolved"?"Επιλύθηκαν":"Κλειστά"}
+                    </span>
+                  ))}
+                  <div className="mt-3 space-y-2">
+                    {supportTickets.filter(t => ticketFilter === "all" || t.status === ticketFilter).map((ticket: any) => {
+                      const user_profile = ticket.profiles;
+                      return (
+                        <button key={ticket.id} onClick={() => { setSelectedTicket(ticket); fetchTicketMessages(ticket.id); }}
+                          className={`w-full text-left rounded-xl border p-4 transition-all ${selectedTicket?.id===ticket.id?"border-primary bg-primary/5":"border-border bg-card hover:border-primary/40"}`}>
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="font-display text-sm font-bold text-foreground truncate">{ticket.subject}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">{user_profile?.display_name || user_profile?.username || "Άγνωστος"}</p>
+                            </div>
+                            <span className={`text-xs font-medium flex-shrink-0 ${ticket.status==="open"?"text-amber-400":ticket.status==="in_progress"?"text-blue-400":ticket.status==="resolved"?"text-green-400":"text-muted-foreground"}`}>
+                              {ticket.status}
+                            </span>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">{new Date(ticket.created_at).toLocaleDateString("el-GR")} · {ticket.priority}</p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+                {selectedTicket ? (
+                  <div className="rounded-xl border border-border bg-card flex flex-col" style={{ maxHeight: "600px" }}>
+                    <div className="p-4 border-b border-border">
+                      <p className="font-display text-sm font-bold text-foreground">{selectedTicket.subject}</p>
+                      <div className="flex items-center gap-2 mt-2 flex-wrap">
+                        {["open","in_progress","resolved","closed"].map(s => (
+                          <button key={s} onClick={() => updateTicketStatus(selectedTicket.id, s)}
+                            className={`text-xs rounded-full px-2 py-0.5 border transition-colors ${selectedTicket.status===s?"bg-primary text-primary-foreground border-primary":"border-border text-muted-foreground hover:text-foreground"}`}>
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                      {ticketMessages.map((msg: any) => (
+                        <div key={msg.id} className={`flex gap-2 ${msg.is_admin ? "flex-row-reverse" : ""}`}>
+                          <div className={`max-w-[75%] rounded-xl px-3 py-2 text-sm ${msg.is_admin?"bg-primary text-primary-foreground":"bg-secondary text-foreground"}`}>
+                            {!msg.is_admin && <p className="text-xs font-bold mb-1 opacity-70">{msg.profiles?.display_name || "Χρήστης"}</p>}
+                            {msg.content}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="p-4 border-t border-border flex gap-2">
+                      <input value={adminReply} onChange={(e) => setAdminReply(e.target.value)}
+                        placeholder="Απάντηση ως admin..." onKeyDown={(e) => { if (e.key==="Enter") handleAdminReply(); }}
+                        className="flex-1 rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm text-foreground" />
+                      <Button onClick={handleAdminReply} disabled={!adminReply.trim()} className="bg-gradient-greek text-white hover:brightness-110 px-3">
+                        <Send className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="rounded-xl border border-border bg-card flex items-center justify-center h-64 text-muted-foreground text-sm">
+                    Επίλεξε ticket για να δεις τη συνομιλία
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Settings */}
           {tab === "settings" && (
             <div>
               <h1 className="font-display text-2xl font-black text-foreground mb-6">Ρυθμίσεις Site</h1>
-              <div className="rounded-xl border border-border bg-card p-6 space-y-4 max-w-lg">
-                <p className="text-sm text-muted-foreground">
-                  Για να δώσεις Admin δικαιώματα σε έναν χρήστη, πήγαινε στο tab <strong>Χρήστες</strong> και πάτα το κουμπί Admin.
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Discord Server ID: <code className="bg-secondary px-2 py-0.5 rounded text-xs">459797812251590677</code>
-                </p>
-                <div className="pt-2 border-t border-border">
-                  <p className="text-xs text-muted-foreground">Greek SimRacers Admin Panel v1.0</p>
+              <div className="max-w-lg space-y-4">
+                {[
+                  { key: "discord_server_id", label: "Discord Server ID", placeholder: "459797812251590677" },
+                  { key: "discord_invite", label: "Discord Invite Link", placeholder: "https://discord.gg/..." },
+                  { key: "contact_email", label: "Email Επικοινωνίας", placeholder: "info@greeksimracers.gr" },
+                ].map(field => (
+                  <div key={field.key} className="rounded-xl border border-border bg-card p-4">
+                    <label className="text-xs font-display font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{field.label}</label>
+                    <div className="flex gap-2">
+                      <input value={siteSettings[field.key] || ""}
+                        onChange={(e) => setSiteSettings(p => ({ ...p, [field.key]: e.target.value }))}
+                        placeholder={field.placeholder}
+                        className="flex-1 rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm text-foreground" />
+                      <Button size="sm" onClick={() => saveSiteSetting(field.key, siteSettings[field.key] || "")} className="bg-gradient-greek text-white hover:brightness-110">
+                        <Check className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <p className="text-xs font-display font-bold text-muted-foreground uppercase tracking-wider mb-2">Admin Panel</p>
+                  <p className="text-xs text-muted-foreground">Greek SimRacers Admin Panel v2.0</p>
+                  <p className="text-xs text-muted-foreground mt-1">Για να δώσεις Admin δικαιώματα, πήγαινε στο tab <strong>Χρήστες</strong>.</p>
                 </div>
               </div>
             </div>
           )}
+
         </main>
       </div>
 
