@@ -255,8 +255,16 @@ const Profile = () => {
               </motion.div>
 
               <div className="flex-1 pb-2">
-                <h1 className="font-display text-3xl font-black text-foreground">
-                  {profile.display_name || profile.username || "Anonymous Racer"}
+                <h1 className="font-display text-3xl font-black text-foreground group/name inline-block relative cursor-default">
+                  <span className="relative inline-block">
+                    <span className="relative z-10 bg-gradient-to-r from-foreground via-foreground to-foreground bg-clip-text transition-all duration-500 group-hover/name:from-primary group-hover/name:via-accent group-hover/name:to-primary group-hover/name:text-transparent">
+                      {profile.display_name || profile.username || "Anonymous Racer"}
+                    </span>
+                    {/* Speed underline */}
+                    <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-gradient-to-r from-primary via-accent to-primary rounded-full transition-all duration-500 group-hover/name:w-full" />
+                    {/* Glow layer */}
+                    <span className="absolute inset-0 blur-xl opacity-0 bg-gradient-to-r from-primary/40 to-accent/40 transition-opacity duration-500 group-hover/name:opacity-100 -z-10" />
+                  </span>
                 </h1>
                 {profile.username && (
                   <p className="text-muted-foreground text-sm">@{profile.username}</p>
