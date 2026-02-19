@@ -63,7 +63,7 @@ export default {
         },
         racing: {
           red: "hsl(var(--racing-red))",
-          orange: "hsl(var(--racing-orange))",
+          blue: "hsl(var(--racing-blue))",
           dark: "hsl(var(--racing-dark))",
           carbon: "hsl(var(--racing-carbon))",
           glow: "hsl(var(--racing-glow))",
@@ -84,8 +84,8 @@ export default {
           to: { height: "0" },
         },
         "pulse-glow": {
-          "0%, 100%": { boxShadow: "0 0 20px hsl(1 100% 50% / 0.2)" },
-          "50%": { boxShadow: "0 0 40px hsl(1 100% 50% / 0.4)" },
+          "0%, 100%": { boxShadow: "0 0 20px hsl(356 100% 52% / 0.2)" },
+          "50%": { boxShadow: "0 0 40px hsl(356 100% 52% / 0.4)" },
         },
       },
       animation: {

@@ -73,18 +73,24 @@ const ReactiveBackground = () => {
           ? p.opacity + (1 - dist / maxDist) * 0.5
           : p.opacity * (0.5 + pulse * 0.5);
 
+        // Alternate between red and blue particles
+        const isBlue = (p.baseX + p.baseY) % 120 < 60;
+        const hue = isBlue ? 210 : 356;
+        const sat = isBlue ? 100 : 100;
+        const light = isBlue ? 55 : 52;
+
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size + (dist < maxDist ? (1 - dist / maxDist) * 2 : 0), 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(1, 100%, 50%, ${glowOpacity})`;
+        ctx.fillStyle = `hsla(${hue}, ${sat}%, ${light}%, ${glowOpacity})`;
         ctx.fill();
       });
 
       // Mouse glow
       if (mx > 0 && my > 0) {
         const glowGrad = ctx.createRadialGradient(mx, my, 0, mx, my, 250);
-        glowGrad.addColorStop(0, "hsla(1, 100%, 50%, 0.06)");
-        glowGrad.addColorStop(0.4, "hsla(30, 100%, 50%, 0.02)");
-        glowGrad.addColorStop(1, "hsla(1, 100%, 50%, 0)");
+        glowGrad.addColorStop(0, "hsla(356, 100%, 52%, 0.06)");
+        glowGrad.addColorStop(0.4, "hsla(210, 100%, 55%, 0.03)");
+        glowGrad.addColorStop(1, "hsla(356, 100%, 52%, 0)");
         ctx.fillStyle = glowGrad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
