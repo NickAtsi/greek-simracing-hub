@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { Circle, Clock, Users } from "lucide-react";
+import Particles from "@/components/Particles";
 
 const races = [
   {
@@ -33,9 +34,11 @@ const races = [
 
 const LiveRacesSection = () => {
   return (
-    <section id="live-races" className="relative py-24">
+    <section id="live-races" className="relative py-24 overflow-hidden">
+      <Particles />
+      <div className="absolute inset-0 carbon-texture opacity-10" />
       <div className="absolute right-0 top-0 h-72 w-72 rounded-full bg-primary/5 blur-[100px]" />
-      <div className="container mx-auto px-4">
+      <div className="container relative z-10 mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -58,7 +61,7 @@ const LiveRacesSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="group relative overflow-hidden rounded-xl border border-border bg-gradient-card p-6 transition-all hover:border-primary/30 hover:shadow-glow"
+              className="group relative overflow-hidden rounded-xl border border-border bg-card/80 backdrop-blur-sm p-6 transition-all hover:border-primary/30 hover:shadow-glow"
             >
               {race.status === "live" && (
                 <div className="absolute right-4 top-4 flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1">

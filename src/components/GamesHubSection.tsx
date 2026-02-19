@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import { Gamepad2, ExternalLink } from "lucide-react";
 
 const games = [
   { name: "Assetto Corsa Competizione", abbr: "ACC", players: "850+", color: "from-primary to-racing-orange" },
@@ -12,8 +11,10 @@ const games = [
 
 const GamesHubSection = () => {
   return (
-    <section id="games-hub" className="relative border-t border-border py-24">
-      <div className="container mx-auto px-4">
+    <section id="games-hub" className="relative border-t border-border py-24 overflow-hidden">
+      <div className="absolute inset-0 carbon-texture opacity-10" />
+      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-96 w-96 rounded-full bg-accent/5 blur-[120px]" />
+      <div className="container relative z-10 mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -38,7 +39,7 @@ const GamesHubSection = () => {
               viewport={{ once: true }}
               transition={{ delay: i * 0.05 }}
               whileHover={{ y: -4 }}
-              className="group flex flex-col items-center gap-3 rounded-xl border border-border bg-gradient-card p-6 text-center transition-all hover:border-primary/30 hover:shadow-glow"
+              className="group flex flex-col items-center gap-3 rounded-xl border border-border bg-card/80 backdrop-blur-sm p-6 text-center transition-all hover:border-primary/30 hover:shadow-glow"
             >
               <div className={`flex h-14 w-14 items-center justify-center rounded-lg bg-gradient-to-br ${game.color} shadow-lg`}>
                 <span className="font-display text-sm font-bold text-primary-foreground">
