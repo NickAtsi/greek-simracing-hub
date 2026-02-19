@@ -9,7 +9,136 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import gsrLogo from "@/assets/gsr-logo.png";
 
-// Floating particles component
+// Animated racing track lines on canvas
+const RacingBackground = () => {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const resize = () => {
+      canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+      canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    };
+    resize();
+    window.addEventListener("resize", resize);
+
+    const w = () => canvas.offsetWidth;
+    const h = () => canvas.offsetHeight;
+
+    // Racing lines that streak across
+    interface RacingLine {
+      x: number;
+      y: number;
+      speed: number;
+      length: number;
+      opacity: number;
+      hue: number;
+      width: number;
+    }
+
+    const lines: RacingLine[] = [];
+    for (let i = 0; i < 25; i++) {
+      lines.push({
+        x: Math.random() * w(),
+        y: Math.random() * h(),
+        speed: 2 + Math.random() * 6,
+        length: 40 + Math.random() * 120,
+        opacity: 0.1 + Math.random() * 0.4,
+        hue: Math.random() > 0.7 ? 30 : 1, // red or orange
+        width: 1 + Math.random() * 2,
+      });
+    }
+
+    // Grid dots
+    interface GridDot {
+      x: number;
+      y: number;
+      baseOpacity: number;
+      phase: number;
+    }
+
+    const dots: GridDot[] = [];
+    const spacing = 40;
+    for (let x = 0; x < w(); x += spacing) {
+      for (let y = 0; y < h(); y += spacing) {
+        dots.push({
+          x: x + (Math.random() - 0.5) * 10,
+          y: y + (Math.random() - 0.5) * 10,
+          baseOpacity: 0.05 + Math.random() * 0.15,
+          phase: Math.random() * Math.PI * 2,
+        });
+      }
+    }
+
+    let animId: number;
+    let time = 0;
+
+    const draw = () => {
+      time += 0.016;
+      ctx.clearRect(0, 0, w(), h());
+
+      // Draw pulsing grid dots
+      dots.forEach((d) => {
+        const pulse = Math.sin(time * 1.5 + d.phase) * 0.5 + 0.5;
+        const opacity = d.baseOpacity * (0.5 + pulse * 0.5);
+        ctx.beginPath();
+        ctx.arc(d.x, d.y, 1.2, 0, Math.PI * 2);
+        ctx.fillStyle = `hsla(1, 100%, 50%, ${opacity})`;
+        ctx.fill();
+      });
+
+      // Draw racing streak lines
+      lines.forEach((l) => {
+        const grad = ctx.createLinearGradient(l.x, l.y, l.x - l.length, l.y);
+        grad.addColorStop(0, `hsla(${l.hue}, 100%, 50%, ${l.opacity})`);
+        grad.addColorStop(1, `hsla(${l.hue}, 100%, 50%, 0)`);
+
+        ctx.beginPath();
+        ctx.moveTo(l.x, l.y);
+        ctx.lineTo(l.x - l.length, l.y);
+        ctx.strokeStyle = grad;
+        ctx.lineWidth = l.width;
+        ctx.stroke();
+
+        // Move
+        l.x += l.speed;
+        if (l.x - l.length > w()) {
+          l.x = -l.length;
+          l.y = Math.random() * h();
+        }
+      });
+
+      // Central glow pulse
+      const glowSize = 200 + Math.sin(time) * 40;
+      const glowGrad = ctx.createRadialGradient(
+        w() / 2, h() / 2, 0,
+        w() / 2, h() / 2, glowSize
+      );
+      glowGrad.addColorStop(0, "hsla(1, 100%, 44%, 0.08)");
+      glowGrad.addColorStop(0.5, "hsla(30, 100%, 50%, 0.03)");
+      glowGrad.addColorStop(1, "hsla(1, 100%, 44%, 0)");
+      ctx.fillStyle = glowGrad;
+      ctx.fillRect(0, 0, w(), h());
+
+      animId = requestAnimationFrame(draw);
+    };
+    draw();
+
+    return () => {
+      cancelAnimationFrame(animId);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
+
+  return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full" />;
+};
+
+// Small floating particles for left side
 const Particles = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -27,14 +156,14 @@ const Particles = () => {
     window.addEventListener("resize", resize);
 
     const particles: { x: number; y: number; vx: number; vy: number; r: number; o: number }[] = [];
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 40; i++) {
       particles.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.4,
-        vy: (Math.random() - 0.5) * 0.4,
-        r: Math.random() * 2 + 0.5,
-        o: Math.random() * 0.5 + 0.1,
+        vx: (Math.random() - 0.5) * 0.3,
+        vy: (Math.random() - 0.5) * 0.3,
+        r: Math.random() * 1.5 + 0.5,
+        o: Math.random() * 0.3 + 0.05,
       });
     }
 
@@ -64,24 +193,6 @@ const Particles = () => {
   return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />;
 };
 
-const testimonials = [
-  {
-    text: "Η κοινότητα GSR με βοήθησε να γίνω καλύτερος sim racer. Απίστευτη εμπειρία!",
-    name: "Γιάννης Κ.",
-    handle: "@giannis_racer",
-  },
-  {
-    text: "Οι αγώνες είναι πάντα καλά οργανωμένοι και η ατμόσφαιρα φανταστική.",
-    name: "Μαρία Π.",
-    handle: "@maria_speed",
-  },
-  {
-    text: "Βρήκα την ιδανική κοινότητα για sim racing στην Ελλάδα!",
-    name: "Νίκος Δ.",
-    handle: "@nikos_drift",
-  },
-];
-
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
@@ -90,7 +201,6 @@ const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [forgotPassword, setForgotPassword] = useState(false);
-  const [testimonialIdx, setTestimonialIdx] = useState(0);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
@@ -98,13 +208,6 @@ const Auth = () => {
   useEffect(() => {
     if (user) navigate("/");
   }, [user, navigate]);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTestimonialIdx((i) => (i + 1) % testimonials.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, []);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -149,22 +252,20 @@ const Auth = () => {
     }
   };
 
-  const currentTestimonial = testimonials[testimonialIdx];
-
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-background">
       {/* Left side - Form */}
-      <div className="relative flex w-full flex-col items-center justify-center bg-background px-6 lg:w-1/2">
+      <div className="relative flex w-full flex-col items-center justify-center px-6 lg:w-1/2">
         <Particles />
 
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
           className="relative z-10 w-full max-w-md"
         >
           {/* Logo */}
-          <div className="mb-8 flex items-center gap-3">
+          <div className="mb-10 flex items-center gap-3">
             <img src={gsrLogo} alt="GSR" className="h-10 w-10 object-contain" />
             <span className="font-display text-lg font-bold tracking-wider text-foreground">
               Greek<span className="text-primary">SimRacers</span>
@@ -172,7 +273,7 @@ const Auth = () => {
           </div>
 
           {/* Title */}
-          <h1 className="mb-2 font-display text-3xl font-bold text-gradient-racing">
+          <h1 className="mb-1 font-display text-3xl font-bold text-gradient-racing">
             {forgotPassword ? "Επαναφορά" : isLogin ? "Σύνδεση" : "Εγγραφή"}
           </h1>
           <p className="mb-8 text-sm text-muted-foreground">
@@ -277,11 +378,11 @@ const Auth = () => {
 
           {/* Social */}
           {!forgotPassword && (
-            <div className="flex flex-col gap-3">
+            <div className="flex gap-3">
               <Button
                 type="button"
                 variant="outline"
-                className="h-11 w-full gap-2 border-border bg-secondary/30 text-foreground hover:bg-secondary/60"
+                className="h-11 flex-1 gap-2 border-border bg-secondary/30 text-foreground hover:bg-secondary/60"
                 onClick={() => handleSocialLogin("google")}
               >
                 <svg className="h-5 w-5" viewBox="0 0 24 24">
@@ -290,24 +391,24 @@ const Auth = () => {
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                 </svg>
-                Σύνδεση με Google
+                Google
               </Button>
               <Button
                 type="button"
                 variant="outline"
-                className="h-11 w-full gap-2 border-border bg-secondary/30 text-foreground hover:bg-secondary/60"
+                className="h-11 flex-1 gap-2 border-border bg-secondary/30 text-foreground hover:bg-secondary/60"
                 onClick={() => handleSocialLogin("facebook")}
               >
                 <svg className="h-5 w-5" viewBox="0 0 24 24" fill="#1877F2">
                   <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
                 </svg>
-                Σύνδεση με Facebook
+                Facebook
               </Button>
             </div>
           )}
 
           {/* Toggle */}
-          <p className="mt-6 text-center text-sm text-muted-foreground">
+          <p className="mt-8 text-center text-sm text-muted-foreground">
             {forgotPassword ? (
               <button onClick={() => setForgotPassword(false)} className="text-primary hover:underline">
                 Πίσω στη σύνδεση
@@ -331,68 +432,67 @@ const Auth = () => {
         </motion.div>
       </div>
 
-      {/* Right side - Hero / Branding */}
-      <div className="relative hidden w-1/2 overflow-hidden bg-card lg:flex lg:flex-col lg:items-center lg:justify-center">
-        {/* Gradient glow */}
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 h-64 w-64 rounded-full bg-primary/20 blur-[120px]" />
-        <div className="absolute bottom-1/4 right-1/4 h-48 w-48 rounded-full bg-accent/15 blur-[100px]" />
+      {/* Right side - Animated Racing Background */}
+      <div className="relative hidden w-1/2 overflow-hidden bg-card lg:flex lg:items-center lg:justify-center">
+        {/* Animated canvas */}
+        <RacingBackground />
 
+        {/* Carbon texture overlay */}
+        <div className="absolute inset-0 carbon-texture opacity-30" />
+
+        {/* Diagonal racing stripes */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div
+            className="absolute -top-1/2 -right-1/4 h-[200%] w-1/3 rotate-12 opacity-[0.03]"
+            style={{ background: "var(--gradient-racing)" }}
+          />
+          <div
+            className="absolute -top-1/2 right-1/4 h-[200%] w-px rotate-12 opacity-10"
+            style={{ background: "hsl(var(--primary))" }}
+          />
+          <div
+            className="absolute -top-1/2 right-[35%] h-[200%] w-px rotate-12 opacity-[0.06]"
+            style={{ background: "hsl(var(--accent))" }}
+          />
+        </div>
+
+        {/* Center branding */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.7, delay: 0.2 }}
-          className="relative z-10 px-12 text-center"
+          className="relative z-10 flex flex-col items-center text-center px-12"
         >
-          <img src={gsrLogo} alt="GSR" className="mx-auto mb-8 h-24 w-24 object-contain drop-shadow-2xl" />
+          <div className="relative mb-8">
+            <div className="absolute inset-0 scale-150 rounded-full bg-primary/10 blur-3xl" />
+            <img src={gsrLogo} alt="GSR" className="relative h-28 w-28 object-contain drop-shadow-2xl" />
+          </div>
+
           <h2 className="font-display text-4xl font-bold leading-tight text-foreground">
             Ζήσε την <br />
             <span className="text-gradient-racing">Αδρεναλίνη</span>
           </h2>
-          <p className="mt-4 text-base text-muted-foreground">
+          <p className="mt-4 max-w-xs text-sm text-muted-foreground leading-relaxed">
             Η μεγαλύτερη ελληνική κοινότητα sim racing σε περιμένει
           </p>
-        </motion.div>
 
-        {/* Testimonial card */}
-        <motion.div
-          key={testimonialIdx}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.4 }}
-          className="absolute bottom-12 left-12 right-12 rounded-xl border border-border bg-background/60 backdrop-blur-md p-5"
-        >
-          <p className="text-sm text-foreground italic">"{currentTestimonial.text}"</p>
-          <div className="mt-3 flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-racing text-xs font-bold text-primary-foreground">
-              {currentTestimonial.name[0]}
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-foreground">{currentTestimonial.name}</p>
-              <p className="text-xs text-muted-foreground">{currentTestimonial.handle}</p>
-            </div>
-            <div className="ml-auto flex gap-0.5">
-              {[...Array(5)].map((_, i) => (
-                <svg key={i} className="h-3.5 w-3.5 fill-accent" viewBox="0 0 20 20">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-              ))}
-            </div>
-          </div>
-
-          {/* Dots */}
-          <div className="mt-3 flex justify-center gap-1.5">
-            {testimonials.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setTestimonialIdx(i)}
-                className={`h-1.5 rounded-full transition-all ${
-                  i === testimonialIdx ? "w-4 bg-primary" : "w-1.5 bg-muted-foreground/30"
-                }`}
-              />
+          {/* Stats row */}
+          <div className="mt-10 flex gap-8">
+            {[
+              { value: "500+", label: "Μέλη" },
+              { value: "50+", label: "Αγώνες" },
+              { value: "10+", label: "Πρωταθλήματα" },
+            ].map((stat) => (
+              <div key={stat.label} className="text-center">
+                <p className="font-display text-2xl font-bold text-gradient-racing">{stat.value}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{stat.label}</p>
+              </div>
             ))}
           </div>
         </motion.div>
+
+        {/* Bottom checkered flag pattern */}
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-racing" />
       </div>
     </div>
   );
