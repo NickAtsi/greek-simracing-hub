@@ -123,6 +123,101 @@ const Particles = () => {
   return <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none" />;
 };
 
+// Right panel with 3D mouse-reactive text
+const RightPanel = () => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [rotateX, setRotateX] = useState(0);
+  const [rotateY, setRotateY] = useState(0);
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const x = (e.clientX - rect.left) / rect.width - 0.5;
+    const y = (e.clientY - rect.top) / rect.height - 0.5;
+    setRotateY(x * 20);
+    setRotateX(-y * 15);
+  };
+
+  const handleMouseLeave = () => {
+    setRotateX(0);
+    setRotateY(0);
+  };
+
+  return (
+    <div
+      ref={containerRef}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      className="relative hidden w-1/2 overflow-hidden bg-card lg:flex lg:items-center lg:justify-center"
+      style={{ perspective: "1000px" }}
+    >
+      <RacingBackground />
+      <div className="absolute inset-0 carbon-texture opacity-30" />
+      <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute -top-1/2 -right-1/4 h-[200%] w-1/3 rotate-12 opacity-[0.03]" style={{ background: "var(--gradient-racing)" }} />
+        <div className="absolute -top-1/2 right-1/4 h-[200%] w-px rotate-12 opacity-10" style={{ background: "hsl(var(--primary))" }} />
+        <div className="absolute -top-1/2 right-[35%] h-[200%] w-px rotate-12 opacity-[0.06]" style={{ background: "hsl(var(--accent))" }} />
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.7, delay: 0.2 }}
+        className="relative z-10 flex flex-col items-center text-center px-12"
+        style={{
+          transform: `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
+          transition: "transform 0.15s ease-out",
+          transformStyle: "preserve-3d",
+        }}
+      >
+        <div className="relative mb-8" style={{ transform: "translateZ(60px)" }}>
+          <div className="absolute inset-0 scale-150 rounded-full bg-primary/10 blur-3xl" />
+          <img src={gsrLogo} alt="GSR" className="relative h-28 w-28 object-contain drop-shadow-2xl" />
+        </div>
+        <h2
+          className="font-display text-5xl font-bold leading-tight text-foreground"
+          style={{
+            transform: "translateZ(40px)",
+            textShadow: "0 4px 12px hsla(1, 100%, 44%, 0.3), 0 8px 30px hsla(0, 0%, 0%, 0.5)",
+          }}
+        >
+          Ζήσε την <br />
+          <span
+            className="text-gradient-racing"
+            style={{
+              textShadow: "none",
+              filter: "drop-shadow(0 4px 20px hsla(1, 100%, 50%, 0.4))",
+            }}
+          >
+            Αδρεναλίνη
+          </span>
+        </h2>
+        <p
+          className="mt-4 max-w-xs text-sm text-muted-foreground leading-relaxed"
+          style={{ transform: "translateZ(20px)" }}
+        >
+          Η μεγαλύτερη ελληνική κοινότητα sim racing σε περιμένει
+        </p>
+        <div className="mt-10 flex gap-8" style={{ transform: "translateZ(30px)" }}>
+          {[{ value: "500+", label: "Μέλη" }, { value: "50+", label: "Αγώνες" }, { value: "10+", label: "Πρωταθλήματα" }].map((stat) => (
+            <div key={stat.label} className="text-center">
+              <p
+                className="font-display text-2xl font-bold text-gradient-racing"
+                style={{ filter: "drop-shadow(0 2px 8px hsla(1, 100%, 50%, 0.3))" }}
+              >
+                {stat.value}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">{stat.label}</p>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-racing" />
+    </div>
+  );
+};
+
 const SIM_OPTIONS = [
   "Assetto Corsa", "Assetto Corsa Competizione", "iRacing",
   "rFactor 2", "Gran Turismo", "Forza Motorsport", "F1 Series",
@@ -466,38 +561,7 @@ const Auth = () => {
       </div>
 
       {/* Right side - Animated Racing Background */}
-      <div className="relative hidden w-1/2 overflow-hidden bg-card lg:flex lg:items-center lg:justify-center">
-        <RacingBackground />
-        <div className="absolute inset-0 carbon-texture opacity-30" />
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-1/2 -right-1/4 h-[200%] w-1/3 rotate-12 opacity-[0.03]" style={{ background: "var(--gradient-racing)" }} />
-          <div className="absolute -top-1/2 right-1/4 h-[200%] w-px rotate-12 opacity-10" style={{ background: "hsl(var(--primary))" }} />
-          <div className="absolute -top-1/2 right-[35%] h-[200%] w-px rotate-12 opacity-[0.06]" style={{ background: "hsl(var(--accent))" }} />
-        </div>
-
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7, delay: 0.2 }} className="relative z-10 flex flex-col items-center text-center px-12">
-          <div className="relative mb-8">
-            <div className="absolute inset-0 scale-150 rounded-full bg-primary/10 blur-3xl" />
-            <img src={gsrLogo} alt="GSR" className="relative h-28 w-28 object-contain drop-shadow-2xl" />
-          </div>
-          <h2 className="font-display text-4xl font-bold leading-tight text-foreground">
-            Ζήσε την <br /><span className="text-gradient-racing">Αδρεναλίνη</span>
-          </h2>
-          <p className="mt-4 max-w-xs text-sm text-muted-foreground leading-relaxed">
-            Η μεγαλύτερη ελληνική κοινότητα sim racing σε περιμένει
-          </p>
-          <div className="mt-10 flex gap-8">
-            {[{ value: "500+", label: "Μέλη" }, { value: "50+", label: "Αγώνες" }, { value: "10+", label: "Πρωταθλήματα" }].map((stat) => (
-              <div key={stat.label} className="text-center">
-                <p className="font-display text-2xl font-bold text-gradient-racing">{stat.value}</p>
-                <p className="mt-1 text-xs text-muted-foreground">{stat.label}</p>
-              </div>
-            ))}
-          </div>
-        </motion.div>
-
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-racing" />
-      </div>
+      <RightPanel />
     </div>
   );
 };
