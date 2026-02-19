@@ -12,7 +12,7 @@ const navItems = [
   { label: "Άρθρα", href: "/articles" },
   { label: "Forum", href: "/forum" },
   { label: "Games Hub", href: "/games-hub" },
-  { label: "Podcasts", href: "/#podcasts" },
+  { label: "Podcasts", href: "/podcasts" },
   { label: "Επικοινωνία", href: "/contact" },
 ];
 

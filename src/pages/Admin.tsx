@@ -53,7 +53,8 @@ const Admin = () => {
 
   // Form states
   const [showPodcastForm, setShowPodcastForm] = useState(false);
-  const [podcastForm, setPodcastForm] = useState({ title: "", description: "", spotify_url: "", host: "", episode_number: "", duration: "", category: "Γενικά" });
+  const [editingPodcast, setEditingPodcast] = useState<any>(null);
+  const [podcastForm, setPodcastForm] = useState({ title: "", description: "", spotify_url: "", host: "", episode_number: "", duration: "", category: "Γενικά", published: true });
   const [showCatForm, setShowCatForm] = useState(false);
   const [catForm, setCatForm] = useState({ name: "", slug: "", color: "#1565C0", type: "article" });
   const [editProfile, setEditProfile] = useState<any>(null);
@@ -198,8 +199,29 @@ const Admin = () => {
     toast({ title: "Επεισόδιο διαγράφηκε" }); fetchPodcasts();
   };
 
-  const handleAddPodcast = async () => {
-    const { error } = await supabase.from("podcast_episodes" as any).insert({
+  const openNewPodcast = () => {
+    setEditingPodcast(null);
+    setPodcastForm({ title: "", description: "", spotify_url: "", host: "", episode_number: "", duration: "", category: "Γενικά", published: true });
+    setShowPodcastForm(true);
+  };
+
+  const openEditPodcast = (ep: any) => {
+    setEditingPodcast(ep);
+    setPodcastForm({
+      title: ep.title || "",
+      description: ep.description || "",
+      spotify_url: ep.spotify_url || "",
+      host: ep.host || "",
+      episode_number: ep.episode_number?.toString() || "",
+      duration: ep.duration || "",
+      category: ep.category || "Γενικά",
+      published: ep.published ?? true,
+    });
+    setShowPodcastForm(true);
+  };
+
+  const handleSavePodcast = async () => {
+    const payload = {
       title: podcastForm.title,
       description: podcastForm.description,
       spotify_url: podcastForm.spotify_url,
@@ -207,12 +229,26 @@ const Admin = () => {
       episode_number: parseInt(podcastForm.episode_number) || null,
       duration: podcastForm.duration,
       category: podcastForm.category,
-    });
-    if (!error) {
-      toast({ title: "Επεισόδιο προστέθηκε!" });
-      setShowPodcastForm(false);
-      setPodcastForm({ title: "", description: "", spotify_url: "", host: "", episode_number: "", duration: "", category: "Γενικά" });
-      fetchPodcasts();
+      published: podcastForm.published,
+    };
+
+    if (editingPodcast) {
+      const { error } = await supabase.from("podcast_episodes" as any).update(payload as any).eq("id", editingPodcast.id);
+      if (!error) {
+        toast({ title: "Επεισόδιο ενημερώθηκε!" });
+        setShowPodcastForm(false);
+        setEditingPodcast(null);
+        fetchPodcasts();
+        fetchStats();
+      }
+    } else {
+      const { error } = await supabase.from("podcast_episodes" as any).insert(payload as any);
+      if (!error) {
+        toast({ title: "Επεισόδιο προστέθηκε!" });
+        setShowPodcastForm(false);
+        fetchPodcasts();
+        fetchStats();
+      }
     }
   };
 
@@ -472,30 +508,38 @@ const Admin = () => {
             <div>
               <div className="flex items-center justify-between mb-6">
                 <h1 className="font-display text-2xl font-black text-foreground">Podcasts ({stats.podcasts})</h1>
-                <Button onClick={() => setShowPodcastForm(true)} className="gap-2 bg-gradient-greek text-white hover:brightness-110">
+                <Button onClick={openNewPodcast} className="gap-2 bg-gradient-greek text-white hover:brightness-110">
                   <Plus className="h-4 w-4" /> Νέο Επεισόδιο
                 </Button>
               </div>
               <div className="space-y-3">
                 {podcasts.map((p: any) => (
-                  <div key={p.id} className="flex items-center gap-4 rounded-xl border border-border bg-card p-4">
-                    <div className="flex-shrink-0 h-10 w-10 rounded-full bg-green-600/20 border border-green-600/40 flex items-center justify-center">
-                      <Headphones className="h-4 w-4 text-green-400" />
+                  <div key={p.id} className="flex items-center gap-4 rounded-xl border border-border bg-card p-4 group hover:border-primary/30 transition-colors">
+                    <div className="flex-shrink-0 h-10 w-10 rounded-full bg-card border border-border flex items-center justify-center">
+                      <Headphones className="h-4 w-4 text-muted-foreground" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium text-foreground text-sm">#{p.episode_number} — {p.title}</p>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground mt-0.5">
-                        <span>{p.host}</span>
-                        <span>{p.duration}</span>
-                        <span>{p.category}</span>
+                      <div className="flex items-center gap-2 mb-0.5">
+                        {!p.published && <span className="text-[10px] bg-secondary text-muted-foreground px-1.5 py-0.5 rounded font-display">DRAFT</span>}
+                        <p className="font-medium text-foreground text-sm truncate">EP#{p.episode_number || "?"} — {p.title}</p>
+                      </div>
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                        {p.host && <span>{p.host}</span>}
+                        {p.duration && <span>{p.duration}</span>}
+                        {p.category && <span className="bg-secondary/80 rounded px-1.5 py-0.5">{p.category}</span>}
                         {p.spotify_url && (
-                          <a href={p.spotify_url} target="_blank" rel="noopener noreferrer" className="text-green-500 hover:underline">Spotify ↗</a>
+                          <a href={p.spotify_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Spotify ↗</a>
                         )}
                       </div>
                     </div>
-                    <Button size="sm" variant="outline" onClick={() => deletePodcast(p.id)} className="h-7 px-2 text-destructive border-destructive/30">
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
+                    <div className="flex items-center gap-1">
+                      <Button size="sm" variant="outline" onClick={() => openEditPodcast(p)} className="h-7 px-2 gap-1 text-xs">
+                        <Edit className="h-3 w-3" /> Επεξεργασία
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => deletePodcast(p.id)} className="h-7 px-2 text-destructive border-destructive/30">
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
                 {podcasts.length === 0 && (
@@ -664,27 +708,63 @@ const Admin = () => {
         </main>
       </div>
 
-      {/* Add Podcast Dialog */}
-      <Dialog open={showPodcastForm} onOpenChange={setShowPodcastForm}>
+      {/* Add/Edit Podcast Dialog */}
+      <Dialog open={showPodcastForm} onOpenChange={(v) => { setShowPodcastForm(v); if (!v) setEditingPodcast(null); }}>
         <DialogContent className="max-w-lg bg-card border-border">
           <DialogHeader>
-            <DialogTitle className="font-display text-foreground">Νέο Podcast Επεισόδιο</DialogTitle>
+            <DialogTitle className="font-display text-foreground">
+              {editingPodcast ? "Επεξεργασία Επεισοδίου" : "Νέο Podcast Επεισόδιο"}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-3">
-              <Input placeholder="Τίτλος" value={podcastForm.title} onChange={(e) => setPodcastForm(p => ({ ...p, title: e.target.value }))} className="bg-secondary/50" />
-              <Input placeholder="Αρ. Επεισοδίου" type="number" value={podcastForm.episode_number} onChange={(e) => setPodcastForm(p => ({ ...p, episode_number: e.target.value }))} className="bg-secondary/50" />
+              <div className="col-span-2">
+                <label className="text-xs text-muted-foreground mb-1 block">Τίτλος *</label>
+                <Input placeholder="Τίτλος επεισοδίου" value={podcastForm.title} onChange={(e) => setPodcastForm(p => ({ ...p, title: e.target.value }))} className="bg-secondary/50" />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Αρ. Επεισοδίου</label>
+                <Input placeholder="π.χ. 42" type="number" value={podcastForm.episode_number} onChange={(e) => setPodcastForm(p => ({ ...p, episode_number: e.target.value }))} className="bg-secondary/50" />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Διάρκεια</label>
+                <Input placeholder="π.χ. 45:30" value={podcastForm.duration} onChange={(e) => setPodcastForm(p => ({ ...p, duration: e.target.value }))} className="bg-secondary/50" />
+              </div>
             </div>
-            <Input placeholder="Host (π.χ. Γιάννης Κ.)" value={podcastForm.host} onChange={(e) => setPodcastForm(p => ({ ...p, host: e.target.value }))} className="bg-secondary/50" />
-            <Input placeholder="Spotify URL (π.χ. https://open.spotify.com/episode/...)" value={podcastForm.spotify_url} onChange={(e) => setPodcastForm(p => ({ ...p, spotify_url: e.target.value }))} className="bg-secondary/50" />
-            <div className="grid grid-cols-2 gap-3">
-              <Input placeholder="Διάρκεια (π.χ. 45:30)" value={podcastForm.duration} onChange={(e) => setPodcastForm(p => ({ ...p, duration: e.target.value }))} className="bg-secondary/50" />
-              <Input placeholder="Κατηγορία" value={podcastForm.category} onChange={(e) => setPodcastForm(p => ({ ...p, category: e.target.value }))} className="bg-secondary/50" />
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Host</label>
+              <Input placeholder="π.χ. Γιάννης Κ." value={podcastForm.host} onChange={(e) => setPodcastForm(p => ({ ...p, host: e.target.value }))} className="bg-secondary/50" />
             </div>
-            <Textarea placeholder="Περιγραφή..." value={podcastForm.description} onChange={(e) => setPodcastForm(p => ({ ...p, description: e.target.value }))} rows={3} className="resize-none bg-secondary/50" />
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setShowPodcastForm(false)}>Ακύρωση</Button>
-              <Button onClick={handleAddPodcast} className="bg-gradient-greek text-white hover:brightness-110">Προσθήκη</Button>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Spotify Episode URL</label>
+              <Input placeholder="https://open.spotify.com/episode/..." value={podcastForm.spotify_url} onChange={(e) => setPodcastForm(p => ({ ...p, spotify_url: e.target.value }))} className="bg-secondary/50" />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Κατηγορία</label>
+              <Input placeholder="π.χ. Γενικά, F1, SimRacing..." value={podcastForm.category} onChange={(e) => setPodcastForm(p => ({ ...p, category: e.target.value }))} className="bg-secondary/50" />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Περιγραφή</label>
+              <Textarea placeholder="Περιγραφή επεισοδίου..." value={podcastForm.description} onChange={(e) => setPodcastForm(p => ({ ...p, description: e.target.value }))} rows={3} className="resize-none bg-secondary/50" />
+            </div>
+            {/* Published toggle */}
+            <div className="flex items-center justify-between rounded-lg border border-border bg-secondary/20 px-4 py-3">
+              <div>
+                <p className="text-sm font-medium text-foreground">Δημοσιευμένο</p>
+                <p className="text-xs text-muted-foreground">Εμφανίζεται στο site</p>
+              </div>
+              <button
+                onClick={() => setPodcastForm(p => ({ ...p, published: !p.published }))}
+                className={`relative h-6 w-11 rounded-full transition-colors ${podcastForm.published ? "bg-primary" : "bg-secondary"}`}
+              >
+                <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-card transition-transform ${podcastForm.published ? "translate-x-5" : "translate-x-0"}`} />
+              </button>
+            </div>
+            <div className="flex justify-end gap-2 pt-1">
+              <Button variant="outline" onClick={() => { setShowPodcastForm(false); setEditingPodcast(null); }}>Ακύρωση</Button>
+              <Button onClick={handleSavePodcast} disabled={!podcastForm.title.trim()} className="bg-gradient-greek text-white hover:brightness-110 gap-2">
+                {editingPodcast ? <><Edit className="h-4 w-4" /> Ενημέρωση</> : <><Plus className="h-4 w-4" /> Προσθήκη</>}
+              </Button>
             </div>
           </div>
         </DialogContent>
