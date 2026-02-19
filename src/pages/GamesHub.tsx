@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import FantasyLeagueComponent from "@/components/FantasyLeague";
 
 type GameState = "idle" | "countdown" | "waiting" | "go" | "result" | "too-early";
 
@@ -196,16 +197,6 @@ const ReactionTimeGame = () => {
   );
 };
 
-const FantasyLeague = () => (
-  <div className="rounded-xl border border-border bg-card p-12 text-center">
-    <Trophy className="mx-auto h-16 w-16 text-muted-foreground/30 mb-4" />
-    <h3 className="font-display text-2xl font-bold text-foreground mb-2">Fantasy League</h3>
-    <p className="text-muted-foreground max-w-md mx-auto">
-      Σύντομα κοντά σου! Δημιούργησε την ομάδα σου, διαγωνίσου με φίλους και κέρδισε βραβεία.
-    </p>
-    <p className="mt-4 text-sm text-primary font-display font-semibold">Coming Soon 🏁</p>
-  </div>
-);
 
 const GamesHub = () => {
   return (
@@ -243,7 +234,7 @@ const GamesHub = () => {
             <ReactionTimeGame />
           </TabsContent>
           <TabsContent value="fantasy">
-            <FantasyLeague />
+            <FantasyLeagueComponent />
           </TabsContent>
         </Tabs>
       </div>
