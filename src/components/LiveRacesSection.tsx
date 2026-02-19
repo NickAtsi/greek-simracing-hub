@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { Circle, Clock, Users } from "lucide-react";
-import Particles from "@/components/Particles";
 
 const races = [
   {
@@ -35,8 +34,7 @@ const races = [
 const LiveRacesSection = () => {
   return (
     <section id="live-races" className="relative py-24 overflow-hidden">
-      <Particles />
-      <div className="absolute inset-0 carbon-texture opacity-10" />
+      <div className="absolute inset-0 carbon-texture opacity-5" />
       <div className="absolute right-0 top-0 h-72 w-72 rounded-full bg-primary/5 blur-[100px]" />
       <div className="container relative z-10 mx-auto px-4">
         <motion.div

@@ -11,8 +11,8 @@ const games = [
 
 const GamesHubSection = () => {
   return (
-    <section id="games-hub" className="relative border-t border-border py-24 overflow-hidden">
-      <div className="absolute inset-0 carbon-texture opacity-10" />
+    <section id="games-hub" className="relative border-t border-border/50 py-24 overflow-hidden">
+      <div className="absolute inset-0 carbon-texture opacity-5" />
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-96 w-96 rounded-full bg-accent/5 blur-[120px]" />
       <div className="container relative z-10 mx-auto px-4">
         <motion.div
