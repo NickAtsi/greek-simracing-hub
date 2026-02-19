@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
 import gsrLogo from "@/assets/gsr-logo.png";
+import SocialIcon from "@/components/SocialIcon";
 
 const socials = [
   { label: "Discord", href: "#", icon: (
@@ -37,23 +37,9 @@ const Footer = () => {
               Η #1 ελληνική πλατφόρμα SimRacing. Αγώνες, πληροφόρηση,
               και πάθος για τη virtual μηχανοκίνηση.
             </p>
-            {/* Social icons with glow effects */}
             <div className="mt-6 flex gap-2">
               {socials.map((social) => (
-                <motion.a
-                  key={social.label}
-                  href={social.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  whileHover={{ scale: 1.15, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="group relative flex h-10 w-10 items-center justify-center rounded-xl border border-border/50 bg-card/50 text-muted-foreground transition-all duration-300 hover:text-foreground hover:border-primary/50 hover:bg-primary/10"
-                >
-                  <span className="absolute inset-0 rounded-xl opacity-0 transition-opacity duration-300 group-hover:opacity-100 shadow-[0_0_16px_hsl(356,100%,52%,0.35)]" />
-                  <span className="relative z-10 transition-colors duration-300 group-hover:text-primary">
-                    {social.icon}
-                  </span>
-                </motion.a>
+                <SocialIcon key={social.label} href={social.href} label={social.label} icon={social.icon} />
               ))}
             </div>
           </div>

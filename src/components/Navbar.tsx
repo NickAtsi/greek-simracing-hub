@@ -4,6 +4,7 @@ import { Menu, X, LogIn, LogOut } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import gsrLogo from "@/assets/gsr-logo.png";
+import SocialIcon from "@/components/SocialIcon";
 
 const navItems = [
   { label: "Αρχική", href: "/" },
@@ -99,17 +100,7 @@ const Navbar = () => {
           {/* Social icons */}
           <div className="flex items-center gap-1 mr-3 border-r border-border/50 pr-3">
             {socials.map((s) => (
-              <a
-                key={s.label}
-                href={s.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                title={s.label}
-                className="group relative flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground transition-all duration-300 hover:text-foreground hover:bg-secondary/60"
-              >
-                <span className="absolute inset-0 rounded-lg opacity-0 transition-opacity duration-300 group-hover:opacity-100 shadow-[0_0_12px_hsl(356,100%,52%,0.3)]" />
-                <span className="relative z-10">{s.icon}</span>
-              </a>
+              <SocialIcon key={s.label} href={s.href} label={s.label} icon={s.icon} size="sm" />
             ))}
           </div>
 
