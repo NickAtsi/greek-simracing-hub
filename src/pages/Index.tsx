@@ -6,6 +6,7 @@ import PodcastsSection from "@/components/PodcastsSection";
 import CommunitySection from "@/components/CommunitySection";
 import Footer from "@/components/Footer";
 import ReactiveBackground from "@/components/ReactiveBackground";
+import ScrollToTop from "@/components/ScrollToTop";
 
 const Index = () => {
   return (
@@ -18,6 +19,7 @@ const Index = () => {
       <PodcastsSection />
       <CommunitySection />
       <Footer />
+      <ScrollToTop />
     </div>
   );
 };
