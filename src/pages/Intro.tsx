@@ -172,9 +172,25 @@ const Intro = () => {
   const navigate = useNavigate();
   const [phase, setPhase] = useState<"loading" | "reveal" | "cta">("loading");
   const [skipped, setSkipped] = useState(false);
+  const [progress, setProgress] = useState(0);
 
   const tagline = useTypewriter("Racing is our Passion", 55, 800);
   const subtitle = useTypewriter("Greek SimRacers Hub", 80, 2200);
+
+  // Progress bar: 0→100 over 2600ms, then CTA appears at 100%
+  useEffect(() => {
+    const duration = 2600;
+    const interval = 30;
+    const step = (100 / duration) * interval;
+    const id = setInterval(() => {
+      setProgress((p) => {
+        const next = Math.min(p + step, 100);
+        if (next >= 100) clearInterval(id);
+        return next;
+      });
+    }, interval);
+    return () => clearInterval(id);
+  }, []);
 
   // Auto-advance phases
   useEffect(() => {
@@ -337,12 +353,55 @@ const Intro = () => {
         </AnimatePresence>
       </div>
 
-      {/* Bottom scan line effect */}
-      <motion.div
-        className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent"
-        animate={{ opacity: [0.3, 0.8, 0.3] }}
-        transition={{ duration: 2.5, repeat: Infinity }}
-      />
+      {/* ── Progress bar ── */}
+      <div className="absolute bottom-0 left-0 right-0 z-20">
+        {/* Label + percentage */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: progress < 100 ? 1 : 0 }}
+          transition={{ duration: 0.4 }}
+          className="flex justify-between items-center px-8 mb-2"
+        >
+          <span className="font-display text-[9px] tracking-[0.4em] text-primary/50 uppercase">
+            {progress < 30 ? "Initializing" : progress < 70 ? "Loading Systems" : "Ready"}
+          </span>
+          <span className="font-display text-[9px] tracking-widest text-primary/50">
+            {Math.floor(progress)}%
+          </span>
+        </motion.div>
+
+        {/* Track */}
+        <div className="relative h-[2px] w-full bg-primary/10">
+          {/* Fill */}
+          <motion.div
+          className="absolute left-0 top-0 h-full"
+          style={{ width: `${progress}%` }}
+          transition={{ ease: "linear" }}
+        >
+            <div
+              className="h-full w-full"
+              style={{
+                background: "linear-gradient(90deg, hsl(214,89%,30%), hsl(214,89%,60%), hsl(0,0%,90%))",
+                boxShadow: "0 0 12px hsl(214,89%,52%), 0 0 24px hsl(214,89%,40%,0.5)",
+              }}
+            />
+          </motion.div>
+
+          {/* Leading glow dot */}
+          {progress > 0 && progress < 100 && (
+            <motion.div
+              className="absolute top-1/2 -translate-y-1/2 h-3 w-3 rounded-full -translate-x-1/2"
+              style={{
+                left: `${progress}%`,
+                background: "hsl(214,89%,80%)",
+                boxShadow: "0 0 10px 3px hsl(214,89%,60%), 0 0 20px hsl(214,89%,52%)",
+              }}
+              animate={{ opacity: [0.8, 1, 0.8], scale: [0.9, 1.1, 0.9] }}
+              transition={{ duration: 0.6, repeat: Infinity }}
+            />
+          )}
+        </div>
+      </div>
 
       {/* Corner brackets */}
       {[
