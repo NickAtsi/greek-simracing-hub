@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Heart, MessageCircle, UserPlus, UserCheck, UserX, Trophy, Gamepad2, Flag, Mic, Settings, Calendar, Users, Camera, Save, X, Edit2 } from "lucide-react";
+import { Heart, MessageCircle, UserPlus, UserCheck, UserX, Trophy, Gamepad2, Flag, Calendar, Users, Camera, Save, Edit2, Globe, MapPin, Hash, Clock3, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -29,7 +29,7 @@ const Profile = () => {
   const [followingCount, setFollowingCount] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
-  const [editForm, setEditForm] = useState({ display_name: "", username: "", favorite_sim: "", favorite_track: "", setup_type: "" });
+  const [editForm, setEditForm] = useState({ display_name: "", username: "", favorite_sim: "", favorite_track: "", setup_type: "", bio: "", location: "", discord_username: "", nationality: "", years_simracing: "", website_url: "" });
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [saving, setSaving] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -158,6 +158,12 @@ const Profile = () => {
       favorite_sim: profile?.favorite_sim || "",
       favorite_track: profile?.favorite_track || "",
       setup_type: profile?.setup_type || "",
+      bio: profile?.bio || "",
+      location: profile?.location || "",
+      discord_username: profile?.discord_username || "",
+      nationality: profile?.nationality || "",
+      years_simracing: profile?.years_simracing || "",
+      website_url: profile?.website_url || "",
     });
     setShowEditDialog(true);
   };
@@ -308,7 +314,17 @@ const Profile = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-16">
             {/* Left: Racing Info */}
             <div className="space-y-4">
-              <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="rounded-xl border border-border bg-card p-5">
+              {/* Bio */}
+              {profile.bio && (
+                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="rounded-xl border border-border bg-card p-5">
+                  <h3 className="font-display text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                    <MessageCircle className="h-4 w-4 text-primary" /> Βιογραφικό
+                  </h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{profile.bio}</p>
+                </motion.div>
+              )}
+
+              <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.05 }} className="rounded-xl border border-border bg-card p-5">
                 <h3 className="font-display text-sm font-bold text-foreground mb-4 flex items-center gap-2">
                   <Flag className="h-4 w-4 text-primary" /> Racing Info
                 </h3>
@@ -331,6 +347,24 @@ const Profile = () => {
                       <span className="text-xs font-medium text-foreground bg-primary/10 px-2 py-0.5 rounded-full">{profile.setup_type}</span>
                     </div>
                   )}
+                  {profile.years_simracing && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground flex items-center gap-1.5"><Clock3 className="h-3.5 w-3.5" />Χρόνια SimRacing</span>
+                      <span className="text-xs font-medium text-foreground bg-primary/10 px-2 py-0.5 rounded-full">{profile.years_simracing}</span>
+                    </div>
+                  )}
+                  {profile.nationality && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground flex items-center gap-1.5"><Globe className="h-3.5 w-3.5" />Εθνικότητα</span>
+                      <span className="text-xs font-medium text-foreground bg-primary/10 px-2 py-0.5 rounded-full">{profile.nationality}</span>
+                    </div>
+                  )}
+                  {profile.location && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" />Τοποθεσία</span>
+                      <span className="text-xs font-medium text-foreground">{profile.location}</span>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between">
                     <span className="text-xs text-muted-foreground flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" />Μέλος από</span>
                     <span className="text-xs font-medium text-foreground">{new Date(profile.created_at).toLocaleDateString("el-GR")}</span>
@@ -338,7 +372,33 @@ const Profile = () => {
                 </div>
               </motion.div>
 
-              <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="rounded-xl border border-border bg-card p-5">
+              {/* Social / Links */}
+              {(profile.discord_username || profile.website_url) && (
+                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="rounded-xl border border-border bg-card p-5">
+                  <h3 className="font-display text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                    <Hash className="h-4 w-4 text-primary" /> Links
+                  </h3>
+                  <div className="space-y-2">
+                    {profile.discord_username && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+                          <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057.1 18.081.118 18.105.137 18.12a19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+                          Discord
+                        </span>
+                        <span className="text-xs font-medium text-foreground">@{profile.discord_username}</span>
+                      </div>
+                    )}
+                    {profile.website_url && (
+                      <a href={profile.website_url.startsWith("http") ? profile.website_url : `https://${profile.website_url}`} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-xs text-primary hover:underline">
+                        <ExternalLink className="h-3.5 w-3.5" /> {profile.website_url}
+                      </a>
+                    )}
+                  </div>
+                </motion.div>
+              )}
+
+              <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }} className="rounded-xl border border-border bg-card p-5">
                 <h3 className="font-display text-sm font-bold text-foreground mb-3 flex items-center gap-2">
                   <Users className="h-4 w-4 text-primary" /> Κοινωνικό
                 </h3>
@@ -426,7 +486,7 @@ const Profile = () => {
             <DialogTitle className="font-display text-foreground">Επεξεργασία Προφίλ</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            {/* Avatar upload in dialog too */}
+            {/* Avatar upload */}
             <div className="flex items-center gap-4">
               <Avatar className="h-16 w-16">
                 <AvatarImage src={profile?.avatar_url || ""} />
@@ -440,6 +500,8 @@ const Profile = () => {
                 <p className="text-xs text-muted-foreground mt-1">JPG, PNG έως 5MB</p>
               </div>
             </div>
+
+            {/* Basic Info */}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block">Εμφανιζόμενο Όνομα</label>
@@ -450,27 +512,75 @@ const Profile = () => {
                 <Input value={editForm.username} onChange={(e) => setEditForm(p => ({ ...p, username: e.target.value }))} className="bg-secondary/50" placeholder="@username..." />
               </div>
             </div>
+
+            {/* Bio */}
             <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Αγαπημένο Sim Racing Game</label>
-              <Input value={editForm.favorite_sim} onChange={(e) => setEditForm(p => ({ ...p, favorite_sim: e.target.value }))} className="bg-secondary/50" placeholder="π.χ. iRacing, Assetto Corsa..." />
+              <label className="text-xs text-muted-foreground mb-1 block">Βιογραφικό</label>
+              <Textarea value={editForm.bio} onChange={(e) => setEditForm(p => ({ ...p, bio: e.target.value }))} className="bg-secondary/50 resize-none" placeholder="Πες μας λίγα πράγματα για σένα..." rows={3} maxLength={500} />
+              <p className="text-xs text-muted-foreground mt-0.5 text-right">{editForm.bio.length}/500</p>
             </div>
-            <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Αγαπημένη Πίστα</label>
-              <Input value={editForm.favorite_track} onChange={(e) => setEditForm(p => ({ ...p, favorite_track: e.target.value }))} className="bg-secondary/50" placeholder="π.χ. Nürburgring, Spa..." />
+
+            {/* Location & Nationality */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Τοποθεσία</label>
+                <Input value={editForm.location} onChange={(e) => setEditForm(p => ({ ...p, location: e.target.value }))} className="bg-secondary/50" placeholder="π.χ. Αθήνα, Θεσσαλονίκη..." />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Εθνικότητα</label>
+                <Input value={editForm.nationality} onChange={(e) => setEditForm(p => ({ ...p, nationality: e.target.value }))} className="bg-secondary/50" placeholder="π.χ. Έλληνας..." />
+              </div>
             </div>
-            <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Τύπος Setup</label>
-              <select value={editForm.setup_type} onChange={(e) => setEditForm(p => ({ ...p, setup_type: e.target.value }))}
-                className="w-full rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm text-foreground">
-                <option value="">Επιλέξτε...</option>
-                <option value="Keyboard">Keyboard</option>
-                <option value="Controller">Controller</option>
-                <option value="Entry Wheel">Entry Wheel</option>
-                <option value="Mid-Range Wheel">Mid-Range Wheel</option>
-                <option value="Direct Drive">Direct Drive</option>
-                <option value="Full Motion Rig">Full Motion Rig</option>
-              </select>
+
+            {/* Racing Info */}
+            <div className="border-t border-border pt-4">
+              <p className="text-xs font-display font-bold text-muted-foreground uppercase tracking-wider mb-3">Racing Info</p>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Αγαπημένο Sim Racing Game</label>
+                  <Input value={editForm.favorite_sim} onChange={(e) => setEditForm(p => ({ ...p, favorite_sim: e.target.value }))} className="bg-secondary/50" placeholder="π.χ. iRacing, Assetto Corsa..." />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Αγαπημένη Πίστα</label>
+                  <Input value={editForm.favorite_track} onChange={(e) => setEditForm(p => ({ ...p, favorite_track: e.target.value }))} className="bg-secondary/50" placeholder="π.χ. Nürburgring, Spa..." />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Τύπος Setup</label>
+                    <select value={editForm.setup_type} onChange={(e) => setEditForm(p => ({ ...p, setup_type: e.target.value }))}
+                      className="w-full rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm text-foreground">
+                      <option value="">Επιλέξτε...</option>
+                      <option value="Keyboard">Keyboard</option>
+                      <option value="Controller">Controller</option>
+                      <option value="Entry Wheel">Entry Wheel</option>
+                      <option value="Mid-Range Wheel">Mid-Range Wheel</option>
+                      <option value="Direct Drive">Direct Drive</option>
+                      <option value="Full Motion Rig">Full Motion Rig</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Χρόνια SimRacing</label>
+                    <Input value={editForm.years_simracing} onChange={(e) => setEditForm(p => ({ ...p, years_simracing: e.target.value }))} className="bg-secondary/50" placeholder="π.χ. 3, 5-10..." />
+                  </div>
+                </div>
+              </div>
             </div>
+
+            {/* Social Links */}
+            <div className="border-t border-border pt-4">
+              <p className="text-xs font-display font-bold text-muted-foreground uppercase tracking-wider mb-3">Social Links</p>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Discord Username</label>
+                  <Input value={editForm.discord_username} onChange={(e) => setEditForm(p => ({ ...p, discord_username: e.target.value }))} className="bg-secondary/50" placeholder="username#0000 ή username..." />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">Website / Twitch / YouTube</label>
+                  <Input value={editForm.website_url} onChange={(e) => setEditForm(p => ({ ...p, website_url: e.target.value }))} className="bg-secondary/50" placeholder="https://..." />
+                </div>
+              </div>
+            </div>
+
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => setShowEditDialog(false)}>Ακύρωση</Button>
               <Button onClick={handleSaveProfile} disabled={saving} className="bg-gradient-greek text-white hover:brightness-110 gap-2">

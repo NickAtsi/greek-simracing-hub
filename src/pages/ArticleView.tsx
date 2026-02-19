@@ -180,7 +180,14 @@ const ArticleView = () => {
             </div>
 
             <div className="flex items-start justify-between gap-4 mb-4">
-              <h1 className="font-display text-3xl font-black text-foreground leading-tight">{article.title}</h1>
+              <h1 className="font-display text-3xl font-black leading-tight group/title inline-block relative cursor-default">
+                <span className="relative inline-block">
+                  <span className="relative z-10 bg-gradient-to-r from-foreground via-foreground to-foreground bg-clip-text transition-all duration-500 group-hover/title:from-primary group-hover/title:via-accent group-hover/title:to-primary group-hover/title:text-transparent">
+                    {article.title}
+                  </span>
+                  <span className="absolute -bottom-1 left-0 h-0.5 w-0 bg-gradient-to-r from-primary via-accent to-primary rounded-full transition-all duration-500 group-hover/title:w-full" />
+                </span>
+              </h1>
               {isAuthor && (
                 <div className="flex gap-2 flex-shrink-0">
                   <Button size="sm" variant="outline" onClick={handleDeleteArticle} className="gap-1.5 text-xs text-destructive hover:bg-destructive hover:text-destructive-foreground border-destructive/40">

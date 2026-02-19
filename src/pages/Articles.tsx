@@ -200,9 +200,11 @@ const Articles = () => {
                               )}
                               <span className="text-xs text-muted-foreground">{new Date(article.created_at).toLocaleDateString("el-GR")}</span>
                             </div>
-                            <Link to={`/articles/${article.id}`}>
-                              <h2 className="font-display text-lg font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2 mb-2">
-                                {article.title}
+                            <Link to={`/articles/${article.id}`} className="group/title">
+                              <h2 className="font-display text-lg font-bold line-clamp-2 mb-2 relative inline-block w-full">
+                                <span className="relative inline bg-gradient-to-r from-foreground via-foreground to-foreground bg-clip-text transition-all duration-500 group-hover/title:from-primary group-hover/title:via-accent group-hover/title:to-primary group-hover/title:text-transparent">
+                                  {article.title}
+                                </span>
                               </h2>
                             </Link>
                             <p className="text-sm text-muted-foreground line-clamp-2 mb-3">

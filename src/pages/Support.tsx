@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { MessageCircle, Plus, Send, Clock, CheckCircle, XCircle, AlertCircle, Shield } from "lucide-react";
+import { MessageCircle, Plus, Send, Clock, CheckCircle, XCircle, AlertCircle, Shield, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,11 +13,18 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 
-const statusConfig: Record<string, { label: string; icon: any; color: string }> = {
-  open: { label: "Ανοιχτό", icon: AlertCircle, color: "text-amber-400" },
-  in_progress: { label: "Σε Εξέλιξη", icon: Clock, color: "text-blue-400" },
-  resolved: { label: "Επιλύθηκε", icon: CheckCircle, color: "text-green-400" },
-  closed: { label: "Κλειστό", icon: XCircle, color: "text-muted-foreground" },
+const priorityConfig: Record<string, { label: string; color: string }> = {
+  low: { label: "Χαμηλή", color: "bg-secondary text-muted-foreground" },
+  normal: { label: "Κανονική", color: "bg-blue-500/20 text-blue-400" },
+  high: { label: "Υψηλή", color: "bg-orange-500/20 text-orange-400" },
+  urgent: { label: "Επείγον", color: "bg-destructive/20 text-destructive" },
+};
+
+const statusConfig: Record<string, { label: string; icon: any; color: string; badge: string }> = {
+  open: { label: "Ανοιχτό", icon: AlertCircle, color: "text-amber-400", badge: "bg-amber-500/20 text-amber-400" },
+  in_progress: { label: "Σε Εξέλιξη", icon: Clock, color: "text-blue-400", badge: "bg-blue-500/20 text-blue-400" },
+  resolved: { label: "Επιλύθηκε", icon: CheckCircle, color: "text-green-400", badge: "bg-green-500/20 text-green-400" },
+  closed: { label: "Κλειστό", icon: XCircle, color: "text-muted-foreground", badge: "bg-secondary text-muted-foreground" },
 };
 
 const Support = () => {
@@ -170,7 +177,7 @@ const Support = () => {
                 <h1 className="font-display text-3xl font-black uppercase text-foreground">
                   <span className="text-gradient-racing">Support</span> Tickets
                 </h1>
-                <p className="text-muted-foreground mt-1">Επικοινωνήστε απευθείας με την ομάδα μας</p>
+                <p className="text-muted-foreground mt-1 text-sm">Επικοινωνήστε απευθείας με την ομάδα μας</p>
               </div>
               <Button onClick={() => setShowCreate(true)} className="gap-2 bg-gradient-greek text-white hover:brightness-110">
                 <Plus className="h-4 w-4" /> Νέο Ticket
@@ -179,115 +186,167 @@ const Support = () => {
           </div>
         </div>
 
-        <div className="container mx-auto px-4 mt-8">
+        <div className="container mx-auto px-4 mt-6">
           {tickets.length === 0 ? (
-            <div className="text-center py-20">
-              <MessageCircle className="h-12 w-12 mx-auto mb-3 text-muted-foreground opacity-30" />
-              <p className="text-muted-foreground mb-4">Δεν έχεις ανοιχτά tickets.</p>
-              <Button onClick={() => setShowCreate(true)} className="bg-gradient-greek text-white hover:brightness-110">
-                Άνοιξε το πρώτο ticket
+            <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-24">
+              <MessageCircle className="h-14 w-14 mx-auto mb-4 text-muted-foreground opacity-30" />
+              <p className="text-muted-foreground mb-5 text-lg font-display font-bold">Δεν έχεις ανοιχτά tickets.</p>
+              <Button onClick={() => setShowCreate(true)} className="bg-gradient-greek text-white hover:brightness-110 gap-2">
+                <Plus className="h-4 w-4" /> Άνοιξε το πρώτο ticket
               </Button>
-            </div>
+            </motion.div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-5">
               {/* Ticket List */}
               <div className="space-y-2">
+                <p className="text-xs font-display font-bold text-muted-foreground uppercase tracking-wider mb-3 px-1">
+                  Tickets ({tickets.length})
+                </p>
                 {tickets.map((ticket: any) => {
                   const status = statusConfig[ticket.status] || statusConfig.open;
+                  const priority = priorityConfig[ticket.priority] || priorityConfig.normal;
+                  const isSelected = selectedTicket?.id === ticket.id;
                   return (
-                    <button
+                    <motion.button
                       key={ticket.id}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
                       onClick={() => setSelectedTicket(ticket)}
-                      className={`w-full text-left rounded-xl border p-4 transition-all ${selectedTicket?.id === ticket.id ? "border-primary bg-primary/5" : "border-border bg-card hover:border-primary/40"}`}
+                      className={`w-full text-left rounded-xl border p-4 transition-all ${isSelected ? "border-primary bg-primary/5 shadow-md" : "border-border bg-card hover:border-primary/40"}`}
                     >
-                      <div className="flex items-start justify-between gap-2 mb-1">
-                        <p className="font-display text-sm font-bold text-foreground truncate">{ticket.subject}</p>
-                        <status.icon className={`h-4 w-4 flex-shrink-0 ${status.color}`} />
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <p className="font-display text-sm font-bold text-foreground truncate flex-1">{ticket.subject}</p>
+                        <ChevronRight className={`h-4 w-4 flex-shrink-0 transition-colors ${isSelected ? "text-primary" : "text-muted-foreground"}`} />
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-xs font-medium ${status.color}`}>{status.label}</span>
-                        <span className="text-xs text-muted-foreground">·</span>
-                        <span className="text-xs text-muted-foreground">{new Date(ticket.created_at).toLocaleDateString("el-GR")}</span>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full ${status.badge}`}>
+                          <status.icon className="h-3 w-3" />{status.label}
+                        </span>
+                        <span className={`inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full ${priority.color}`}>
+                          {priority.label}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground ml-auto">
+                          {new Date(ticket.updated_at).toLocaleDateString("el-GR")}
+                        </span>
                       </div>
-                    </button>
+                    </motion.button>
                   );
                 })}
               </div>
 
               {/* Chat Window */}
-              <div className="lg:col-span-2">
+              <div>
                 {selectedTicket ? (
-                  <div className="rounded-xl border border-border bg-card flex flex-col" style={{ height: "600px" }}>
-                    {/* Chat Header */}
-                    <div className="p-4 border-b border-border flex items-center justify-between">
-                      <div>
-                        <p className="font-display text-sm font-bold text-foreground">{selectedTicket.subject}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          {(() => {
-                            const s = statusConfig[selectedTicket.status] || statusConfig.open;
-                            return <span className={`text-xs flex items-center gap-1 ${s.color}`}><s.icon className="h-3 w-3" />{s.label}</span>;
-                          })()}
+                  <motion.div
+                    key={selectedTicket.id}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="rounded-xl border border-border bg-card flex flex-col"
+                    style={{ height: "640px" }}
+                  >
+                    <div className="p-4 border-b border-border flex items-center justify-between bg-secondary/20 rounded-t-xl">
+                      <div className="flex items-center gap-3">
+                        <div className="h-9 w-9 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <MessageCircle className="h-4 w-4 text-primary" />
+                        </div>
+                        <div>
+                          <p className="font-display text-sm font-bold text-foreground">{selectedTicket.subject}</p>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            {(() => {
+                              const s = statusConfig[selectedTicket.status] || statusConfig.open;
+                              const p = priorityConfig[selectedTicket.priority] || priorityConfig.normal;
+                              return (
+                                <>
+                                  <span className={`text-[10px] font-bold flex items-center gap-1 ${s.color}`}>
+                                    <s.icon className="h-3 w-3" />{s.label}
+                                  </span>
+                                  <span className="text-muted-foreground text-[10px]">·</span>
+                                  <span className="text-[10px] text-muted-foreground font-bold">{p.label}</span>
+                                </>
+                              );
+                            })()}
+                          </div>
                         </div>
                       </div>
+                      <span className="text-xs text-muted-foreground font-mono">#{selectedTicket.id.slice(0, 8)}</span>
                     </div>
 
-                    {/* Messages */}
-                    <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                    <div className="flex-1 overflow-y-auto p-4 space-y-3">
                       {messages.length === 0 && (
-                        <p className="text-center text-muted-foreground text-sm py-8">Δεν υπάρχουν μηνύματα ακόμα.</p>
+                        <div className="flex items-center justify-center h-full">
+                          <p className="text-center text-muted-foreground text-sm">Δεν υπάρχουν μηνύματα ακόμα.</p>
+                        </div>
                       )}
-                      {messages.map((msg: any) => {
+                      {messages.map((msg: any, i: number) => {
                         const isMe = msg.sender_id === user.id;
                         const senderProfile = msg.profiles;
                         const senderName = senderProfile?.display_name || senderProfile?.username || (msg.is_admin ? "Support Team" : "Εσύ");
+                        const showHeader = i === 0 || messages[i - 1]?.sender_id !== msg.sender_id;
                         return (
-                          <div key={msg.id} className={`flex gap-3 ${isMe ? "flex-row-reverse" : ""}`}>
-                            <Avatar className="h-8 w-8 flex-shrink-0">
-                              <AvatarImage src={senderProfile?.avatar_url || ""} />
-                              <AvatarFallback className={`text-xs font-bold ${msg.is_admin ? "bg-primary/20 text-primary" : "bg-secondary text-foreground"}`}>
-                                {msg.is_admin ? <Shield className="h-4 w-4" /> : senderName.slice(0, 1).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className={`max-w-[70%] ${isMe ? "items-end" : "items-start"} flex flex-col gap-1`}>
-                              <div className="flex items-center gap-2">
-                                <span className="text-xs text-muted-foreground">{msg.is_admin ? "Support Team" : senderName}</span>
-                                <span className="text-xs text-muted-foreground">{new Date(msg.created_at).toLocaleTimeString("el-GR", { hour: "2-digit", minute: "2-digit" })}</span>
-                              </div>
-                              <div className={`rounded-2xl px-4 py-2.5 text-sm ${isMe ? "bg-primary text-primary-foreground rounded-tr-sm" : "bg-secondary/60 text-foreground rounded-tl-sm"}`}>
+                          <motion.div
+                            key={msg.id}
+                            initial={{ opacity: 0, y: 5 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className={`flex gap-2.5 ${isMe ? "flex-row-reverse" : ""}`}
+                          >
+                            <div className="flex-shrink-0 w-8">
+                              {showHeader && (
+                                <Avatar className="h-8 w-8">
+                                  <AvatarImage src={senderProfile?.avatar_url || ""} />
+                                  <AvatarFallback className={`text-xs font-bold ${msg.is_admin ? "bg-primary/20 text-primary" : "bg-secondary text-foreground"}`}>
+                                    {msg.is_admin ? <Shield className="h-4 w-4" /> : senderName.slice(0, 1).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                              )}
+                            </div>
+                            <div className={`max-w-[72%] flex flex-col gap-0.5 ${isMe ? "items-end" : "items-start"}`}>
+                              {showHeader && (
+                                <div className={`flex items-center gap-2 ${isMe ? "flex-row-reverse" : ""}`}>
+                                  <span className="text-[11px] font-bold text-foreground">{msg.is_admin ? "Support Team" : senderName}</span>
+                                  {msg.is_admin && <span className="text-[9px] bg-primary/20 text-primary px-1.5 py-0.5 rounded font-display font-bold">ADMIN</span>}
+                                  <span className="text-[10px] text-muted-foreground">{new Date(msg.created_at).toLocaleTimeString("el-GR", { hour: "2-digit", minute: "2-digit" })}</span>
+                                </div>
+                              )}
+                              <div className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed ${isMe ? "bg-primary text-primary-foreground rounded-tr-none" : msg.is_admin ? "bg-primary/10 border border-primary/20 text-foreground rounded-tl-none" : "bg-secondary/60 text-foreground rounded-tl-none"}`}>
                                 {msg.content}
                               </div>
                             </div>
-                          </div>
+                          </motion.div>
                         );
                       })}
                       <div ref={messagesEndRef} />
                     </div>
 
-                    {/* Input */}
                     {selectedTicket.status !== "closed" && selectedTicket.status !== "resolved" ? (
-                      <div className="p-4 border-t border-border flex gap-2">
+                      <div className="p-4 border-t border-border flex gap-2 bg-secondary/10 rounded-b-xl">
                         <Input
                           value={newMessage}
                           onChange={(e) => setNewMessage(e.target.value)}
-                          placeholder="Γράψε το μήνυμά σου..."
-                          className="bg-secondary/50"
+                          placeholder="Γράψε το μήνυμά σου... (Enter για αποστολή)"
+                          className="bg-background border-border"
                           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } }}
                         />
-                        <Button onClick={handleSendMessage} disabled={sendingMsg || !newMessage.trim()} className="bg-gradient-greek text-white hover:brightness-110 px-4">
+                        <Button
+                          onClick={handleSendMessage}
+                          disabled={sendingMsg || !newMessage.trim()}
+                          className="bg-gradient-greek text-white hover:brightness-110 px-4"
+                        >
                           <Send className="h-4 w-4" />
                         </Button>
                       </div>
                     ) : (
-                      <div className="p-4 border-t border-border text-center text-sm text-muted-foreground">
+                      <div className="p-4 border-t border-border text-center text-sm text-muted-foreground bg-secondary/10 rounded-b-xl flex items-center justify-center gap-2">
+                        <XCircle className="h-4 w-4 opacity-50" />
                         Αυτό το ticket έχει κλείσει.
                       </div>
                     )}
-                  </div>
+                  </motion.div>
                 ) : (
-                  <div className="rounded-xl border border-border bg-card flex items-center justify-center" style={{ height: "600px" }}>
+                  <div className="rounded-xl border border-border bg-card flex items-center justify-center" style={{ height: "640px" }}>
                     <div className="text-center text-muted-foreground">
-                      <MessageCircle className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                      <p>Επίλεξε ένα ticket για να δεις τη συνομιλία</p>
+                      <MessageCircle className="h-14 w-14 mx-auto mb-3 opacity-20" />
+                      <p className="font-display font-bold">Επίλεξε ένα ticket</p>
+                      <p className="text-sm mt-1">για να δεις τη συνομιλία</p>
                     </div>
                   </div>
                 )}
@@ -297,7 +356,6 @@ const Support = () => {
         </div>
       </div>
 
-      {/* Create Ticket Dialog */}
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent className="max-w-lg bg-card border-border">
           <DialogHeader>
@@ -305,7 +363,7 @@ const Support = () => {
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="text-xs text-muted-foreground mb-1.5 block">Θέμα</label>
+              <label className="text-xs text-muted-foreground mb-1.5 block">Θέμα *</label>
               <Input
                 placeholder="Περίγραψε σύντομα το πρόβλημά σου..."
                 value={newTicket.subject}
@@ -316,16 +374,23 @@ const Support = () => {
             </div>
             <div>
               <label className="text-xs text-muted-foreground mb-1.5 block">Προτεραιότητα</label>
-              <select value={newTicket.priority} onChange={(e) => setNewTicket(p => ({ ...p, priority: e.target.value }))}
-                className="w-full rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm text-foreground">
-                <option value="low">Χαμηλή</option>
-                <option value="normal">Κανονική</option>
-                <option value="high">Υψηλή</option>
-                <option value="urgent">Επείγον</option>
-              </select>
+              <div className="grid grid-cols-4 gap-2">
+                {(["low", "normal", "high", "urgent"] as const).map((key) => {
+                  const val = priorityConfig[key];
+                  return (
+                    <button
+                      key={key}
+                      onClick={() => setNewTicket(p => ({ ...p, priority: key }))}
+                      className={`rounded-lg border px-3 py-2 text-xs font-bold transition-all ${newTicket.priority === key ? "border-primary bg-primary/10 text-primary" : "border-border bg-secondary/30 text-muted-foreground hover:border-primary/40"}`}
+                    >
+                      {val.label}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
             <div>
-              <label className="text-xs text-muted-foreground mb-1.5 block">Μήνυμα</label>
+              <label className="text-xs text-muted-foreground mb-1.5 block">Μήνυμα *</label>
               <Textarea
                 placeholder="Περίγραψε αναλυτικά το πρόβλημά σου..."
                 value={newTicket.message}
@@ -334,10 +399,12 @@ const Support = () => {
                 className="resize-none bg-secondary/50"
                 maxLength={2000}
               />
+              <p className="text-xs text-muted-foreground mt-0.5 text-right">{newTicket.message.length}/2000</p>
             </div>
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setShowCreate(false)}>Ακύρωση</Button>
-              <Button onClick={handleCreateTicket} disabled={submitting} className="bg-gradient-greek text-white hover:brightness-110">
+              <Button onClick={handleCreateTicket} disabled={submitting} className="bg-gradient-greek text-white hover:brightness-110 gap-2">
+                <MessageCircle className="h-4 w-4" />
                 {submitting ? "Δημιουργία..." : "Δημιουργία Ticket"}
               </Button>
             </div>

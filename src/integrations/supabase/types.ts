@@ -532,39 +532,57 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          bio: string | null
           created_at: string
+          discord_username: string | null
           display_name: string | null
           favorite_sim: string | null
           favorite_track: string | null
           id: string
+          location: string | null
+          nationality: string | null
           setup_type: string | null
           updated_at: string
           user_id: string
           username: string | null
+          website_url: string | null
+          years_simracing: string | null
         }
         Insert: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
+          discord_username?: string | null
           display_name?: string | null
           favorite_sim?: string | null
           favorite_track?: string | null
           id?: string
+          location?: string | null
+          nationality?: string | null
           setup_type?: string | null
           updated_at?: string
           user_id: string
           username?: string | null
+          website_url?: string | null
+          years_simracing?: string | null
         }
         Update: {
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
+          discord_username?: string | null
           display_name?: string | null
           favorite_sim?: string | null
           favorite_track?: string | null
           id?: string
+          location?: string | null
+          nationality?: string | null
           setup_type?: string | null
           updated_at?: string
           user_id?: string
           username?: string | null
+          website_url?: string | null
+          years_simracing?: string | null
         }
         Relationships: []
       }

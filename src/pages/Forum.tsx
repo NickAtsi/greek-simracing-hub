@@ -218,10 +218,12 @@ const CategoryThreads = ({ categoryId }: { categoryId: string }) => {
                       {thread.pinned ? <Pin className="h-4 w-4 text-amber-400" /> : <MessageSquare className="h-4 w-4 text-muted-foreground" />}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-display text-sm font-bold text-foreground group-hover:text-primary transition-colors truncate">
+                      <p className="font-display text-sm font-bold truncate group/title">
                         {thread.pinned && <span className="text-amber-400 mr-1">[Καρφιτσωμένο]</span>}
                         {thread.locked && <Lock className="h-3 w-3 inline mr-1 text-muted-foreground" />}
-                        {thread.title}
+                        <span className="bg-gradient-to-r from-foreground via-foreground to-foreground bg-clip-text transition-all duration-500 group-hover:from-primary group-hover:via-accent group-hover:to-primary group-hover:text-transparent">
+                          {thread.title}
+                        </span>
                       </p>
                       <p className="text-xs text-muted-foreground mt-0.5">{new Date(thread.created_at).toLocaleDateString("el-GR")}</p>
                     </div>
