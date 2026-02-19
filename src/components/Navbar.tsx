@@ -8,10 +8,10 @@ import SocialIcon from "@/components/SocialIcon";
 
 const navItems = [
   { label: "Αρχική", href: "/" },
-  { label: "Live Races", href: "/#live-races" },
+  { label: "Άρθρα", href: "/articles" },
+  { label: "Forum", href: "/forum" },
   { label: "Games Hub", href: "/games-hub" },
   { label: "Podcasts", href: "/#podcasts" },
-  { label: "Forum", href: "/#community" },
 ];
 
 const socials = [
@@ -140,9 +140,12 @@ const Navbar = () => {
 
           {user ? (
             <>
-              <span className="text-sm text-muted-foreground truncate max-w-[150px]">
-                {user.user_metadata?.full_name || user.email}
-              </span>
+              <Link to="/profile" className="text-sm text-muted-foreground hover:text-foreground transition-colors truncate max-w-[150px]">
+                {user.user_metadata?.full_name || user.email?.split("@")[0]}
+              </Link>
+              <Link to="/admin" className="flex items-center gap-1.5 rounded-lg border border-border/60 px-3 py-2 text-xs font-medium text-muted-foreground transition-all hover:text-foreground hover:border-border">
+                Admin
+              </Link>
               <button
                 onClick={signOut}
                 className="flex items-center gap-1.5 rounded-lg border border-border/60 px-4 py-2 text-xs font-medium text-muted-foreground transition-all hover:text-foreground hover:border-border"
@@ -154,7 +157,7 @@ const Navbar = () => {
           ) : (
             <Link
               to="/auth"
-              className="flex items-center gap-2 rounded-lg bg-gradient-racing px-5 py-2 font-body text-sm font-medium text-primary-foreground transition-all hover:brightness-110 hover:shadow-racing"
+              className="flex items-center gap-2 rounded-lg bg-gradient-greek px-5 py-2 font-body text-sm font-medium text-primary-foreground transition-all hover:brightness-110 hover:shadow-racing"
             >
               <LogIn className="h-3.5 w-3.5" />
               Σύνδεση
