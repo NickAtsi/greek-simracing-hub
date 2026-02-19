@@ -112,10 +112,19 @@ const HeroSection = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.3 }}
         >
-          <h1 className="font-display text-6xl font-black uppercase leading-none tracking-tight text-foreground sm:text-7xl lg:text-9xl">
-            <span className="block text-gradient-racing">GREEK</span>
-            <span className="block text-foreground">SIM</span>
-            <span className="block text-gradient-racing">RACERS</span>
+          <h1 className="font-display text-5xl font-black uppercase tracking-tight text-foreground sm:text-6xl lg:text-8xl">
+            Greek{" "}
+            <span
+              style={{
+                background: "linear-gradient(135deg, #1565C0 0%, #1E88E5 40%, #ffffff 70%, #1565C0 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+                filter: "drop-shadow(0 2px 12px rgba(21,101,192,0.5))",
+              }}
+            >
+              SimRacers
+            </span>
           </h1>
         </motion.div>
 
