@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Mail, Lock, User, Eye, EyeOff, Gamepad2, Monitor, MapPin, ChevronRight, ChevronLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -126,21 +126,22 @@ const Particles = () => {
 // Right panel with 3D mouse-reactive text
 const RightPanel = () => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [rotateX, setRotateX] = useState(0);
-  const [rotateY, setRotateY] = useState(0);
+  const mouseX = useMotionValue(0);
+  const mouseY = useMotionValue(0);
+
+  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [15, -15]), { stiffness: 150, damping: 20 });
+  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-20, 20]), { stiffness: 150, damping: 20 });
 
   const handleMouseMove = (e: React.MouseEvent) => {
     const rect = containerRef.current?.getBoundingClientRect();
     if (!rect) return;
-    const x = (e.clientX - rect.left) / rect.width - 0.5;
-    const y = (e.clientY - rect.top) / rect.height - 0.5;
-    setRotateY(x * 20);
-    setRotateX(-y * 15);
+    mouseX.set((e.clientX - rect.left) / rect.width - 0.5);
+    mouseY.set((e.clientY - rect.top) / rect.height - 0.5);
   };
 
   const handleMouseLeave = () => {
-    setRotateX(0);
-    setRotateY(0);
+    mouseX.set(0);
+    mouseY.set(0);
   };
 
   return (
@@ -160,24 +161,24 @@ const RightPanel = () => {
       </div>
 
       <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.7, delay: 0.2 }}
         className="relative z-10 flex flex-col items-center text-center px-12"
         style={{
-          transform: `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`,
-          transition: "transform 0.15s ease-out",
+          rotateX,
+          rotateY,
           transformStyle: "preserve-3d",
         }}
       >
-        <div className="relative mb-8" style={{ transform: "translateZ(60px)" }}>
+        <motion.div
+          className="relative mb-8"
+          style={{ translateZ: 60 }}
+        >
           <div className="absolute inset-0 scale-150 rounded-full bg-primary/10 blur-3xl" />
           <img src={gsrLogo} alt="GSR" className="relative h-28 w-28 object-contain drop-shadow-2xl" />
-        </div>
-        <h2
+        </motion.div>
+        <motion.h2
           className="font-display text-5xl font-bold leading-tight text-foreground"
           style={{
-            transform: "translateZ(40px)",
+            translateZ: 40,
             textShadow: "0 4px 12px hsla(1, 100%, 44%, 0.3), 0 8px 30px hsla(0, 0%, 0%, 0.5)",
           }}
         >
@@ -191,14 +192,14 @@ const RightPanel = () => {
           >
             Αδρεναλίνη
           </span>
-        </h2>
-        <p
+        </motion.h2>
+        <motion.p
           className="mt-4 max-w-xs text-sm text-muted-foreground leading-relaxed"
-          style={{ transform: "translateZ(20px)" }}
+          style={{ translateZ: 20 }}
         >
           Η μεγαλύτερη ελληνική κοινότητα sim racing σε περιμένει
-        </p>
-        <div className="mt-10 flex gap-8" style={{ transform: "translateZ(30px)" }}>
+        </motion.p>
+        <motion.div className="mt-10 flex gap-8" style={{ translateZ: 30 }}>
           {[{ value: "500+", label: "Μέλη" }, { value: "50+", label: "Αγώνες" }, { value: "10+", label: "Πρωταθλήματα" }].map((stat) => (
             <div key={stat.label} className="text-center">
               <p
@@ -210,7 +211,7 @@ const RightPanel = () => {
               <p className="mt-1 text-xs text-muted-foreground">{stat.label}</p>
             </div>
           ))}
-        </div>
+        </motion.div>
       </motion.div>
 
       <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-racing" />
