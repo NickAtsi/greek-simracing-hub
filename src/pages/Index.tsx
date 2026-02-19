@@ -5,10 +5,12 @@ import GamesHubSection from "@/components/GamesHubSection";
 import PodcastsSection from "@/components/PodcastsSection";
 import CommunitySection from "@/components/CommunitySection";
 import Footer from "@/components/Footer";
+import ReactiveBackground from "@/components/ReactiveBackground";
 
 const Index = () => {
   return (
     <div className="min-h-screen bg-background">
+      <ReactiveBackground />
       <Navbar />
       <HeroSection />
       <LiveRacesSection />

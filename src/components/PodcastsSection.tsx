@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { Play, Clock } from "lucide-react";
-import Particles from "@/components/Particles";
 
 const podcasts = [
   {
@@ -25,9 +24,8 @@ const podcasts = [
 
 const PodcastsSection = () => {
   return (
-    <section id="podcasts" className="relative border-t border-border py-24 overflow-hidden">
-      <Particles />
-      <div className="absolute inset-0 carbon-texture opacity-10" />
+    <section id="podcasts" className="relative border-t border-border/50 py-24 overflow-hidden">
+      <div className="absolute inset-0 carbon-texture opacity-5" />
       <div className="absolute left-0 top-1/2 h-72 w-72 -translate-y-1/2 rounded-full bg-accent/5 blur-[100px]" />
       <div className="container relative z-10 mx-auto px-4">
         <motion.div

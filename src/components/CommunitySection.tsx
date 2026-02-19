@@ -12,8 +12,8 @@ const topics = [
 
 const CommunitySection = () => {
   return (
-    <section id="community" className="relative border-t border-border py-24 overflow-hidden">
-      <div className="absolute inset-0 carbon-texture opacity-10" />
+    <section id="community" className="relative border-t border-border/50 py-24 overflow-hidden">
+      <div className="absolute inset-0 carbon-texture opacity-5" />
       <div className="container relative z-10 mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
