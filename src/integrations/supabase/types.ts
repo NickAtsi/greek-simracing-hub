@@ -19,7 +19,10 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           display_name: string | null
+          favorite_sim: string | null
+          favorite_track: string | null
           id: string
+          setup_type: string | null
           updated_at: string
           user_id: string
           username: string | null
@@ -28,7 +31,10 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
+          favorite_sim?: string | null
+          favorite_track?: string | null
           id?: string
+          setup_type?: string | null
           updated_at?: string
           user_id: string
           username?: string | null
@@ -37,7 +43,10 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           display_name?: string | null
+          favorite_sim?: string | null
+          favorite_track?: string | null
           id?: string
+          setup_type?: string | null
           updated_at?: string
           user_id?: string
           username?: string | null
