@@ -6,11 +6,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import gsrLogo from "@/assets/gsr-logo.png";
 
 const navItems = [
-  { label: "Αρχική", href: "#" },
-  { label: "Live Races", href: "#live-races" },
-  { label: "Games Hub", href: "#games-hub" },
-  { label: "Podcasts", href: "#podcasts" },
-  { label: "Forum", href: "#community" },
+  { label: "Αρχική", href: "/" },
+  { label: "Live Races", href: "/#live-races" },
+  { label: "Games Hub", href: "/games-hub" },
+  { label: "Podcasts", href: "/#podcasts" },
+  { label: "Forum", href: "/#community" },
 ];
 
 const Navbar = () => {
@@ -25,24 +25,34 @@ const Navbar = () => {
       className="fixed top-0 left-0 right-0 z-50 border-b border-border bg-background/80 backdrop-blur-xl"
     >
       <div className="container mx-auto flex items-center justify-between px-4 py-4">
-        <a href="#" className="flex items-center gap-2">
+        <Link to="/" className="flex items-center gap-2">
           <img src={gsrLogo} alt="Greek SimRacers" className="h-10 w-10 object-contain" />
           <span className="font-display text-lg font-bold tracking-wider text-foreground">
             Greek<span className="text-primary">SimRacers</span>
           </span>
-        </a>
+        </Link>
 
         {/* Desktop Nav */}
         <div className="hidden items-center gap-8 md:flex">
-          {navItems.map((item) => (
-            <a
-              key={item.label}
-              href={item.href}
-              className="font-body text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-            >
-              {item.label}
-            </a>
-          ))}
+          {navItems.map((item) =>
+            item.href.startsWith("/") && !item.href.includes("#") ? (
+              <Link
+                key={item.label}
+                to={item.href}
+                className="font-body text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              >
+                {item.label}
+              </Link>
+            ) : (
+              <a
+                key={item.label}
+                href={item.href}
+                className="font-body text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+              >
+                {item.label}
+              </a>
+            )
+          )}
           {user ? (
             <div className="flex items-center gap-3">
               <span className="text-sm text-muted-foreground">
@@ -84,16 +94,27 @@ const Navbar = () => {
           className="border-t border-border bg-background md:hidden"
         >
           <div className="flex flex-col gap-4 px-4 py-6">
-            {navItems.map((item) => (
-              <a
-                key={item.label}
-                href={item.href}
-                onClick={() => setIsOpen(false)}
-                className="font-body text-sm text-muted-foreground transition-colors hover:text-primary"
-              >
-                {item.label}
-              </a>
-            ))}
+            {navItems.map((item) =>
+              item.href.startsWith("/") && !item.href.includes("#") ? (
+                <Link
+                  key={item.label}
+                  to={item.href}
+                  onClick={() => setIsOpen(false)}
+                  className="font-body text-sm text-muted-foreground transition-colors hover:text-primary"
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setIsOpen(false)}
+                  className="font-body text-sm text-muted-foreground transition-colors hover:text-primary"
+                >
+                  {item.label}
+                </a>
+              )
+            )}
             {user ? (
               <button
                 onClick={() => { signOut(); setIsOpen(false); }}
