@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Menu, X, LogIn, LogOut } from "lucide-react";
+import { Menu, X, LogIn, LogOut, Shield } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import gsrLogo from "@/assets/gsr-logo.png";
 import SocialIcon from "@/components/SocialIcon";
+import { supabase } from "@/integrations/supabase/client";
 
 const navItems = [
   { label: "Αρχική", href: "/" },
@@ -12,6 +13,7 @@ const navItems = [
   { label: "Forum", href: "/forum" },
   { label: "Games Hub", href: "/games-hub" },
   { label: "Podcasts", href: "/#podcasts" },
+  { label: "Επικοινωνία", href: "/contact" },
 ];
 
 const socials = [
@@ -32,22 +34,13 @@ const socials = [
   )},
 ];
 
-const NavLink = ({ item, active, onClick }: { item: typeof navItems[0]; active: boolean; onClick?: () => void }) => {
+const NavLinkItem = ({ item, active, onClick }: { item: typeof navItems[0]; active: boolean; onClick?: () => void }) => {
   const inner = (
-    <motion.span
-      className="relative block"
-      whileHover={{
-        rotate: [0, -3, 3, -2, 2, 0],
-        transition: { duration: 0.4, ease: "easeInOut" },
-      }}
-    >
+    <motion.span className="relative block" whileHover={{ rotate: [0, -3, 3, -2, 2, 0], transition: { duration: 0.4, ease: "easeInOut" } }}>
       {item.label}
       {active && (
-        <motion.div
-          layoutId="nav-underline"
-          className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-racing rounded-full"
-          transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
-        />
+        <motion.div layoutId="nav-underline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-racing rounded-full"
+          transition={{ type: "spring", bounce: 0.2, duration: 0.5 }} />
       )}
     </motion.span>
   );
@@ -58,9 +51,7 @@ const NavLink = ({ item, active, onClick }: { item: typeof navItems[0]; active: 
 
   const sharedChildren = (
     <>
-      {/* Glow background on hover */}
       <span className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-primary/0 via-primary/10 to-primary/0 blur-sm" />
-      {/* Shine sweep */}
       <span className="absolute inset-0 overflow-hidden pointer-events-none rounded-lg">
         <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12" />
       </span>
@@ -79,6 +70,16 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, signOut } = useAuth();
   const location = useLocation();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      supabase.from("user_roles" as any).select("role").eq("user_id", user.id).eq("role", "admin").single()
+        .then(({ data }) => setIsAdmin(!!data));
+    } else {
+      setIsAdmin(false);
+    }
+  }, [user]);
 
   const isActive = (href: string) => {
     if (href === "/") return location.pathname === "/";
@@ -94,27 +95,15 @@ const Navbar = () => {
       className="fixed top-0 left-0 right-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-2xl"
     >
       <div className="container mx-auto flex items-center justify-between px-4 py-3">
-        {/* Logo with effects */}
         <Link to="/" className="group relative flex items-center gap-2.5">
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 400, damping: 15 }}
-            className="relative flex items-center gap-2.5"
-          >
-            {/* Glow behind logo */}
+          <motion.div whileHover={{ scale: 1.05 }} transition={{ type: "spring", stiffness: 400, damping: 15 }} className="relative flex items-center gap-2.5">
             <span className="absolute -inset-2 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-primary/0 via-primary/20 to-accent/0 blur-md" />
-            {/* Speed lines */}
             <span className="absolute -left-5 top-1/2 -translate-y-1/2 flex flex-col gap-1 opacity-0 group-hover:opacity-70 transition-all duration-300 group-hover:-translate-x-1">
               <span className="w-4 h-[2px] rounded-full bg-primary/60" />
               <span className="w-3 h-[1px] rounded-full bg-primary/40" />
             </span>
             <div className="relative overflow-hidden rounded-lg">
-              <img
-                src={gsrLogo}
-                alt="Greek SimRacers"
-                className="relative h-9 w-9 object-contain transition-all duration-300 group-hover:drop-shadow-[0_0_12px_hsl(var(--primary)/0.4)]"
-              />
-              {/* Shine sweep on logo */}
+              <img src={gsrLogo} alt="Greek SimRacers" className="relative h-9 w-9 object-contain transition-all duration-300 group-hover:drop-shadow-[0_0_12px_hsl(var(--primary)/0.4)]" />
               <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12" />
             </div>
             <span className="font-display text-base font-bold tracking-wider text-foreground">
@@ -123,14 +112,12 @@ const Navbar = () => {
           </motion.div>
         </Link>
 
-        {/* Centered Desktop Nav */}
         <div className="hidden items-center gap-1 md:flex">
           {navItems.map((item) => (
-            <NavLink key={item.label} item={item} active={isActive(item.href)} />
+            <NavLinkItem key={item.label} item={item} active={isActive(item.href)} />
           ))}
         </div>
 
-        {/* Right side - Socials + Auth */}
         <div className="hidden md:flex items-center gap-2">
           <div className="flex items-center gap-1.5 mr-3 border-r border-border/50 pr-3">
             {socials.map((s) => (
@@ -143,9 +130,12 @@ const Navbar = () => {
               <Link to="/profile" className="text-sm text-muted-foreground hover:text-foreground transition-colors truncate max-w-[150px]">
                 {user.user_metadata?.full_name || user.email?.split("@")[0]}
               </Link>
-              <Link to="/admin" className="flex items-center gap-1.5 rounded-lg border border-border/60 px-3 py-2 text-xs font-medium text-muted-foreground transition-all hover:text-foreground hover:border-border">
-                Admin
-              </Link>
+              {isAdmin && (
+                <Link to="/admin" className="flex items-center gap-1.5 rounded-lg border border-primary/40 bg-primary/10 px-3 py-2 text-xs font-medium text-primary transition-all hover:bg-primary/20">
+                  <Shield className="h-3.5 w-3.5" />
+                  Admin
+                </Link>
+              )}
               <button
                 onClick={signOut}
                 className="flex items-center gap-1.5 rounded-lg border border-border/60 px-4 py-2 text-xs font-medium text-muted-foreground transition-all hover:text-foreground hover:border-border"
@@ -165,16 +155,11 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Mobile Toggle */}
-        <button
-          onClick={() => setIsOpen(!isOpen)}
-          className="text-foreground md:hidden"
-        >
+        <button onClick={() => setIsOpen(!isOpen)} className="text-foreground md:hidden">
           {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </div>
 
-      {/* Mobile Menu */}
       {isOpen && (
         <motion.div
           initial={{ opacity: 0, height: 0 }}
@@ -183,28 +168,27 @@ const Navbar = () => {
         >
           <div className="flex flex-col gap-1 px-4 py-4">
             {navItems.map((item) => (
-              <NavLink key={item.label} item={item} active={isActive(item.href)} onClick={() => setIsOpen(false)} />
+              <NavLinkItem key={item.label} item={item} active={isActive(item.href)} onClick={() => setIsOpen(false)} />
             ))}
-            {/* Mobile socials */}
             <div className="mt-2 pt-2 border-t border-border/50 flex items-center gap-2 px-4">
               {socials.map((s) => (
                 <SocialIcon key={s.label} href={s.href} label={s.label} icon={s.icon} hoverColor={s.hoverColor} size="sm" />
               ))}
             </div>
-            <div className="mt-2 pt-2 border-t border-border/50">
+            <div className="mt-2 pt-2 border-t border-border/50 flex flex-col gap-2">
               {user ? (
-                <button
-                  onClick={() => { signOut(); setIsOpen(false); }}
-                  className="w-full rounded-lg border border-border/60 px-4 py-3 text-center font-body text-sm text-muted-foreground"
-                >
-                  Αποσύνδεση
-                </button>
+                <>
+                  {isAdmin && (
+                    <Link to="/admin" onClick={() => setIsOpen(false)} className="flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/10 px-4 py-2.5 text-sm font-medium text-primary">
+                      <Shield className="h-4 w-4" /> Admin Panel
+                    </Link>
+                  )}
+                  <button onClick={() => { signOut(); setIsOpen(false); }} className="w-full rounded-lg border border-border/60 px-4 py-3 text-center font-body text-sm text-muted-foreground">
+                    Αποσύνδεση
+                  </button>
+                </>
               ) : (
-                <Link
-                  to="/auth"
-                  onClick={() => setIsOpen(false)}
-                  className="block rounded-lg bg-gradient-racing px-4 py-3 text-center font-body text-sm font-medium text-primary-foreground"
-                >
+                <Link to="/auth" onClick={() => setIsOpen(false)} className="block rounded-lg bg-gradient-racing px-4 py-3 text-center font-body text-sm font-medium text-primary-foreground">
                   Σύνδεση
                 </Link>
               )}

@@ -1,10 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Heart, MessageCircle, UserPlus, UserCheck, UserX, Trophy, Gamepad2, Flag, Mic, Settings, Calendar, Users } from "lucide-react";
+import { Heart, MessageCircle, UserPlus, UserCheck, UserX, Trophy, Gamepad2, Flag, Mic, Settings, Calendar, Users, Camera, Save, X, Edit2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -26,6 +28,11 @@ const Profile = () => {
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editForm, setEditForm] = useState({ display_name: "", username: "", favorite_sim: "", favorite_track: "", setup_type: "" });
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const profileUserId = userId || user?.id;
   const isOwnProfile = user?.id === profileUserId;
@@ -55,7 +62,7 @@ const Profile = () => {
   const fetchComments = async () => {
     const { data } = await supabase
       .from("profile_comments" as any)
-      .select("*")
+      .select("*, profiles!author_id(display_name, username, avatar_url)")
       .eq("profile_user_id", profileUserId)
       .order("created_at", { ascending: false });
     setComments((data as any[]) || []);
@@ -144,6 +151,52 @@ const Profile = () => {
     fetchComments();
   };
 
+  const openEdit = () => {
+    setEditForm({
+      display_name: profile?.display_name || "",
+      username: profile?.username || "",
+      favorite_sim: profile?.favorite_sim || "",
+      favorite_track: profile?.favorite_track || "",
+      setup_type: profile?.setup_type || "",
+    });
+    setShowEditDialog(true);
+  };
+
+  const handleSaveProfile = async () => {
+    if (!user) return;
+    setSaving(true);
+    const { error } = await supabase.from("profiles").update(editForm as any).eq("user_id", user.id);
+    setSaving(false);
+    if (!error) {
+      toast({ title: "Προφίλ αποθηκεύτηκε!" });
+      setShowEditDialog(false);
+      fetchProfile();
+    }
+  };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast({ title: "Το αρχείο είναι πολύ μεγάλο (max 5MB)", variant: "destructive" });
+      return;
+    }
+    setUploadingAvatar(true);
+    const ext = file.name.split(".").pop();
+    const path = `${user.id}/avatar.${ext}`;
+    const { error: uploadError } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+    if (uploadError) {
+      toast({ title: "Σφάλμα ανεβάσματος", variant: "destructive" });
+      setUploadingAvatar(false);
+      return;
+    }
+    const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
+    await supabase.from("profiles").update({ avatar_url: publicUrl } as any).eq("user_id", user.id);
+    setUploadingAvatar(false);
+    toast({ title: "Avatar ενημερώθηκε!" });
+    fetchProfile();
+  };
+
   if (loading) return (
     <div className="min-h-screen bg-background flex items-center justify-center">
       <Navbar />
@@ -171,23 +224,33 @@ const Profile = () => {
         <div className="relative h-48 bg-gradient-to-r from-primary/30 via-accent/20 to-primary/10 border-b border-border overflow-hidden">
           <div className="absolute inset-0 carbon-texture opacity-10" />
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/80" />
-          {/* Greek flag stripes */}
-          <div className="absolute top-0 left-0 right-0 flex flex-col">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className={`h-3 ${i % 2 === 0 ? "bg-primary/20" : "bg-transparent"}`} />
-            ))}
-          </div>
         </div>
 
         <div className="container mx-auto px-4">
           {/* Profile Header */}
           <div className="relative -mt-16 mb-8">
             <div className="flex flex-col md:flex-row items-start md:items-end gap-4">
-              <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative">
+              <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="relative group">
                 <Avatar className="h-32 w-32 border-4 border-background ring-2 ring-primary/40">
                   <AvatarImage src={profile.avatar_url || ""} />
                   <AvatarFallback className="bg-gradient-greek text-white text-3xl font-display font-bold">{initials}</AvatarFallback>
                 </Avatar>
+                {isOwnProfile && (
+                  <>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadingAvatar}
+                      className="absolute inset-0 rounded-full bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                    >
+                      {uploadingAvatar ? (
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white" />
+                      ) : (
+                        <Camera className="h-7 w-7 text-white" />
+                      )}
+                    </button>
+                    <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+                  </>
+                )}
                 <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-green-500 border-2 border-background" />
               </motion.div>
 
@@ -211,11 +274,7 @@ const Profile = () => {
               <div className="flex items-center gap-2 pb-2">
                 {!isOwnProfile && (
                   <>
-                    <Button
-                      onClick={handleLike}
-                      variant="outline"
-                      className={`gap-2 ${hasLiked ? "border-primary text-primary" : ""}`}
-                    >
+                    <Button onClick={handleLike} variant="outline" className={`gap-2 ${hasLiked ? "border-primary text-primary" : ""}`}>
                       <Heart className={`h-4 w-4 ${hasLiked ? "fill-primary" : ""}`} />
                       {hasLiked ? "Liked" : "Like"}
                     </Button>
@@ -227,11 +286,9 @@ const Profile = () => {
                   </>
                 )}
                 {isOwnProfile && (
-                  <Link to="/admin">
-                    <Button variant="outline" className="gap-2">
-                      <Settings className="h-4 w-4" /> Επεξεργασία
-                    </Button>
-                  </Link>
+                  <Button onClick={openEdit} variant="outline" className="gap-2">
+                    <Edit2 className="h-4 w-4" /> Επεξεργασία Προφίλ
+                  </Button>
                 )}
                 {isAdmin && !isOwnProfile && (
                   <span className="rounded-full bg-primary/20 border border-primary/40 px-2 py-0.5 text-xs font-display text-primary">ADMIN</span>
@@ -243,7 +300,6 @@ const Profile = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-16">
             {/* Left: Racing Info */}
             <div className="space-y-4">
-              {/* Racing Stats Card */}
               <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="rounded-xl border border-border bg-card p-5">
                 <h3 className="font-display text-sm font-bold text-foreground mb-4 flex items-center gap-2">
                   <Flag className="h-4 w-4 text-primary" /> Racing Info
@@ -274,7 +330,6 @@ const Profile = () => {
                 </div>
               </motion.div>
 
-              {/* Friends card */}
               <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="rounded-xl border border-border bg-card p-5">
                 <h3 className="font-display text-sm font-bold text-foreground mb-3 flex items-center gap-2">
                   <Users className="h-4 w-4 text-primary" /> Κοινωνικό
@@ -299,7 +354,6 @@ const Profile = () => {
                   <MessageCircle className="h-4 w-4 text-primary" /> Σχόλια Προφίλ
                 </h3>
 
-                {/* Comment form */}
                 {user && !isOwnProfile && (
                   <div className="mb-4 space-y-2">
                     <Textarea
@@ -315,39 +369,111 @@ const Profile = () => {
                   </div>
                 )}
 
-                {/* Comments list */}
                 <div className="space-y-3">
                   {comments.length === 0 && (
                     <p className="text-center text-muted-foreground text-sm py-6">Δεν υπάρχουν σχόλια ακόμα.</p>
                   )}
-                  {comments.map((comment: any) => (
-                    <motion.div
-                      key={comment.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="flex items-start gap-3 rounded-lg bg-secondary/30 p-3"
-                    >
-                      <Avatar className="h-8 w-8 flex-shrink-0">
-                        <AvatarFallback className="bg-primary/20 text-primary text-xs font-bold">?</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-xs font-medium text-foreground">{comment.author_id?.slice(0, 8)}...</span>
-                          <span className="text-xs text-muted-foreground">{new Date(comment.created_at).toLocaleDateString("el-GR")}</span>
+                  {comments.map((comment: any) => {
+                    const authorProfile = comment.profiles;
+                    const authorName = authorProfile?.display_name || authorProfile?.username || comment.author_id?.slice(0, 8) + "...";
+                    return (
+                      <motion.div
+                        key={comment.id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="flex items-start gap-3 rounded-lg bg-secondary/30 p-3"
+                      >
+                        <Avatar className="h-8 w-8 flex-shrink-0">
+                          <AvatarImage src={authorProfile?.avatar_url || ""} />
+                          <AvatarFallback className="bg-primary/20 text-primary text-xs font-bold">
+                            {authorName.slice(0, 1).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-1">
+                            <Link to={`/profile/${comment.author_id}`} className="text-xs font-medium text-foreground hover:text-primary transition-colors">
+                              {authorName}
+                            </Link>
+                            <span className="text-xs text-muted-foreground">{new Date(comment.created_at).toLocaleDateString("el-GR")}</span>
+                          </div>
+                          <p className="text-sm text-foreground">{comment.content}</p>
                         </div>
-                        <p className="text-sm text-foreground">{comment.content}</p>
-                      </div>
-                      {(user?.id === comment.author_id || isAdmin || isOwnProfile) && (
-                        <button onClick={() => handleDeleteComment(comment.id)} className="text-muted-foreground hover:text-destructive transition-colors text-xs">✕</button>
-                      )}
-                    </motion.div>
-                  ))}
+                        {(user?.id === comment.author_id || isAdmin || isOwnProfile) && (
+                          <button onClick={() => handleDeleteComment(comment.id)} className="text-muted-foreground hover:text-destructive transition-colors text-xs">✕</button>
+                        )}
+                      </motion.div>
+                    );
+                  })}
                 </div>
               </motion.div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Edit Profile Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-md bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="font-display text-foreground">Επεξεργασία Προφίλ</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {/* Avatar upload in dialog too */}
+            <div className="flex items-center gap-4">
+              <Avatar className="h-16 w-16">
+                <AvatarImage src={profile?.avatar_url || ""} />
+                <AvatarFallback className="bg-gradient-greek text-white text-xl font-bold">{initials}</AvatarFallback>
+              </Avatar>
+              <div>
+                <Button size="sm" variant="outline" onClick={() => fileInputRef.current?.click()} disabled={uploadingAvatar} className="gap-2">
+                  <Camera className="h-4 w-4" />
+                  {uploadingAvatar ? "Ανεβάζει..." : "Αλλαγή φωτογραφίας"}
+                </Button>
+                <p className="text-xs text-muted-foreground mt-1">JPG, PNG έως 5MB</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Εμφανιζόμενο Όνομα</label>
+                <Input value={editForm.display_name} onChange={(e) => setEditForm(p => ({ ...p, display_name: e.target.value }))} className="bg-secondary/50" placeholder="Όνομα..." />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">Username</label>
+                <Input value={editForm.username} onChange={(e) => setEditForm(p => ({ ...p, username: e.target.value }))} className="bg-secondary/50" placeholder="@username..." />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Αγαπημένο Sim Racing Game</label>
+              <Input value={editForm.favorite_sim} onChange={(e) => setEditForm(p => ({ ...p, favorite_sim: e.target.value }))} className="bg-secondary/50" placeholder="π.χ. iRacing, Assetto Corsa..." />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Αγαπημένη Πίστα</label>
+              <Input value={editForm.favorite_track} onChange={(e) => setEditForm(p => ({ ...p, favorite_track: e.target.value }))} className="bg-secondary/50" placeholder="π.χ. Nürburgring, Spa..." />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Τύπος Setup</label>
+              <select value={editForm.setup_type} onChange={(e) => setEditForm(p => ({ ...p, setup_type: e.target.value }))}
+                className="w-full rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm text-foreground">
+                <option value="">Επιλέξτε...</option>
+                <option value="Keyboard">Keyboard</option>
+                <option value="Controller">Controller</option>
+                <option value="Entry Wheel">Entry Wheel</option>
+                <option value="Mid-Range Wheel">Mid-Range Wheel</option>
+                <option value="Direct Drive">Direct Drive</option>
+                <option value="Full Motion Rig">Full Motion Rig</option>
+              </select>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" onClick={() => setShowEditDialog(false)}>Ακύρωση</Button>
+              <Button onClick={handleSaveProfile} disabled={saving} className="bg-gradient-greek text-white hover:brightness-110 gap-2">
+                <Save className="h-4 w-4" />
+                {saving ? "Αποθήκευση..." : "Αποθήκευση"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Footer />
     </div>
   );
