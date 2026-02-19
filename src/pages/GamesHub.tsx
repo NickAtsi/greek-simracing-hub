@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import FantasyLeagueComponent from "@/components/FantasyLeague";
+// FantasyLeague coming soon
 
 type GameState = "idle" | "countdown" | "waiting" | "go" | "result" | "too-early";
 
@@ -234,7 +234,14 @@ const GamesHub = () => {
             <ReactionTimeGame />
           </TabsContent>
           <TabsContent value="fantasy">
-            <FantasyLeagueComponent />
+            <div className="flex flex-col items-center justify-center py-20 rounded-xl border border-border bg-card">
+              <div className="text-6xl mb-4">🏆</div>
+              <h2 className="font-display text-2xl font-black text-foreground mb-2">Fantasy League</h2>
+              <p className="text-muted-foreground text-center max-w-sm mb-4">
+                Το Fantasy League έρχεται πολύ σύντομα! Φτιάξε την ομάδα σου, επέλεξε οδηγούς και ανέβα στο leaderboard.
+              </p>
+              <span className="rounded-full border border-primary/40 bg-primary/10 px-4 py-1.5 font-display text-sm text-primary font-bold tracking-wider">ΕΡΧΕΤΑΙ ΣΥΝΤΟΜΑ</span>
+            </div>
           </TabsContent>
         </Tabs>
       </div>

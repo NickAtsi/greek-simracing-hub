@@ -1,13 +1,8 @@
 import { motion } from "framer-motion";
 import { MessageSquare, TrendingUp, Users, Shield, ChevronRight, Star, Trophy } from "lucide-react";
 import { Link } from "react-router-dom";
+import DiscordWidget from "@/components/DiscordWidget";
 
-const topics = [
-  { title: "Καλύτερο τιμόνι κάτω από 300€;", replies: 45, views: 320, category: "Hardware", hot: true },
-  { title: "ACC 1.10 Update - Τι αλλάζει;", replies: 32, views: 280, category: "News", hot: false },
-  { title: "Πρώτη φορά σε league - τι να προσέξω;", replies: 28, views: 195, category: "Βοήθεια", hot: false },
-  { title: "DIY Cockpit Build Log", replies: 56, views: 450, category: "Projects", hot: true },
-];
 
 const perks = [
   { icon: Trophy, label: "Αποκλειστικοί αγώνες" },
@@ -45,52 +40,71 @@ const CommunitySection = () => {
           </p>
         </motion.div>
 
-        {/* Topics */}
-        <div className="mx-auto max-w-3xl space-y-3">
-          {topics.map((topic, i) => (
-            <motion.a
-              key={i}
-              href="#"
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{ delay: i * 0.1, duration: 0.55, ease: "easeOut" }}
-              whileHover={{ x: 4 }}
-              className="group flex items-center justify-between rounded-2xl border border-border bg-card/70 backdrop-blur-sm px-5 py-4 transition-all hover:border-primary/30 hover:shadow-glow"
-            >
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="flex-shrink-0 flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                  <MessageSquare className="h-3.5 w-3.5 text-primary" />
-                </div>
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h4 className="font-body text-sm font-medium text-foreground group-hover:text-primary transition-colors truncate">
-                      {topic.title}
-                    </h4>
-                    {topic.hot && (
-                      <span className="flex-shrink-0 rounded-full bg-primary/15 px-2 py-0.5 font-display text-[8px] tracking-wider text-primary uppercase">
-                        🔥 Hot
-                      </span>
-                    )}
+        {/* Forum + Discord Grid */}
+        <div className="mx-auto max-w-5xl grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Forum Recent Topics */}
+          <div className="lg:col-span-2 space-y-3">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-display text-sm font-bold text-muted-foreground uppercase tracking-wider">Τελευταίες Συζητήσεις</h3>
+              <Link to="/forum" className="text-xs text-primary hover:underline">Δες όλες →</Link>
+            </div>
+            {[
+              { title: "Καλύτερο τιμόνι κάτω από 300€;", replies: 45, views: 320, category: "Τεχνική Υποστήριξη", hot: true },
+              { title: "ACC 1.10 Update — Τι αλλάζει;", replies: 32, views: 280, category: "Simracing Games", hot: false },
+              { title: "Πρώτη φορά σε league — τι να προσέξω;", replies: 28, views: 195, category: "Γενικές Συζητήσεις", hot: false },
+              { title: "DIY Cockpit Build Log 2025", replies: 56, views: 450, category: "Γενικές Συζητήσεις", hot: true },
+            ].map((topic, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ delay: i * 0.08, duration: 0.55, ease: "easeOut" }}
+              >
+                <Link to="/forum">
+                  <div className="group flex items-center justify-between rounded-2xl border border-border bg-card/70 backdrop-blur-sm px-5 py-4 transition-all hover:border-primary/30 hover:shadow-glow hover:translate-x-1">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex-shrink-0 flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                        <MessageSquare className="h-3.5 w-3.5 text-primary" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h4 className="font-body text-sm font-medium text-foreground group-hover:text-primary transition-colors truncate">
+                            {topic.title}
+                          </h4>
+                          {topic.hot && (
+                            <span className="flex-shrink-0 rounded-full bg-primary/15 px-2 py-0.5 font-display text-[8px] tracking-wider text-primary uppercase">
+                              🔥 Hot
+                            </span>
+                          )}
+                        </div>
+                        <span className="mt-0.5 inline-block rounded-md bg-secondary/70 px-2 py-0.5 font-body text-[10px] text-muted-foreground">
+                          {topic.category}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="hidden flex-shrink-0 items-center gap-5 sm:flex">
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <MessageSquare className="h-3 w-3" />
+                        <span className="font-body text-xs">{topic.replies}</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-muted-foreground">
+                        <TrendingUp className="h-3 w-3" />
+                        <span className="font-body text-xs">{topic.views}</span>
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted-foreground/40 transition-all group-hover:text-primary group-hover:translate-x-1" />
+                    </div>
                   </div>
-                  <span className="mt-0.5 inline-block rounded-md bg-secondary/70 px-2 py-0.5 font-body text-[10px] text-muted-foreground">
-                    {topic.category}
-                  </span>
-                </div>
-              </div>
-              <div className="hidden flex-shrink-0 items-center gap-5 sm:flex">
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <MessageSquare className="h-3 w-3" />
-                  <span className="font-body text-xs">{topic.replies}</span>
-                </div>
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <TrendingUp className="h-3 w-3" />
-                  <span className="font-body text-xs">{topic.views}</span>
-                </div>
-                <ChevronRight className="h-4 w-4 text-muted-foreground/40 transition-all group-hover:text-primary group-hover:translate-x-1" />
-              </div>
-            </motion.a>
-          ))}
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Discord Widget */}
+          <div>
+            <h3 className="font-display text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4">Discord Server</h3>
+            <DiscordWidget />
+          </div>
         </div>
 
         {/* Join CTA */}
@@ -101,6 +115,7 @@ const CommunitySection = () => {
           transition={{ duration: 0.7, delay: 0.2 }}
           className="mt-16 mx-auto max-w-2xl overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-card to-card/60 backdrop-blur-sm"
         >
+
           {/* Top gradient bar */}
           <div className="h-1 w-full bg-gradient-racing" />
           <div className="p-10 text-center">

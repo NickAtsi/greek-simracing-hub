@@ -15,7 +15,7 @@
     --popover: 210 35% 9%;
     --popover-foreground: 210 20% 95%;
 
-    --primary: 356 100% 45%;
+    --primary: 214 89% 40%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 210 30% 13%;
@@ -24,7 +24,7 @@
     --muted: 210 25% 15%;
     --muted-foreground: 210 15% 55%;
 
-    --accent: 210 100% 55%;
+    --accent: 214 89% 52%;
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
@@ -32,33 +32,37 @@
 
     --border: 210 25% 16%;
     --input: 210 25% 16%;
-    --ring: 356 100% 45%;
+    --ring: 214 89% 40%;
 
     --radius: 0.5rem;
 
     --sidebar-background: 210 40% 7%;
     --sidebar-foreground: 210 15% 88%;
-    --sidebar-primary: 356 100% 45%;
+    --sidebar-primary: 214 89% 40%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 210 30% 13%;
     --sidebar-accent-foreground: 210 15% 88%;
     --sidebar-border: 210 25% 16%;
-    --sidebar-ring: 356 100% 45%;
+    --sidebar-ring: 214 89% 40%;
 
-    --racing-red: 356 100% 45%;
-    --racing-blue: 210 100% 55%;
+    /* Greek colors: Blue & White */
+    --greek-blue: 214 89% 40%;
+    --greek-blue-light: 214 89% 52%;
+    --greek-white: 0 0% 96%;
+    --racing-blue: 214 89% 40%;
     --racing-dark: 210 40% 4%;
     --racing-carbon: 210 30% 10%;
-    --racing-glow: 356 100% 52%;
+    --racing-glow: 214 89% 52%;
 
     --font-display: 'Orbitron', sans-serif;
     --font-body: 'Inter', sans-serif;
 
-    --gradient-racing: linear-gradient(135deg, hsl(356, 100%, 45%), hsl(210, 100%, 55%));
+    --gradient-racing: linear-gradient(135deg, hsl(214, 89%, 35%), hsl(214, 89%, 55%), hsl(0, 0%, 90%));
+    --gradient-greek: linear-gradient(135deg, hsl(214, 89%, 35%) 0%, hsl(214, 89%, 52%) 50%, hsl(0, 0%, 100%) 100%);
     --gradient-dark: linear-gradient(180deg, hsl(210, 40%, 6%) 0%, hsl(210, 40%, 3%) 100%);
     --gradient-card: linear-gradient(145deg, hsl(210, 35%, 11%) 0%, hsl(210, 35%, 7%) 100%);
-    --shadow-racing: 0 0 30px -5px hsl(356 100% 45% / 0.3);
-    --shadow-glow: 0 0 20px hsl(356 100% 52% / 0.2);
+    --shadow-racing: 0 0 30px -5px hsl(214 89% 40% / 0.4);
+    --shadow-glow: 0 0 20px hsl(214 89% 52% / 0.25);
   }
 }
 
@@ -79,14 +83,25 @@
 
 @layer utilities {
   .text-gradient-racing {
-    background: var(--gradient-racing);
+    background: var(--gradient-greek);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-greek {
+    background: linear-gradient(135deg, hsl(214, 89%, 55%), hsl(0, 0%, 100%));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .bg-gradient-racing {
-    background: var(--gradient-racing);
+    background: var(--gradient-greek);
+  }
+
+  .bg-gradient-greek {
+    background: linear-gradient(135deg, hsl(214, 89%, 35%), hsl(214, 89%, 55%));
   }
 
   .bg-gradient-card {
@@ -106,7 +121,7 @@
   }
 
   .racing-border {
-    border: 1px solid hsl(var(--racing-red) / 0.2);
+    border: 1px solid hsl(var(--greek-blue) / 0.25);
   }
 
   .carbon-texture {

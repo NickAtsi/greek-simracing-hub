@@ -9,6 +9,10 @@ import Auth from "./pages/Auth";
 import GamesHub from "./pages/GamesHub";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
+import Profile from "./pages/Profile";
+import Articles from "./pages/Articles";
+import Forum from "./pages/Forum";
+import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +28,13 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/games-hub" element={<GamesHub />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/profile/:userId" element={<Profile />} />
+            <Route path="/articles" element={<Articles />} />
+            <Route path="/forum" element={<Forum />} />
+            <Route path="/forum/category/:categoryId" element={<Forum />} />
+            <Route path="/forum/thread/:threadId" element={<Forum />} />
+            <Route path="/admin" element={<Admin />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
@@ -34,3 +45,4 @@ const App = () => (
 );
 
 export default App;
+
