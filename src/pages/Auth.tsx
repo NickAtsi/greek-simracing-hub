@@ -1,4 +1,6 @@
 import { useState, useEffect, useRef } from "react";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { Mail, Lock, User, Eye, EyeOff, Gamepad2, Monitor, MapPin, ChevronRight, ChevronLeft } from "lucide-react";
@@ -330,9 +332,11 @@ const Auth = () => {
   );
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen flex-col bg-background">
+      <Navbar />
+      <div className="flex flex-1">
       {/* Left side - Form */}
-      <div className="relative flex w-full flex-col items-center justify-center px-6 lg:w-1/2">
+      <div className="relative flex w-full flex-col items-center justify-center px-6 pt-20 lg:w-1/2">
         <Particles />
 
         <motion.div
@@ -454,6 +458,8 @@ const Auth = () => {
 
       {/* Right side - Animated Racing Background */}
       <RightPanel />
+    </div>
+      <Footer />
     </div>
   );
 };
