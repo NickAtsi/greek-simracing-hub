@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Plus, Search, Heart, MessageCircle, Eye, Pin, BookOpen, Filter } from "lucide-react";
+import { Plus, Search, Heart, MessageCircle, Eye, Pin, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +17,7 @@ const Articles = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [articles, setArticles] = useState<any[]>([]);
+  const [authorProfiles, setAuthorProfiles] = useState<Record<string, any>>({});
   const [categories, setCategories] = useState<any[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -38,7 +40,6 @@ const Articles = () => {
 
   const fetchArticles = async () => {
     setLoading(true);
-    let q = (supabase.from("article_categories" as any) as any);
     let query = supabase
       .from("articles" as any)
       .select(`*, article_categories(name, color, slug), article_likes(count), article_comments(count)`)
@@ -46,15 +47,25 @@ const Articles = () => {
       .order("pinned", { ascending: false })
       .order("created_at", { ascending: false });
 
-    if (selectedCategory) {
-      query = query.eq("category_id", selectedCategory);
-    }
-    if (search) {
-      query = query.ilike("title", `%${search}%`);
-    }
+    if (selectedCategory) query = query.eq("category_id", selectedCategory);
+    if (search) query = query.ilike("title", `%${search}%`);
+
     const { data } = await query;
-    setArticles((data as any[]) || []);
+    const arts = (data as any[]) || [];
+    setArticles(arts);
     setLoading(false);
+
+    // Fetch author profiles
+    if (arts.length > 0) {
+      const ids = [...new Set(arts.map((a: any) => a.author_id))];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, display_name, username, avatar_url")
+        .in("user_id", ids as string[]);
+      const map: Record<string, any> = {};
+      ((profiles as any[]) || []).forEach((p: any) => { map[p.user_id] = p; });
+      setAuthorProfiles(map);
+    }
   };
 
   const handleCreate = async () => {
@@ -165,50 +176,59 @@ const Articles = () => {
                 </div>
               ) : (
                 <div className="space-y-4">
-                  {articles.map((article: any, i: number) => (
-                    <motion.div
-                      key={article.id}
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.05 }}
-                      className="group rounded-xl border border-border bg-card hover:border-primary/40 transition-all p-5"
-                    >
-                      <div className="flex items-start gap-4">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-2 flex-wrap">
-                            {article.pinned && (
-                              <span className="flex items-center gap-1 text-xs text-amber-400 font-medium"><Pin className="h-3 w-3" />Καρφιτσωμένο</span>
-                            )}
-                            {article.article_categories && (
-                              <span className="rounded-full px-2 py-0.5 text-[10px] font-display font-bold text-white" style={{ backgroundColor: article.article_categories.color }}>
-                                {article.article_categories.name}
-                              </span>
-                            )}
-                            <span className="text-xs text-muted-foreground">{new Date(article.created_at).toLocaleDateString("el-GR")}</span>
-                          </div>
-                          <Link to={`/articles/${article.id}`}>
-                            <h2 className="font-display text-lg font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2 mb-2">
-                              {article.title}
-                            </h2>
-                          </Link>
-                          <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-                            {article.content.slice(0, 200)}...
-                          </p>
-                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                            <span className="flex items-center gap-1"><Eye className="h-3.5 w-3.5" />{article.views || 0}</span>
-                            <button
-                              onClick={() => handleLike(article.id, false)}
-                              className="flex items-center gap-1 hover:text-primary transition-colors"
-                            >
-                              <Heart className="h-3.5 w-3.5" />
-                              {article.article_likes?.[0]?.count || 0}
-                            </button>
-                            <span className="flex items-center gap-1"><MessageCircle className="h-3.5 w-3.5" />{article.article_comments?.[0]?.count || 0}</span>
+                  {articles.map((article: any, i: number) => {
+                    const profile = authorProfiles[article.author_id];
+                    const authorName = profile?.display_name || profile?.username || "Χρήστης";
+                    return (
+                      <motion.div
+                        key={article.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                        className="group rounded-xl border border-border bg-card hover:border-primary/40 transition-all p-5"
+                      >
+                        <div className="flex items-start gap-4">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-2 flex-wrap">
+                              {article.pinned && (
+                                <span className="flex items-center gap-1 text-xs text-amber-400 font-medium"><Pin className="h-3 w-3" />Καρφιτσωμένο</span>
+                              )}
+                              {article.article_categories && (
+                                <span className="rounded-full px-2 py-0.5 text-[10px] font-display font-bold text-white" style={{ backgroundColor: article.article_categories.color }}>
+                                  {article.article_categories.name}
+                                </span>
+                              )}
+                              <span className="text-xs text-muted-foreground">{new Date(article.created_at).toLocaleDateString("el-GR")}</span>
+                            </div>
+                            <Link to={`/articles/${article.id}`}>
+                              <h2 className="font-display text-lg font-bold text-foreground group-hover:text-primary transition-colors line-clamp-2 mb-2">
+                                {article.title}
+                              </h2>
+                            </Link>
+                            <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
+                              {article.content.slice(0, 200)}...
+                            </p>
+                            <div className="flex items-center justify-between">
+                              <Link to={`/profile/${article.author_id}`} className="flex items-center gap-2 group/author">
+                                <Avatar className="h-6 w-6">
+                                  <AvatarImage src={profile?.avatar_url || ""} alt={authorName} />
+                                  <AvatarFallback className="bg-gradient-greek text-white text-[10px] font-bold">
+                                    {authorName.slice(0, 2).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="text-xs text-muted-foreground group-hover/author:text-primary transition-colors">{authorName}</span>
+                              </Link>
+                              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                <span className="flex items-center gap-1"><Eye className="h-3.5 w-3.5" />{article.views || 0}</span>
+                                <span className="flex items-center gap-1"><Heart className="h-3.5 w-3.5" />{article.article_likes?.[0]?.count || 0}</span>
+                                <span className="flex items-center gap-1"><MessageCircle className="h-3.5 w-3.5" />{article.article_comments?.[0]?.count || 0}</span>
+                              </div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </motion.div>
-                  ))}
+                      </motion.div>
+                    );
+                  })}
                 </div>
               )}
             </div>

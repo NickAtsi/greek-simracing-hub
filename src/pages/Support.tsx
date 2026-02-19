@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
-import { MessageCircle, Plus, Send, Clock, CheckCircle, XCircle, AlertCircle, ChevronRight, Shield } from "lucide-react";
+import { MessageCircle, Plus, Send, Clock, CheckCircle, XCircle, AlertCircle, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -32,18 +32,51 @@ const Support = () => {
   const [submitting, setSubmitting] = useState(false);
   const [sendingMsg, setSendingMsg] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const selectedTicketRef = useRef<any>(null);
 
   useEffect(() => {
     if (user) fetchTickets();
   }, [user]);
 
   useEffect(() => {
+    selectedTicketRef.current = selectedTicket;
     if (selectedTicket) fetchMessages(selectedTicket.id);
   }, [selectedTicket]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Realtime subscription for messages
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel("support-messages-realtime")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "support_messages" },
+        async (payload) => {
+          const current = selectedTicketRef.current;
+          if (current && payload.new.ticket_id === current.id) {
+            // Fetch the new message with profile info
+            const { data } = await supabase
+              .from("support_messages" as any)
+              .select("*, profiles!sender_id(display_name, username, avatar_url)")
+              .eq("id", payload.new.id)
+              .single();
+            if (data) {
+              setMessages(prev => [...prev, data as any]);
+            }
+          }
+          // Refresh ticket list to update timestamps
+          fetchTickets();
+        }
+      )
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
 
   const fetchTickets = async () => {
     const { data } = await supabase
@@ -61,6 +94,7 @@ const Support = () => {
       .order("created_at");
     setMessages((data as any[]) || []);
   };
+
 
   const handleCreateTicket = async () => {
     if (!user) return;
@@ -93,16 +127,16 @@ const Support = () => {
   const handleSendMessage = async () => {
     if (!user || !selectedTicket || !newMessage.trim()) return;
     setSendingMsg(true);
+    const msgContent = newMessage.trim();
+    setNewMessage(""); // clear immediately for better UX
     await supabase.from("support_messages" as any).insert({
       ticket_id: selectedTicket.id,
       sender_id: user.id,
-      content: newMessage.trim(),
+      content: msgContent,
       is_admin: false,
     });
     // Update ticket updated_at
     await supabase.from("support_tickets" as any).update({ updated_at: new Date().toISOString() } as any).eq("id", selectedTicket.id);
-    setNewMessage("");
-    fetchMessages(selectedTicket.id);
     setSendingMsg(false);
   };
 

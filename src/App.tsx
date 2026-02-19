@@ -11,6 +11,7 @@ import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import Articles from "./pages/Articles";
+import ArticleView from "./pages/ArticleView";
 import Forum from "./pages/Forum";
 import Admin from "./pages/Admin";
 import Contact from "./pages/Contact";
@@ -36,6 +37,7 @@ const App = () => (
             <Route path="/profile" element={<Profile />} />
             <Route path="/profile/:userId" element={<Profile />} />
             <Route path="/articles" element={<Articles />} />
+            <Route path="/articles/:id" element={<ArticleView />} />
             <Route path="/forum" element={<Forum />} />
             <Route path="/forum/category/:categoryId" element={<Forum />} />
             <Route path="/forum/thread/:threadId" element={<Forum />} />
