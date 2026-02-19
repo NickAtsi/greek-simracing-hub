@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { MessageSquare, Plus, Pin, Lock, Eye, ChevronRight, Users, TrendingUp, Clock, ArrowLeft, Send } from "lucide-react";
+import { MessageSquare, Plus, Pin, Lock, Eye, ChevronRight, Users, TrendingUp, Clock, ArrowLeft, Send, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -263,26 +263,54 @@ const CategoryThreads = ({ categoryId }: { categoryId: string }) => {
 const ThreadView = ({ threadId }: { threadId: string }) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [thread, setThread] = useState<any>(null);
   const [posts, setPosts] = useState<any[]>([]);
+  const [profiles, setProfiles] = useState<Record<string, any>>({});
   const [newPost, setNewPost] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [showEditThread, setShowEditThread] = useState(false);
+  const [editTitle, setEditTitle] = useState("");
+  const [editContent, setEditContent] = useState("");
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
+  const [editPostContent, setEditPostContent] = useState("");
 
   useEffect(() => {
     fetchThread();
     fetchPosts();
-    // Increment views
     supabase.from("forum_threads" as any).update({ views: (thread?.views || 0) + 1 } as any).eq("id", threadId);
   }, [threadId]);
 
   const fetchThread = async () => {
     const { data } = await supabase.from("forum_threads" as any).select("*, forum_categories(name, icon, id)").eq("id", threadId).single();
-    setThread(data);
+    const threadData = data as any;
+    setThread(threadData);
+    if (threadData) fetchProfilesForIds([threadData.author_id]);
   };
 
   const fetchPosts = async () => {
     const { data } = await supabase.from("forum_posts" as any).select("*").eq("thread_id", threadId).order("created_at");
-    setPosts((data as any[]) || []);
+    const postsData = (data as any[]) || [];
+    setPosts(postsData);
+    if (postsData.length > 0) fetchProfilesForIds(postsData.map((p: any) => p.author_id));
+  };
+
+  const fetchProfilesForIds = async (ids: string[]) => {
+    const unique = [...new Set(ids)];
+    const { data } = await supabase.from("profiles").select("user_id, display_name, username, avatar_url").in("user_id", unique);
+    if (data) {
+      setProfiles(prev => {
+        const map = { ...prev };
+        (data as any[]).forEach(p => { map[p.user_id] = p; });
+        return map;
+      });
+    }
+  };
+
+  const getProfile = (userId: string) => profiles[userId] || null;
+  const getDisplayName = (userId: string) => {
+    const p = getProfile(userId);
+    return p?.display_name || p?.username || userId?.slice(0, 8) + "...";
   };
 
   const handleReply = async () => {
@@ -304,12 +332,45 @@ const ThreadView = ({ threadId }: { threadId: string }) => {
     fetchPosts();
   };
 
+  const handleEditPost = async (postId: string) => {
+    if (!editPostContent.trim()) return;
+    await supabase.from("forum_posts" as any).update({ content: editPostContent.trim() } as any).eq("id", postId);
+    setEditingPostId(null);
+    setEditPostContent("");
+    fetchPosts();
+    toast({ title: "Ανάρτηση ενημερώθηκε!" });
+  };
+
+  const handleDeleteThread = async () => {
+    if (!window.confirm("Σίγουρα θέλεις να διαγράψεις αυτό το thread;")) return;
+    const catId = thread?.forum_categories?.id;
+    await supabase.from("forum_threads" as any).delete().eq("id", threadId);
+    toast({ title: "Thread διαγράφηκε!" });
+    navigate(catId ? `/forum/category/${catId}` : "/forum");
+  };
+
+  const handleEditThread = async () => {
+    if (!editTitle.trim() || !editContent.trim()) return;
+    await supabase.from("forum_threads" as any).update({ title: editTitle.trim(), content: editContent.trim() } as any).eq("id", threadId);
+    setShowEditThread(false);
+    fetchThread();
+    toast({ title: "Thread ενημερώθηκε!" });
+  };
+
+  const openEditThread = () => {
+    setEditTitle(thread.title);
+    setEditContent(thread.content);
+    setShowEditThread(true);
+  };
+
   if (!thread) return (
     <div className="min-h-screen bg-background flex items-center justify-center">
       <Navbar />
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
     </div>
   );
+
+  const isThreadAuthor = user && user.id === thread.author_id;
 
   const allMessages = [
     { id: "op", author_id: thread.author_id, content: thread.content, created_at: thread.created_at, is_op: true },
@@ -331,42 +392,85 @@ const ThreadView = ({ threadId }: { threadId: string }) => {
           </div>
 
           {/* Thread Title */}
-          <div className="mb-6">
-            <div className="flex items-center gap-2 mb-1">
-              {thread.pinned && <span className="text-amber-400 text-xs font-display font-bold flex items-center gap-1"><Pin className="h-3 w-3" />ΚΑΡΦΙΤΣΩΜΕΝΟ</span>}
-              {thread.locked && <span className="text-muted-foreground text-xs font-display font-bold flex items-center gap-1"><Lock className="h-3 w-3" />ΚΛΕΙΔΩΜΕΝΟ</span>}
+          <div className="mb-6 flex items-start justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                {thread.pinned && <span className="text-amber-400 text-xs font-display font-bold flex items-center gap-1"><Pin className="h-3 w-3" />ΚΑΡΦΙΤΣΩΜΕΝΟ</span>}
+                {thread.locked && <span className="text-muted-foreground text-xs font-display font-bold flex items-center gap-1"><Lock className="h-3 w-3" />ΚΛΕΙΔΩΜΕΝΟ</span>}
+              </div>
+              <h1 className="font-display text-2xl font-black text-foreground">{thread.title}</h1>
             </div>
-            <h1 className="font-display text-2xl font-black text-foreground">{thread.title}</h1>
+            {isThreadAuthor && (
+              <div className="flex gap-2 flex-shrink-0">
+                <Button size="sm" variant="outline" onClick={openEditThread} className="gap-1.5 text-xs">
+                  <Pencil className="h-3.5 w-3.5" /> Επεξεργασία
+                </Button>
+                <Button size="sm" variant="outline" onClick={handleDeleteThread} className="gap-1.5 text-xs text-destructive hover:bg-destructive hover:text-destructive-foreground border-destructive/40">
+                  <Trash2 className="h-3.5 w-3.5" /> Διαγραφή
+                </Button>
+              </div>
+            )}
           </div>
 
           {/* Posts */}
           <div className="space-y-4 mb-8">
-            {allMessages.map((msg: any, i: number) => (
-              <motion.div key={msg.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
-                className={`rounded-xl border ${msg.is_op ? "border-primary/30 bg-primary/5" : "border-border bg-card"} p-5`}>
-                <div className="flex items-start gap-4">
-                  <div className="flex-shrink-0 flex flex-col items-center gap-1.5">
-                    <Avatar className="h-10 w-10">
-                      <AvatarFallback className="bg-gradient-greek text-white text-sm font-bold">{msg.author_id?.slice(0, 2).toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    {msg.is_op && <span className="text-[9px] font-display font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">OP</span>}
-                    <span className="text-[10px] text-muted-foreground">#{i + 1}</span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-2">
-                      <Link to={`/profile/${msg.author_id}`} className="text-xs font-bold text-foreground hover:text-primary transition-colors">
-                        {msg.author_id?.slice(0, 8)}...
+            {allMessages.map((msg: any, i: number) => {
+              const profile = getProfile(msg.author_id);
+              const displayName = getDisplayName(msg.author_id);
+              const isMyPost = user && user.id === msg.author_id;
+              const isEditingThis = editingPostId === msg.id;
+
+              return (
+                <motion.div key={msg.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}
+                  className={`rounded-xl border ${msg.is_op ? "border-primary/30 bg-primary/5" : "border-border bg-card"} p-5`}>
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0 flex flex-col items-center gap-1.5">
+                      <Link to={`/profile/${msg.author_id}`}>
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src={profile?.avatar_url || ""} alt={displayName} />
+                          <AvatarFallback className="bg-gradient-greek text-white text-sm font-bold">
+                            {displayName.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
                       </Link>
-                      <span className="text-xs text-muted-foreground">{new Date(msg.created_at).toLocaleString("el-GR")}</span>
+                      {msg.is_op && <span className="text-[9px] font-display font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">OP</span>}
+                      <span className="text-[10px] text-muted-foreground">#{i + 1}</span>
                     </div>
-                    <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-2">
+                        <Link to={`/profile/${msg.author_id}`} className="text-sm font-bold text-foreground hover:text-primary transition-colors">
+                          {displayName}
+                        </Link>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground">{new Date(msg.created_at).toLocaleString("el-GR")}</span>
+                          {!msg.is_op && isMyPost && !isEditingThis && (
+                            <>
+                              <button onClick={() => { setEditingPostId(msg.id); setEditPostContent(msg.content); }} className="text-muted-foreground hover:text-primary transition-colors">
+                                <Pencil className="h-3.5 w-3.5" />
+                              </button>
+                              <button onClick={() => handleDeletePost(msg.id)} className="text-muted-foreground hover:text-destructive transition-colors">
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                      {isEditingThis ? (
+                        <div className="space-y-2">
+                          <Textarea value={editPostContent} onChange={(e) => setEditPostContent(e.target.value)} rows={4} className="resize-none bg-secondary/50 border-border text-sm" />
+                          <div className="flex gap-2 justify-end">
+                            <Button size="sm" variant="outline" onClick={() => setEditingPostId(null)}>Ακύρωση</Button>
+                            <Button size="sm" onClick={() => handleEditPost(msg.id)} className="bg-gradient-greek text-white hover:brightness-110">Αποθήκευση</Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                      )}
+                    </div>
                   </div>
-                  {!msg.is_op && user && (user.id === msg.author_id) && (
-                    <button onClick={() => handleDeletePost(msg.id)} className="text-muted-foreground hover:text-destructive transition-colors text-xs flex-shrink-0">✕</button>
-                  )}
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
           </div>
 
           {/* Reply box */}
@@ -400,6 +504,24 @@ const ThreadView = ({ threadId }: { threadId: string }) => {
           )}
         </div>
       </div>
+
+      {/* Edit Thread Dialog */}
+      <Dialog open={showEditThread} onOpenChange={setShowEditThread}>
+        <DialogContent className="max-w-2xl bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="font-display text-foreground">Επεξεργασία Thread</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input placeholder="Τίτλος thread..." value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="bg-secondary/50 border-border" />
+            <Textarea placeholder="Περιεχόμενο..." value={editContent} onChange={(e) => setEditContent(e.target.value)} rows={6} className="resize-none bg-secondary/50 border-border" />
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowEditThread(false)}>Ακύρωση</Button>
+              <Button onClick={handleEditThread} className="bg-gradient-greek text-white hover:brightness-110">Αποθήκευση</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Footer />
     </div>
   );
@@ -414,3 +536,4 @@ const Forum = () => {
 };
 
 export default Forum;
+
