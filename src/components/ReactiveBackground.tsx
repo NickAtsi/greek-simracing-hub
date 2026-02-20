@@ -2,10 +2,14 @@ import { useEffect, useRef, useCallback } from "react";
 
 const ReactiveBackground = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const mouseRef = useRef({ x: -1000, y: -1000 });
+  const mouseRef = useRef({ x: -9999, y: -9999 });
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     mouseRef.current = { x: e.clientX, y: e.clientY };
+  }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    mouseRef.current = { x: -9999, y: -9999 };
   }, []);
 
   useEffect(() => {
@@ -21,139 +25,171 @@ const ReactiveBackground = () => {
     resize();
     window.addEventListener("resize", resize);
     window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseleave", handleMouseLeave);
 
+    // ── Particle definition ──────────────────────────────────────────────────
     interface Particle {
-      x: number; y: number; baseX: number; baseY: number;
-      size: number; opacity: number; phase: number; speed: number;
-      type: "dot" | "line";
+      x: number;
+      y: number;
+      vx: number;
+      vy: number;
+      baseX: number;
+      baseY: number;
+      size: number;
+      opacity: number;
+      phase: number;
+      speed: number;
+      // dash style
+      isDash: boolean;
+      dashLen: number;
       angle: number;
-      length: number;
+      angleV: number;
     }
 
+    const COUNT = Math.floor((window.innerWidth * window.innerHeight) / 7000);
     const particles: Particle[] = [];
-    const spacing = 70;
-    for (let x = 0; x < canvas.width; x += spacing) {
-      for (let y = 0; y < canvas.height; y += spacing) {
-        const isLine = Math.random() < 0.15;
-        particles.push({
-          x: x + (Math.random() - 0.5) * 30,
-          y: y + (Math.random() - 0.5) * 30,
-          baseX: x + (Math.random() - 0.5) * 30,
-          baseY: y + (Math.random() - 0.5) * 30,
-          size: isLine ? 1 : Math.random() * 1.2 + 0.3,
-          opacity: Math.random() * 0.15 + 0.03,
-          phase: Math.random() * Math.PI * 2,
-          speed: 0.3 + Math.random() * 1,
-          type: isLine ? "line" : "dot",
-          angle: Math.random() * Math.PI,
-          length: 8 + Math.random() * 15,
-        });
-      }
-    }
 
-    // Racing track lines — subtle horizontal streaks
-    interface TrackLine {
-      y: number; speed: number; opacity: number; width: number;
-    }
-    const trackLines: TrackLine[] = [];
-    for (let i = 0; i < 6; i++) {
-      trackLines.push({
-        y: Math.random() * canvas.height,
-        speed: 0.3 + Math.random() * 0.7,
-        opacity: 0.015 + Math.random() * 0.02,
-        width: canvas.width * (0.15 + Math.random() * 0.3),
+    for (let i = 0; i < COUNT; i++) {
+      const bx = Math.random() * canvas.width;
+      const by = Math.random() * canvas.height;
+      const isDash = Math.random() < 0.35;
+      particles.push({
+        x: bx,
+        y: by,
+        vx: (Math.random() - 0.5) * 0.25,
+        vy: (Math.random() - 0.5) * 0.25,
+        baseX: bx,
+        baseY: by,
+        size: isDash ? 0.8 : Math.random() * 1.4 + 0.4,
+        opacity: Math.random() * 0.35 + 0.08,
+        phase: Math.random() * Math.PI * 2,
+        speed: 0.4 + Math.random() * 0.8,
+        isDash,
+        dashLen: 4 + Math.random() * 10,
+        angle: Math.random() * Math.PI * 2,
+        angleV: (Math.random() - 0.5) * 0.008,
       });
     }
 
     let animId: number;
     let time = 0;
 
+    const REPEL_RADIUS = 130;
+    const REPEL_FORCE = 5.5;
+    const FRICTION = 0.88;
+    const RETURN_FORCE = 0.018;
+
     const draw = () => {
-      time += 0.006;
+      time += 0.008;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+
       const mx = mouseRef.current.x;
       const my = mouseRef.current.y;
 
-      // Draw subtle racing track lines
-      trackLines.forEach((line) => {
-        const xOffset = Math.sin(time * line.speed) * 100;
-        const grad = ctx.createLinearGradient(
-          canvas.width / 2 - line.width / 2 + xOffset, line.y,
-          canvas.width / 2 + line.width / 2 + xOffset, line.y
-        );
-        grad.addColorStop(0, `hsla(356, 80%, 50%, 0)`);
-        grad.addColorStop(0.3, `hsla(356, 80%, 50%, ${line.opacity})`);
-        grad.addColorStop(0.7, `hsla(210, 90%, 55%, ${line.opacity})`);
-        grad.addColorStop(1, `hsla(210, 90%, 55%, 0)`);
-        ctx.fillStyle = grad;
-        ctx.fillRect(0, line.y - 0.5, canvas.width, 1);
-      });
-
-      // Draw particles
       particles.forEach((p) => {
-        const dx = mx - p.baseX;
-        const dy = my - p.baseY;
+        // ── Physics ──────────────────────────────────────────────────────────
+        const dx = p.x - mx;
+        const dy = p.y - my;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        const maxDist = 180;
 
-        if (dist < maxDist) {
-          const force = (1 - dist / maxDist) * 25;
-          p.x = p.baseX - (dx / dist) * force;
-          p.y = p.baseY - (dy / dist) * force;
-        } else {
-          p.x += (p.baseX - p.x) * 0.04;
-          p.y += (p.baseY - p.y) * 0.04;
+        if (dist < REPEL_RADIUS && dist > 0) {
+          // Repulsion: push away from cursor
+          const force = (1 - dist / REPEL_RADIUS) * REPEL_FORCE;
+          p.vx += (dx / dist) * force;
+          p.vy += (dy / dist) * force;
         }
 
+        // Spring return to base position
+        p.vx += (p.baseX - p.x) * RETURN_FORCE;
+        p.vy += (p.baseY - p.y) * RETURN_FORCE;
+
+        // Damping
+        p.vx *= FRICTION;
+        p.vy *= FRICTION;
+
+        // Integrate
+        p.x += p.vx;
+        p.y += p.vy;
+
+        // Angle drift
+        p.angle += p.angleV;
+
+        // ── Visual ───────────────────────────────────────────────────────────
         const pulse = Math.sin(time * p.speed + p.phase) * 0.5 + 0.5;
-        const glowOpacity = dist < maxDist
-          ? p.opacity + (1 - dist / maxDist) * 0.4
-          : p.opacity * (0.5 + pulse * 0.5);
+        const proximity = dist < REPEL_RADIUS ? (1 - dist / REPEL_RADIUS) : 0;
 
-        // Alternate between red and blue
-        const isBlue = (Math.floor(p.baseX / spacing) + Math.floor(p.baseY / spacing)) % 2 === 0;
-        const hue = isBlue ? 210 : 356;
-        const sat = isBlue ? 85 : 90;
-        const light = isBlue ? 55 : 50;
+        // Alternate hue grid — blue dominant, occasional white accent
+        const gridX = Math.floor(p.baseX / 90);
+        const gridY = Math.floor(p.baseY / 90);
+        const isAccent = (gridX + gridY) % 5 === 0;
 
-        if (p.type === "line") {
-          const a = p.angle + Math.sin(time * 0.5 + p.phase) * 0.3;
+        let hue: number, sat: number, light: number;
+        if (isAccent) {
+          hue = 0; sat = 0; light = 90; // near-white
+        } else {
+          hue = 214; sat = 85; light = 55 + pulse * 12; // blue
+        }
+
+        const finalOpacity = Math.min(
+          p.opacity * (0.6 + pulse * 0.4) + proximity * 0.5,
+          0.9
+        );
+
+        ctx.globalAlpha = finalOpacity;
+
+        if (p.isDash) {
+          // Small dash/tick — like the Google Antigravity ones
+          const a = p.angle;
+          const hx = Math.cos(a) * p.dashLen * 0.5;
+          const hy = Math.sin(a) * p.dashLen * 0.5;
           ctx.beginPath();
-          ctx.moveTo(p.x - Math.cos(a) * p.length / 2, p.y - Math.sin(a) * p.length / 2);
-          ctx.lineTo(p.x + Math.cos(a) * p.length / 2, p.y + Math.sin(a) * p.length / 2);
-          ctx.strokeStyle = `hsla(${hue}, ${sat}%, ${light}%, ${glowOpacity * 0.6})`;
+          ctx.moveTo(p.x - hx, p.y - hy);
+          ctx.lineTo(p.x + hx, p.y + hy);
+          ctx.strokeStyle = `hsl(${hue},${sat}%,${light}%)`;
           ctx.lineWidth = p.size;
+          ctx.lineCap = "round";
           ctx.stroke();
         } else {
+          // Dot
+          const r = p.size + proximity * 1.8;
           ctx.beginPath();
-          ctx.arc(p.x, p.y, p.size + (dist < maxDist ? (1 - dist / maxDist) * 1.5 : 0), 0, Math.PI * 2);
-          ctx.fillStyle = `hsla(${hue}, ${sat}%, ${light}%, ${glowOpacity})`;
+          ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
+          ctx.fillStyle = `hsl(${hue},${sat}%,${light}%)`;
           ctx.fill();
         }
+
+        ctx.globalAlpha = 1;
       });
 
-      // Mouse glow — dual color racing feel
-      if (mx > 0 && my > 0) {
-        const glowGrad = ctx.createRadialGradient(mx, my, 0, mx, my, 200);
-        glowGrad.addColorStop(0, "hsla(356, 90%, 50%, 0.04)");
-        glowGrad.addColorStop(0.5, "hsla(210, 90%, 55%, 0.02)");
-        glowGrad.addColorStop(1, "hsla(356, 90%, 50%, 0)");
-        ctx.fillStyle = glowGrad;
+      // ── Subtle mouse glow ────────────────────────────────────────────────
+      if (mx > 0 && mx < canvas.width) {
+        const g = ctx.createRadialGradient(mx, my, 0, mx, my, REPEL_RADIUS * 1.4);
+        g.addColorStop(0, "hsla(214,89%,55%,0.05)");
+        g.addColorStop(0.5, "hsla(214,89%,40%,0.02)");
+        g.addColorStop(1, "hsla(214,89%,55%,0)");
+        ctx.fillStyle = g;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
 
       animId = requestAnimationFrame(draw);
     };
+
     draw();
 
     return () => {
       cancelAnimationFrame(animId);
       window.removeEventListener("resize", resize);
       window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseleave", handleMouseLeave);
     };
-  }, [handleMouseMove]);
+  }, [handleMouseMove, handleMouseLeave]);
 
-  return <canvas ref={canvasRef} className="fixed inset-0 w-full h-full pointer-events-none z-0" />;
+  return (
+    <canvas
+      ref={canvasRef}
+      className="fixed inset-0 w-full h-full pointer-events-none z-0"
+    />
+  );
 };
 
 export default ReactiveBackground;
