@@ -144,7 +144,7 @@ const Auth = () => {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (user) navigate("/");
+    if (user) navigate("/home");
   }, [user, navigate]);
 
   const resetForm = () => {
