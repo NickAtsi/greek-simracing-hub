@@ -188,16 +188,20 @@ const ReactionTimeGame = () => {
             {gameState === "result" && "Πάτα για να ξαναδοκιμάσεις"}
           </p>
 
-          <div className="flex flex-col gap-3 mb-10">
-            {[0, 1].map((row) => (
-              <div key={row} className="flex gap-3">
-                {Array.from({ length: F1_LIGHTS_COUNT }).map((_, i) => (
+          {/* F1-style light gantry */}
+          <div className="flex gap-2 sm:gap-3 mb-10 bg-[hsl(0,0%,8%)] rounded-xl px-4 py-5 border border-[hsl(0,0%,15%)] shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
+            {Array.from({ length: F1_LIGHTS_COUNT }).map((_, i) => (
+              <div
+                key={i}
+                className="flex flex-col gap-2 items-center bg-[hsl(0,0%,5%)] rounded-lg px-2 py-3 border border-[hsl(0,0%,12%)]"
+              >
+                {[0, 1].map((row) => (
                   <div
-                    key={i}
-                    className={`h-12 w-12 rounded-full border-2 transition-all duration-200 ${
+                    key={row}
+                    className={`h-8 w-8 sm:h-10 sm:w-10 rounded-full border-2 transition-all duration-200 ${
                       lightsOn > i
-                        ? "border-primary bg-primary shadow-[0_0_20px_hsl(var(--primary)/0.6)]"
-                        : "border-border bg-secondary/50"
+                        ? "border-red-700 bg-red-600 shadow-[0_0_18px_4px_rgba(220,38,38,0.7),inset_0_-2px_4px_rgba(0,0,0,0.3)]"
+                        : "border-[hsl(0,0%,18%)] bg-[hsl(0,0%,10%)] shadow-[inset_0_2px_4px_rgba(0,0,0,0.5)]"
                     }`}
                   />
                 ))}
