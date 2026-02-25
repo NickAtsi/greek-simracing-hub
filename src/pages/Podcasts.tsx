@@ -33,15 +33,21 @@ const EqualizerBars = ({ count = 12, className = "" }: { count?: number; classNa
 
 // Neon waveform decoration
 const NeonWave = () => (
-  <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className="absolute bottom-0 left-0 right-0 w-full h-16 opacity-20">
+  <svg
+    viewBox="0 0 1200 120"
+    preserveAspectRatio="none"
+    className="absolute bottom-0 left-0 right-0 w-full h-16 opacity-20"
+  >
     <motion.path
       d="M0,60 C200,20 400,100 600,60 C800,20 1000,100 1200,60 L1200,120 L0,120 Z"
       fill="hsl(var(--primary))"
-      animate={{ d: [
-        "M0,60 C200,20 400,100 600,60 C800,20 1000,100 1200,60 L1200,120 L0,120 Z",
-        "M0,80 C200,40 400,80 600,40 C800,0 1000,80 1200,40 L1200,120 L0,120 Z",
-        "M0,60 C200,20 400,100 600,60 C800,20 1000,100 1200,60 L1200,120 L0,120 Z",
-      ]}}
+      animate={{
+        d: [
+          "M0,60 C200,20 400,100 600,60 C800,20 1000,100 1200,60 L1200,120 L0,120 Z",
+          "M0,80 C200,40 400,80 600,40 C800,0 1000,80 1200,40 L1200,120 L0,120 Z",
+          "M0,60 C200,20 400,100 600,60 C800,20 1000,100 1200,60 L1200,120 L0,120 Z",
+        ],
+      }}
       transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
     />
   </svg>
@@ -79,9 +85,12 @@ const Podcasts = () => {
 
   const categories = ["Όλα", ...Array.from(new Set(podcasts.map((p: any) => p.category).filter(Boolean)))];
 
-  const filtered = podcasts.filter(p => {
+  const filtered = podcasts.filter((p) => {
     const matchCat = selectedCat === "Όλα" || p.category === selectedCat;
-    const matchSearch = !search || p.title?.toLowerCase().includes(search.toLowerCase()) || p.host?.toLowerCase().includes(search.toLowerCase());
+    const matchSearch =
+      !search ||
+      p.title?.toLowerCase().includes(search.toLowerCase()) ||
+      p.host?.toLowerCase().includes(search.toLowerCase());
     return matchCat && matchSearch;
   });
 
@@ -90,13 +99,13 @@ const Podcasts = () => {
       <Navbar />
 
       {/* ═══ HERO / INTRO ═══ */}
-      <section ref={heroRef} className="relative min-h-[100vh] flex flex-col items-center justify-center overflow-hidden">
+      <section
+        ref={heroRef}
+        className="relative min-h-[100vh] flex flex-col items-center justify-center overflow-hidden"
+      >
         {/* Deep dark background with radial glow */}
         <div className="absolute inset-0 bg-background" />
-        <motion.div
-          className="absolute inset-0"
-          style={{ y: heroY }}
-        >
+        <motion.div className="absolute inset-0" style={{ y: heroY }}>
           {/* Primary glow orbs */}
           <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-primary/8 blur-[140px]" />
           <div className="absolute top-1/2 left-1/4 w-[300px] h-[300px] rounded-full bg-primary/5 blur-[100px]" />
@@ -104,15 +113,17 @@ const Podcasts = () => {
         </motion.div>
 
         {/* Grid overlay */}
-        <div className="absolute inset-0 opacity-[0.03]"
-          style={{ backgroundImage: "linear-gradient(hsl(var(--primary)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)", backgroundSize: "60px 60px" }}
+        <div
+          className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage:
+              "linear-gradient(hsl(var(--primary)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary)) 1px, transparent 1px)",
+            backgroundSize: "60px 60px",
+          }}
         />
 
         {/* Large equalizer bars - left */}
-        <motion.div
-          className="absolute left-0 bottom-0 flex items-end gap-1 px-4 pb-0 opacity-30"
-          style={{ y: heroY }}
-        >
+        <motion.div className="absolute left-0 bottom-0 flex items-end gap-1 px-4 pb-0 opacity-30" style={{ y: heroY }}>
           {[120, 180, 140, 220, 160, 100, 200, 130, 170, 90].map((h, i) => (
             <motion.div
               key={i}
@@ -205,17 +216,27 @@ const Podcasts = () => {
             transition={{ delay: 1.1 }}
           >
             {[
-              { name: "Spotify", color: "text-green-400", bg: "bg-green-400/10 border-green-400/30",
-                icon: <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+              {
+                name: "Spotify",
+                color: "text-green-400",
+                bg: "bg-green-400/10 border-green-400/30",
+                icon: (
+                  <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
+                  </svg>
+                ),
               },
-              { name: "Apple Podcasts", color: "text-purple-400", bg: "bg-purple-400/10 border-purple-400/30",
-                icon: <Mic className="h-4 w-4" />
-              },
-              { name: "YouTube", color: "text-red-400", bg: "bg-red-400/10 border-red-400/30",
-                icon: <Radio className="h-4 w-4" />
+              {
+                name: "Apple Podcasts",
+                color: "text-purple-400",
+                bg: "bg-purple-400/10 border-purple-400/30",
+                icon: <Mic className="h-4 w-4" />,
               },
             ].map((p) => (
-              <span key={p.name} className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium ${p.color} ${p.bg}`}>
+              <span
+                key={p.name}
+                className={`flex items-center gap-2 px-4 py-2 rounded-full border text-sm font-medium ${p.color} ${p.bg}`}
+              >
                 {p.icon} {p.name}
               </span>
             ))}
@@ -267,7 +288,7 @@ const Podcasts = () => {
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <input
                     value={search}
-                    onChange={e => setSearch(e.target.value)}
+                    onChange={(e) => setSearch(e.target.value)}
                     placeholder="Αναζήτηση..."
                     className="pl-9 pr-4 py-2 rounded-lg border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary w-48"
                   />
@@ -279,7 +300,7 @@ const Podcasts = () => {
             {categories.length > 1 && (
               <div className="flex items-center gap-2 mt-4 flex-wrap">
                 <Filter className="h-3.5 w-3.5 text-muted-foreground" />
-                {categories.map(cat => (
+                {categories.map((cat) => (
                   <button
                     key={cat}
                     onClick={() => setSelectedCat(cat)}
@@ -297,15 +318,21 @@ const Podcasts = () => {
             <div className="flex justify-center py-20">
               <div className="flex items-end gap-1">
                 {Array.from({ length: 8 }).map((_, i) => (
-                  <motion.div key={i} className="w-2 rounded-t-sm bg-primary/50"
+                  <motion.div
+                    key={i}
+                    className="w-2 rounded-t-sm bg-primary/50"
                     animate={{ height: ["8px", "32px", "8px"] }}
-                    transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.1 }} />
+                    transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.1 }}
+                  />
                 ))}
               </div>
             </div>
           ) : filtered.length === 0 ? (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              className="text-center py-24 rounded-2xl border border-border/50 bg-card/30">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="text-center py-24 rounded-2xl border border-border/50 bg-card/30"
+            >
               <Headphones className="h-14 w-14 text-muted-foreground mx-auto mb-3 opacity-30" />
               <p className="text-muted-foreground font-display font-bold">Δεν βρέθηκαν επεισόδια.</p>
             </motion.div>
@@ -325,7 +352,10 @@ const Podcasts = () => {
                     className={`rounded-2xl border transition-all duration-300 overflow-hidden ${isExpanded ? "border-primary/50 bg-card shadow-lg shadow-primary/5" : "border-border bg-card/70 hover:border-primary/30 hover:bg-card"}`}
                   >
                     {/* Episode row */}
-                    <div className="flex items-center gap-4 p-5 cursor-pointer" onClick={() => setExpandedId(isExpanded ? null : ep.id)}>
+                    <div
+                      className="flex items-center gap-4 p-5 cursor-pointer"
+                      onClick={() => setExpandedId(isExpanded ? null : ep.id)}
+                    >
                       {/* Episode number */}
                       <div className="flex-shrink-0 text-center w-10">
                         <span className="font-display text-[9px] text-muted-foreground uppercase">EP</span>
@@ -337,13 +367,21 @@ const Podcasts = () => {
                       <div className="w-px h-10 bg-border flex-shrink-0" />
 
                       {/* Play icon / Spotify */}
-                      <div className={`flex-shrink-0 h-11 w-11 rounded-full flex items-center justify-center transition-all ${isExpanded ? "bg-green-600/20 border border-green-500/50" : "bg-secondary border border-border"}`}>
+                      <div
+                        className={`flex-shrink-0 h-11 w-11 rounded-full flex items-center justify-center transition-all ${isExpanded ? "bg-green-600/20 border border-green-500/50" : "bg-secondary border border-border"}`}
+                      >
                         {ep.spotify_url ? (
-                          <svg className={`h-5 w-5 transition-colors ${isExpanded ? "text-green-400" : "text-muted-foreground"}`} viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+                          <svg
+                            className={`h-5 w-5 transition-colors ${isExpanded ? "text-green-400" : "text-muted-foreground"}`}
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                          >
+                            <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
                           </svg>
                         ) : (
-                          <Play className={`h-4 w-4 ml-0.5 transition-colors ${isExpanded ? "text-primary" : "text-muted-foreground"}`} />
+                          <Play
+                            className={`h-4 w-4 ml-0.5 transition-colors ${isExpanded ? "text-primary" : "text-muted-foreground"}`}
+                          />
                         )}
                       </div>
 
@@ -361,7 +399,8 @@ const Podcasts = () => {
                           {ep.host && <span className="text-xs text-muted-foreground">{ep.host}</span>}
                           {ep.duration && (
                             <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                              <Clock className="h-3 w-3" />{ep.duration}
+                              <Clock className="h-3 w-3" />
+                              {ep.duration}
                             </span>
                           )}
                         </div>
@@ -370,16 +409,17 @@ const Podcasts = () => {
                       {/* Right side */}
                       <div className="flex items-center gap-3 flex-shrink-0">
                         {ep.spotify_url && (
-                          <a href={ep.spotify_url} target="_blank" rel="noopener noreferrer"
-                            onClick={e => e.stopPropagation()}
-                            className="hidden sm:flex items-center gap-1 text-xs text-green-400 hover:text-green-300 transition-colors">
+                          <a
+                            href={ep.spotify_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="hidden sm:flex items-center gap-1 text-xs text-green-400 hover:text-green-300 transition-colors"
+                          >
                             Spotify <ExternalLink className="h-3 w-3" />
                           </a>
                         )}
-                        <motion.div
-                          animate={{ rotate: isExpanded ? 180 : 0 }}
-                          transition={{ duration: 0.2 }}
-                        >
+                        <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
                           <ChevronDown className="h-4 w-4 text-muted-foreground" />
                         </motion.div>
                       </div>
@@ -398,15 +438,15 @@ const Podcasts = () => {
                           <div className="px-5 pb-5 border-t border-border/50 pt-4 space-y-4">
                             {/* Description */}
                             {ep.description && (
-                              <p className="text-sm text-muted-foreground leading-relaxed">
-                                {ep.description}
-                              </p>
+                              <p className="text-sm text-muted-foreground leading-relaxed">{ep.description}</p>
                             )}
 
                             {/* Equalizer mini animation while expanded */}
                             <div className="flex items-center gap-3">
                               <EqualizerBars count={10} />
-                              <span className="text-xs text-muted-foreground font-display tracking-wider">NOW PLAYING</span>
+                              <span className="text-xs text-muted-foreground font-display tracking-wider">
+                                NOW PLAYING
+                              </span>
                             </div>
 
                             {/* Spotify embed */}
@@ -424,14 +464,20 @@ const Podcasts = () => {
 
                             {/* No embed fallback */}
                             {!embedId && ep.spotify_url && (
-                              <a href={ep.spotify_url} target="_blank" rel="noopener noreferrer"
-                                className="flex items-center gap-3 p-4 rounded-xl bg-green-600/10 border border-green-600/30 hover:bg-green-600/20 transition-colors group">
+                              <a
+                                href={ep.spotify_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-3 p-4 rounded-xl bg-green-600/10 border border-green-600/30 hover:bg-green-600/20 transition-colors group"
+                              >
                                 <svg className="h-8 w-8 text-green-400" viewBox="0 0 24 24" fill="currentColor">
-                                  <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+                                  <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
                                 </svg>
                                 <div>
                                   <p className="text-sm font-bold text-green-400">Άκουσε στο Spotify</p>
-                                  <p className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">{ep.spotify_url}</p>
+                                  <p className="text-xs text-muted-foreground group-hover:text-foreground transition-colors">
+                                    {ep.spotify_url}
+                                  </p>
                                 </div>
                                 <ExternalLink className="h-4 w-4 text-green-400 ml-auto" />
                               </a>
@@ -462,19 +508,26 @@ const Podcasts = () => {
               <div className="absolute left-1/2 top-0 -translate-x-1/2 h-px w-32 bg-gradient-to-r from-transparent via-primary to-transparent" />
 
               <Headphones className="h-10 w-10 text-primary mx-auto mb-4" />
-              <h3 className="font-display text-2xl font-black text-foreground mb-2">
-                Ακούστε μας παντού
-              </h3>
+              <h3 className="font-display text-2xl font-black text-foreground mb-2">Ακούστε μας παντού</h3>
               <p className="text-muted-foreground text-sm mb-6 max-w-sm mx-auto">
                 Διαθέσιμο σε Spotify, Apple Podcasts και YouTube. Subscribe για να μη χάσετε κανένα επεισόδιο.
               </p>
               <div className="flex items-center justify-center gap-3 flex-wrap">
                 {[
-                  { name: "Spotify", color: "bg-green-600/20 border-green-600/40 text-green-400 hover:bg-green-600/30" },
-                  { name: "Apple Podcasts", color: "bg-purple-600/20 border-purple-600/40 text-purple-400 hover:bg-purple-600/30" },
+                  {
+                    name: "Spotify",
+                    color: "bg-green-600/20 border-green-600/40 text-green-400 hover:bg-green-600/30",
+                  },
+                  {
+                    name: "Apple Podcasts",
+                    color: "bg-purple-600/20 border-purple-600/40 text-purple-400 hover:bg-purple-600/30",
+                  },
                   { name: "YouTube", color: "bg-red-600/20 border-red-600/40 text-red-400 hover:bg-red-600/30" },
-                ].map(p => (
-                  <button key={p.name} className={`px-5 py-2.5 rounded-xl border text-sm font-medium transition-all ${p.color}`}>
+                ].map((p) => (
+                  <button
+                    key={p.name}
+                    className={`px-5 py-2.5 rounded-xl border text-sm font-medium transition-all ${p.color}`}
+                  >
                     {p.name}
                   </button>
                 ))}
