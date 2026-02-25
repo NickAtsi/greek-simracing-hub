@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Heart, MessageCircle, UserPlus, UserCheck, UserX, Trophy, Gamepad2, Flag, Calendar, Users, Camera, Save, Edit2, Globe, MapPin, Hash, Clock3, ExternalLink } from "lucide-react";
+import { Heart, MessageCircle, UserPlus, UserCheck, UserX, Trophy, Gamepad2, Flag, Calendar, Users, Camera, Save, Edit2, Globe, MapPin, Hash, Clock3, ExternalLink, Mail, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -32,6 +32,10 @@ const Profile = () => {
   const [editForm, setEditForm] = useState({ display_name: "", username: "", favorite_sim: "", favorite_track: "", setup_type: "", bio: "", location: "", discord_username: "", nationality: "", years_simracing: "", website_url: "" });
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [newEmail, setNewEmail] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [savingAccount, setSavingAccount] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const profileUserId = userId || user?.id;
@@ -165,7 +169,45 @@ const Profile = () => {
       years_simracing: profile?.years_simracing || "",
       website_url: profile?.website_url || "",
     });
+    setNewEmail(user?.email || "");
+    setNewPassword("");
+    setConfirmPassword("");
     setShowEditDialog(true);
+  };
+
+  const handleUpdateAccount = async () => {
+    if (!user) return;
+    setSavingAccount(true);
+    try {
+      // Update email if changed
+      if (newEmail && newEmail !== user.email) {
+        const { error } = await supabase.auth.updateUser({ email: newEmail });
+        if (error) throw error;
+        toast({ title: "Email επιβεβαίωσης στάλθηκε", description: "Έλεγξε το νέο και το παλιό email σου για επιβεβαίωση." });
+      }
+      // Update password if provided
+      if (newPassword) {
+        if (newPassword.length < 6) {
+          toast({ title: "Ο κωδικός πρέπει να έχει τουλάχιστον 6 χαρακτήρες", variant: "destructive" });
+          setSavingAccount(false);
+          return;
+        }
+        if (newPassword !== confirmPassword) {
+          toast({ title: "Οι κωδικοί δεν ταιριάζουν", variant: "destructive" });
+          setSavingAccount(false);
+          return;
+        }
+        const { error } = await supabase.auth.updateUser({ password: newPassword });
+        if (error) throw error;
+        toast({ title: "Ο κωδικός ενημερώθηκε!" });
+        setNewPassword("");
+        setConfirmPassword("");
+      }
+    } catch (error: any) {
+      toast({ title: "Σφάλμα", description: error.message, variant: "destructive" });
+    } finally {
+      setSavingAccount(false);
+    }
   };
 
   const handleSaveProfile = async () => {
@@ -581,11 +623,71 @@ const Profile = () => {
               </div>
             </div>
 
+            {/* Account Settings */}
+            <div className="border-t border-border pt-4">
+              <p className="text-xs font-display font-bold text-muted-foreground uppercase tracking-wider mb-3">Ρυθμίσεις Λογαριασμού</p>
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block flex items-center gap-1.5">
+                    <Mail className="h-3.5 w-3.5" /> Email
+                  </label>
+                  <Input
+                    type="email"
+                    value={newEmail}
+                    onChange={(e) => setNewEmail(e.target.value)}
+                    className="bg-secondary/50"
+                    placeholder="Το email σου..."
+                  />
+                  {newEmail !== user?.email && newEmail.trim() && (
+                    <p className="text-xs text-accent mt-1">Θα σταλεί email επιβεβαίωσης στη νέα διεύθυνση</p>
+                  )}
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block flex items-center gap-1.5">
+                    <Lock className="h-3.5 w-3.5" /> Νέος Κωδικός
+                  </label>
+                  <Input
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="bg-secondary/50"
+                    placeholder="Άφησε κενό αν δεν θέλεις αλλαγή..."
+                  />
+                </div>
+                {newPassword && (
+                  <div>
+                    <label className="text-xs text-muted-foreground mb-1 block">Επιβεβαίωση Κωδικού</label>
+                    <Input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="bg-secondary/50"
+                      placeholder="Επανάληψη κωδικού..."
+                    />
+                    {confirmPassword && newPassword !== confirmPassword && (
+                      <p className="text-xs text-destructive mt-1">Οι κωδικοί δεν ταιριάζουν</p>
+                    )}
+                  </div>
+                )}
+                {(newEmail !== user?.email || newPassword) && (
+                  <Button
+                    onClick={handleUpdateAccount}
+                    disabled={savingAccount}
+                    variant="outline"
+                    className="w-full border-primary/30 text-primary hover:bg-primary/10 gap-2"
+                  >
+                    <Lock className="h-4 w-4" />
+                    {savingAccount ? "Ενημέρωση..." : "Ενημέρωση Λογαριασμού"}
+                  </Button>
+                )}
+              </div>
+            </div>
+
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => setShowEditDialog(false)}>Ακύρωση</Button>
               <Button onClick={handleSaveProfile} disabled={saving} className="bg-gradient-greek text-white hover:brightness-110 gap-2">
                 <Save className="h-4 w-4" />
-                {saving ? "Αποθήκευση..." : "Αποθήκευση"}
+                {saving ? "Αποθήκευση..." : "Αποθήκευση Προφίλ"}
               </Button>
             </div>
           </div>
