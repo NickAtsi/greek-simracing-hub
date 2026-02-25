@@ -161,6 +161,28 @@ const ReactiveBackground = () => {
         ctx.globalAlpha = 1;
       });
 
+      // ── Constellation lines between nearby particles ───────────────────
+      const LINE_DIST = 80;
+      const LINE_DIST_SQ = LINE_DIST * LINE_DIST;
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const a = particles[i];
+          const b = particles[j];
+          const ddx = a.x - b.x;
+          const ddy = a.y - b.y;
+          const distSq = ddx * ddx + ddy * ddy;
+          if (distSq < LINE_DIST_SQ) {
+            const alpha = (1 - Math.sqrt(distSq) / LINE_DIST) * 0.15;
+            ctx.beginPath();
+            ctx.moveTo(a.x, a.y);
+            ctx.lineTo(b.x, b.y);
+            ctx.strokeStyle = `hsla(214,85%,60%,${alpha})`;
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
+          }
+        }
+      }
+
       // ── Subtle mouse glow ────────────────────────────────────────────────
       if (mx > 0 && mx < canvas.width) {
         const g = ctx.createRadialGradient(mx, my, 0, mx, my, REPEL_RADIUS * 1.4);

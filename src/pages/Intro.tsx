@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import gsrLogo from "@/assets/gsr-logo.png";
+import ReactiveBackground from "@/components/ReactiveBackground";
 
 // ── Canvas: Neon Racing Lines + Grid Dots ──────────────────────────────────
 const IntroCanvas = () => {
@@ -219,6 +220,8 @@ const Intro = () => {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-[hsl(210,40%,4%)] flex flex-col items-center justify-center">
+      {/* Reactive particle background */}
+      <ReactiveBackground />
       {/* Canvas background */}
       <IntroCanvas />
 
