@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { ChevronRight, Users, Trophy, Gamepad2, Flag, Zap } from "lucide-react";
+import { ChevronRight, Users, Flag, Zap, Mic, MessageSquare } from "lucide-react";
 import { Link } from "react-router-dom";
 import gsrLogo from "@/assets/gsr-logo.png";
 
@@ -68,7 +68,7 @@ const HeroSection = () => {
       >
         <div className="flex items-center gap-2 rounded-xl border border-accent/20 bg-card/60 px-4 py-2.5 backdrop-blur-sm">
           <Zap className="h-3 w-3 text-accent" />
-          <span className="font-display text-[10px] tracking-widest text-accent">2,500+ RACERS</span>
+          <span className="font-display text-[10px] tracking-widest text-accent">1,000+ RACERS</span>
         </div>
       </motion.div>
 
@@ -136,7 +136,7 @@ const HeroSection = () => {
           className="mx-auto mt-8 max-w-lg font-body text-base text-muted-foreground leading-relaxed sm:text-lg"
         >
           Η #1 πλατφόρμα για Έλληνες SimRacers.{" "}
-          <span className="text-foreground/70">Αγώνες, φόρουμ, podcasts και Fantasy League.</span>
+          <span className="text-foreground/70">Forum, Podcasts, Fantasy League και Gaming κοινότητα.</span>
         </motion.p>
 
         {/* CTAs */}
@@ -174,12 +174,12 @@ const HeroSection = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.9, duration: 0.6 }}
-          className="mx-auto mt-20 grid max-w-lg grid-cols-3 gap-3"
+          className="mx-auto mt-20 grid max-w-md grid-cols-3 gap-3"
         >
           {[
-            { icon: Users, value: "2,500+", label: "Μέλη" },
-            { icon: Trophy, value: "150+", label: "Αγώνες" },
-            { icon: Gamepad2, value: "10+", label: "Παιχνίδια" },
+            { icon: Users, value: "1,000+", label: "Μέλη" },
+            { icon: Mic, value: "50+", label: "Επεισόδια Podcast" },
+            { icon: MessageSquare, value: "Active", label: "Forum" },
           ].map((stat) => (
             <div
               key={stat.label}

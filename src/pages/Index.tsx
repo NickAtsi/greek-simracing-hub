@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
+import FeaturesSection from "@/components/FeaturesSection";
 import PodcastsSection from "@/components/PodcastsSection";
 import CommunitySection from "@/components/CommunitySection";
 import Footer from "@/components/Footer";
@@ -12,6 +13,7 @@ const Index = () => {
       <ReactiveBackground />
       <Navbar />
       <HeroSection />
+      <FeaturesSection />
       <PodcastsSection />
       <CommunitySection />
       <Footer />
