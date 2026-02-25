@@ -178,7 +178,7 @@ const HeroSection = () => {
         >
           {[
             { icon: Users, value: "1,000+", label: "Μέλη" },
-            { icon: Mic, value: "50+", label: "Επεισόδια Podcast" },
+            { icon: Mic, value: "10", label: "Επεισόδια Podcast" },
             { icon: MessageSquare, value: "Active", label: "Forum" },
           ].map((stat) => (
             <div
