@@ -539,6 +539,7 @@ export type Database = {
           favorite_sim: string | null
           favorite_track: string | null
           id: string
+          is_approved: boolean
           location: string | null
           nationality: string | null
           setup_type: string | null
@@ -557,6 +558,7 @@ export type Database = {
           favorite_sim?: string | null
           favorite_track?: string | null
           id?: string
+          is_approved?: boolean
           location?: string | null
           nationality?: string | null
           setup_type?: string | null
@@ -575,6 +577,7 @@ export type Database = {
           favorite_sim?: string | null
           favorite_track?: string | null
           id?: string
+          is_approved?: boolean
           location?: string | null
           nationality?: string | null
           setup_type?: string | null

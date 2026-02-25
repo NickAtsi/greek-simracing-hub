@@ -277,6 +277,12 @@ const Admin = () => {
     fetchUsers();
   };
 
+  const toggleApproval = async (userId: string, currentlyApproved: boolean) => {
+    await supabase.from("profiles").update({ is_approved: !currentlyApproved } as any).eq("user_id", userId);
+    toast({ title: currentlyApproved ? "Χρήστης απορρίφθηκε" : "Χρήστης εγκρίθηκε! ✅" });
+    fetchUsers();
+  };
+
   const openEditProfile = (profile: any) => {
     setEditProfile(profile);
     setProfileForm({
@@ -396,6 +402,7 @@ const Admin = () => {
                     <tr className="bg-secondary/30 border-b border-border">
                       <th className="text-left px-4 py-3 font-display text-xs text-muted-foreground uppercase">Χρήστης</th>
                       <th className="text-left px-4 py-3 font-display text-xs text-muted-foreground uppercase">Username</th>
+                      <th className="text-left px-4 py-3 font-display text-xs text-muted-foreground uppercase">Κατάσταση</th>
                       <th className="text-left px-4 py-3 font-display text-xs text-muted-foreground uppercase">Εγγραφή</th>
                       <th className="text-left px-4 py-3 font-display text-xs text-muted-foreground uppercase">Sim</th>
                       <th className="text-right px-4 py-3 font-display text-xs text-muted-foreground uppercase">Ενέργειες</th>
@@ -413,10 +420,25 @@ const Admin = () => {
                           </div>
                         </td>
                         <td className="px-4 py-3 text-muted-foreground">@{u.username || "—"}</td>
+                        <td className="px-4 py-3">
+                          {u.is_approved ? (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-green-500/15 px-2.5 py-0.5 text-[10px] font-bold text-green-500 uppercase tracking-wider">
+                              <Check className="h-3 w-3" /> Εγκρίθηκε
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-0.5 text-[10px] font-bold text-amber-500 uppercase tracking-wider">
+                              <Clock className="h-3 w-3" /> Αναμονή
+                            </span>
+                          )}
+                        </td>
                         <td className="px-4 py-3 text-muted-foreground text-xs">{new Date(u.created_at).toLocaleDateString("el-GR")}</td>
                         <td className="px-4 py-3 text-muted-foreground text-xs">{u.favorite_sim || "—"}</td>
                         <td className="px-4 py-3">
                           <div className="flex items-center justify-end gap-1">
+                            <Button size="sm" variant="outline" onClick={() => toggleApproval(u.user_id, u.is_approved)}
+                              className={`h-7 px-2 text-xs gap-1 ${u.is_approved ? "text-amber-500 border-amber-500/30" : "text-green-500 border-green-500/30"}`}>
+                              {u.is_approved ? <><X className="h-3 w-3" />Απόρριψη</> : <><Check className="h-3 w-3" />Έγκριση</>}
+                            </Button>
                             <Button size="sm" variant="outline" onClick={() => openEditProfile(u)} className="h-7 px-2 text-xs gap-1"><Edit className="h-3 w-3" /></Button>
                             <Button size="sm" variant="outline" onClick={() => handleGrantAdmin(u.user_id)} className="h-7 px-2 text-xs text-primary border-primary/30 gap-1">
                               <Shield className="h-3 w-3" />Admin
