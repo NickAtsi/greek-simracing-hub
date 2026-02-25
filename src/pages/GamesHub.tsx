@@ -104,10 +104,19 @@ const ReactionTimeGame = () => {
     if (!userBest || time < userBest) setUserBest(time);
   }, [user, userBest, fetchLeaderboard]);
 
+  const audioCtxRef = useRef<AudioContext | null>(null);
+
+  const getAudioCtx = useCallback(() => {
+    if (!audioCtxRef.current || audioCtxRef.current.state === "closed") {
+      audioCtxRef.current = new AudioContext();
+    }
+    return audioCtxRef.current;
+  }, []);
+
   const playBeep = useCallback(() => {
     if (!soundEnabled) return;
     try {
-      const ctx = new AudioContext();
+      const ctx = getAudioCtx();
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain);
@@ -117,12 +126,88 @@ const ReactionTimeGame = () => {
       osc.start();
       osc.stop(ctx.currentTime + 0.1);
     } catch {}
-  }, [soundEnabled]);
+  }, [soundEnabled, getAudioCtx]);
+
+  const engineRevRef = useRef<{ stop: () => void } | null>(null);
+
+  const startEngineRev = useCallback(() => {
+    if (!soundEnabled) return;
+    try {
+      const ctx = getAudioCtx();
+      const now = ctx.currentTime;
+
+      // Base engine oscillator (sawtooth for gritty engine tone)
+      const osc1 = ctx.createOscillator();
+      osc1.type = "sawtooth";
+      osc1.frequency.setValueAtTime(80, now);
+      // Rev up over the light sequence
+      osc1.frequency.linearRampToValueAtTime(220, now + 5);
+
+      // Second harmonic
+      const osc2 = ctx.createOscillator();
+      osc2.type = "sawtooth";
+      osc2.frequency.setValueAtTime(160, now);
+      osc2.frequency.linearRampToValueAtTime(440, now + 5);
+
+      // Noise for texture via high-freq oscillator
+      const osc3 = ctx.createOscillator();
+      osc3.type = "square";
+      osc3.frequency.setValueAtTime(40, now);
+      osc3.frequency.linearRampToValueAtTime(110, now + 5);
+
+      // Gain envelopes
+      const gain1 = ctx.createGain();
+      gain1.gain.setValueAtTime(0.06, now);
+      gain1.gain.linearRampToValueAtTime(0.12, now + 5);
+
+      const gain2 = ctx.createGain();
+      gain2.gain.setValueAtTime(0.03, now);
+      gain2.gain.linearRampToValueAtTime(0.06, now + 5);
+
+      const gain3 = ctx.createGain();
+      gain3.gain.setValueAtTime(0.02, now);
+      gain3.gain.linearRampToValueAtTime(0.04, now + 5);
+
+      // Low-pass filter for warmth
+      const filter = ctx.createBiquadFilter();
+      filter.type = "lowpass";
+      filter.frequency.setValueAtTime(600, now);
+      filter.frequency.linearRampToValueAtTime(1200, now + 5);
+
+      osc1.connect(gain1).connect(filter).connect(ctx.destination);
+      osc2.connect(gain2).connect(filter);
+      osc3.connect(gain3).connect(filter);
+
+      osc1.start(now);
+      osc2.start(now);
+      osc3.start(now);
+
+      engineRevRef.current = {
+        stop: () => {
+          try {
+            const t = ctx.currentTime;
+            gain1.gain.linearRampToValueAtTime(0, t + 0.3);
+            gain2.gain.linearRampToValueAtTime(0, t + 0.3);
+            gain3.gain.linearRampToValueAtTime(0, t + 0.3);
+            osc1.stop(t + 0.4);
+            osc2.stop(t + 0.4);
+            osc3.stop(t + 0.4);
+          } catch {}
+        },
+      };
+    } catch {}
+  }, [soundEnabled, getAudioCtx]);
+
+  const stopEngineRev = useCallback(() => {
+    engineRevRef.current?.stop();
+    engineRevRef.current = null;
+  }, []);
 
   const startGame = useCallback(() => {
     setGameState("countdown");
     setLightsOn(0);
     setReactionTime(null);
+    startEngineRev();
 
     for (let i = 1; i <= F1_LIGHTS_COUNT; i++) {
       setTimeout(() => {
@@ -136,14 +221,16 @@ const ReactionTimeGame = () => {
       setLightsOn(0);
       setGameState("go");
       goTimeRef.current = performance.now();
+      stopEngineRev();
     }, F1_LIGHTS_COUNT * 1000 + randomDelay);
-  }, [playBeep]);
+  }, [playBeep, startEngineRev, stopEngineRev]);
 
   const handleClick = useCallback(() => {
     if (gameState === "idle" || gameState === "result" || gameState === "too-early") {
       startGame();
     } else if (gameState === "countdown") {
       clearTimeout(timeoutRef.current);
+      stopEngineRev();
       setGameState("too-early");
       setLightsOn(0);
     } else if (gameState === "go") {
