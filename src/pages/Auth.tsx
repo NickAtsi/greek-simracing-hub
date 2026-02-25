@@ -459,7 +459,6 @@ const Auth = () => {
       {/* Right side - Animated Racing Background */}
       <RightPanel />
     </div>
-      <Footer />
     </div>
   );
 };
