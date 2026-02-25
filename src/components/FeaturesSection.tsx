@@ -46,7 +46,7 @@ const features = [
   {
     icon: Users,
     title: "Κοινότητα",
-    desc: "1,000+ μέλη στο Discord και στο site – βρες παρέα για αγώνες και συζητήσεις.",
+    desc: "1,000+ μέλη στο Facebook Group – βρες παρέα για αγώνες και συζητήσεις.",
     href: "https://discord.gg/v5RsBTnPpY",
     accent: "text-accent",
     bg: "bg-accent/10",
