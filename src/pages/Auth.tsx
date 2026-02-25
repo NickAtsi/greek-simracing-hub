@@ -13,9 +13,6 @@ import gsrLogo from "@/assets/gsr-logo.png";
 import RacingBackground from "@/components/RacingBackground";
 import Particles from "@/components/Particles";
 
-
-
-
 // Right panel with 3D mouse-reactive text
 const RightPanel = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -48,9 +45,18 @@ const RightPanel = () => {
       <RacingBackground />
       <div className="absolute inset-0 carbon-texture opacity-30" />
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-1/2 -right-1/4 h-[200%] w-1/3 rotate-12 opacity-[0.03]" style={{ background: "var(--gradient-racing)" }} />
-        <div className="absolute -top-1/2 right-1/4 h-[200%] w-px rotate-12 opacity-10" style={{ background: "hsl(var(--primary))" }} />
-        <div className="absolute -top-1/2 right-[35%] h-[200%] w-px rotate-12 opacity-[0.06]" style={{ background: "hsl(var(--accent))" }} />
+        <div
+          className="absolute -top-1/2 -right-1/4 h-[200%] w-1/3 rotate-12 opacity-[0.03]"
+          style={{ background: "var(--gradient-racing)" }}
+        />
+        <div
+          className="absolute -top-1/2 right-1/4 h-[200%] w-px rotate-12 opacity-10"
+          style={{ background: "hsl(var(--primary))" }}
+        />
+        <div
+          className="absolute -top-1/2 right-[35%] h-[200%] w-px rotate-12 opacity-[0.06]"
+          style={{ background: "hsl(var(--accent))" }}
+        />
       </div>
 
       <motion.div
@@ -61,10 +67,7 @@ const RightPanel = () => {
           transformStyle: "preserve-3d",
         }}
       >
-        <motion.div
-          className="relative mb-8"
-          style={{ translateZ: 60 }}
-        >
+        <motion.div className="relative mb-8" style={{ translateZ: 60 }}>
           <div className="absolute inset-0 scale-150 rounded-full bg-primary/10 blur-3xl" />
           <img src={gsrLogo} alt="GSR" className="relative h-28 w-28 object-contain drop-shadow-2xl" />
         </motion.div>
@@ -86,14 +89,11 @@ const RightPanel = () => {
             Αδρεναλίνη
           </span>
         </motion.h2>
-        <motion.p
-          className="mt-4 max-w-xs text-sm text-muted-foreground leading-relaxed"
-          style={{ translateZ: 20 }}
-        >
+        <motion.p className="mt-4 max-w-xs text-sm text-muted-foreground leading-relaxed" style={{ translateZ: 20 }}>
           Η μεγαλύτερη ελληνική κοινότητα sim racing σε περιμένει
         </motion.p>
         <motion.div className="mt-10 flex gap-8" style={{ translateZ: 30 }}>
-          {[{ value: "500+", label: "Μέλη" }, { value: "50+", label: "Αγώνες" }, { value: "10+", label: "Πρωταθλήματα" }].map((stat) => (
+          {[{ value: "1000+", label: "Μέλη" }].map((stat) => (
             <div key={stat.label} className="text-center">
               <p
                 className="font-display text-2xl font-bold text-gradient-racing"
@@ -113,9 +113,16 @@ const RightPanel = () => {
 };
 
 const SIM_OPTIONS = [
-  "Assetto Corsa", "Assetto Corsa Competizione", "iRacing",
-  "rFactor 2", "Gran Turismo", "Forza Motorsport", "F1 Series",
-  "Automobilista 2", "Le Mans Ultimate", "Άλλο",
+  "Assetto Corsa",
+  "Assetto Corsa Competizione",
+  "iRacing",
+  "rFactor 2",
+  "Gran Turismo",
+  "Forza Motorsport",
+  "F1 Series",
+  "Automobilista 2",
+  "Le Mans Ultimate",
+  "Άλλο",
 ];
 
 const SETUP_OPTIONS = [
@@ -184,17 +191,23 @@ const Auth = () => {
 
         // Update profile with extra fields
         if (data.user) {
-          await supabase.from("profiles").update({
-            favorite_sim: favoriteSim || null,
-            setup_type: setupType || null,
-            favorite_track: favoriteTrack || null,
-            display_name: displayName || null,
-          }).eq("user_id", data.user.id);
+          await supabase
+            .from("profiles")
+            .update({
+              favorite_sim: favoriteSim || null,
+              setup_type: setupType || null,
+              favorite_track: favoriteTrack || null,
+              display_name: displayName || null,
+            })
+            .eq("user_id", data.user.id);
         }
 
         // Sign out immediately - admin needs to approve first
         await supabase.auth.signOut();
-        toast({ title: "Εγγραφή επιτυχής! 🏁", description: "Ο λογαριασμός σου αναμένει έγκριση από τους διαχειριστές." });
+        toast({
+          title: "Εγγραφή επιτυχής! 🏁",
+          description: "Ο λογαριασμός σου αναμένει έγκριση από τους διαχειριστές.",
+        });
         resetForm();
       }
     } catch (error: any) {
@@ -213,22 +226,45 @@ const Auth = () => {
         <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Ονοματεπώνυμο</label>
         <div className="relative">
           <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input placeholder="Το όνομά σου" value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="h-11 pl-10 bg-secondary/50 border-border focus:border-primary" />
+          <Input
+            placeholder="Το όνομά σου"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            className="h-11 pl-10 bg-secondary/50 border-border focus:border-primary"
+          />
         </div>
       </div>
       <div>
         <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Email</label>
         <div className="relative">
           <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input type="email" placeholder="Το email σου" value={email} onChange={(e) => setEmail(e.target.value)} required className="h-11 pl-10 bg-secondary/50 border-border focus:border-primary" />
+          <Input
+            type="email"
+            placeholder="Το email σου"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="h-11 pl-10 bg-secondary/50 border-border focus:border-primary"
+          />
         </div>
       </div>
       <div>
         <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Κωδικός</label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input type={showPassword ? "text" : "password"} placeholder="Τουλάχιστον 6 χαρακτήρες" value={password} onChange={(e) => setPassword(e.target.value)} required className="h-11 pl-10 pr-10 bg-secondary/50 border-border focus:border-primary" />
-          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+          <Input
+            type={showPassword ? "text" : "password"}
+            placeholder="Τουλάχιστον 6 χαρακτήρες"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="h-11 pl-10 pr-10 bg-secondary/50 border-border focus:border-primary"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          >
             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
         </div>
@@ -290,7 +326,9 @@ const Auth = () => {
               }`}
             >
               <span className="text-xl">{opt.icon}</span>
-              <span className={`text-xs font-medium ${setupType === opt.value ? "text-primary" : "text-muted-foreground"}`}>
+              <span
+                className={`text-xs font-medium ${setupType === opt.value ? "text-primary" : "text-muted-foreground"}`}
+              >
                 {opt.label}
               </span>
             </button>
@@ -336,130 +374,207 @@ const Auth = () => {
     <div className="flex min-h-screen flex-col bg-background">
       <Navbar />
       <div className="flex flex-1">
-      {/* Left side - Form */}
-      <div className="relative flex w-full flex-col items-center justify-center px-6 pt-20 lg:w-1/2">
-        <Particles />
+        {/* Left side - Form */}
+        <div className="relative flex w-full flex-col items-center justify-center px-6 pt-20 lg:w-1/2">
+          <Particles />
 
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="relative z-10 w-full max-w-md"
-        >
-          {/* Logo */}
-          <div className="mb-10 flex items-center gap-3">
-            <img src={gsrLogo} alt="GSR" className="h-10 w-10 object-contain" />
-            <span className="font-display text-lg font-bold tracking-wider text-foreground">
-              Greek<span className="text-primary">SimRacers</span>
-            </span>
-          </div>
-
-          {/* Title */}
-          <h1 className="mb-1 font-display text-3xl font-bold text-gradient-racing">
-            {forgotPassword ? "Επαναφορά" : isLogin ? "Σύνδεση" : signupStep === 1 ? "Εγγραφή" : "Ο Οδηγός σου"}
-          </h1>
-          <p className="mb-8 text-sm text-muted-foreground">
-            {forgotPassword
-              ? "Συμπλήρωσε το email σου για επαναφορά κωδικού"
-              : isLogin
-              ? "Καλώς ήρθες πίσω στην πίστα"
-              : signupStep === 1
-              ? "Γίνε μέλος της κοινότητας"
-              : "Πες μας λίγα για τον αγωνιστικό σου εαυτό 🏎️"}
-          </p>
-
-          {/* Step indicators for signup */}
-          {!isLogin && !forgotPassword && (
-            <div className="mb-6 flex items-center gap-2">
-              <div className={`h-1 flex-1 rounded-full transition-all ${signupStep >= 1 ? "bg-gradient-racing" : "bg-border"}`} />
-              <div className={`h-1 flex-1 rounded-full transition-all ${signupStep >= 2 ? "bg-gradient-racing" : "bg-border"}`} />
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="relative z-10 w-full max-w-md"
+          >
+            {/* Logo */}
+            <div className="mb-10 flex items-center gap-3">
+              <img src={gsrLogo} alt="GSR" className="h-10 w-10 object-contain" />
+              <span className="font-display text-lg font-bold tracking-wider text-foreground">
+                Greek<span className="text-primary">SimRacers</span>
+              </span>
             </div>
-          )}
 
-          {/* Form */}
-          <form onSubmit={handleEmailAuth} className="flex flex-col gap-4">
-            <AnimatePresence mode="wait">
-              {forgotPassword ? (
-                <motion.div key="forgot" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col gap-4">
-                  <div>
-                    <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Email</label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input type="email" placeholder="Το email σου" value={email} onChange={(e) => setEmail(e.target.value)} required className="h-11 pl-10 bg-secondary/50 border-border focus:border-primary" />
+            {/* Title */}
+            <h1 className="mb-1 font-display text-3xl font-bold text-gradient-racing">
+              {forgotPassword ? "Επαναφορά" : isLogin ? "Σύνδεση" : signupStep === 1 ? "Εγγραφή" : "Ο Οδηγός σου"}
+            </h1>
+            <p className="mb-8 text-sm text-muted-foreground">
+              {forgotPassword
+                ? "Συμπλήρωσε το email σου για επαναφορά κωδικού"
+                : isLogin
+                  ? "Καλώς ήρθες πίσω στην πίστα"
+                  : signupStep === 1
+                    ? "Γίνε μέλος της κοινότητας"
+                    : "Πες μας λίγα για τον αγωνιστικό σου εαυτό 🏎️"}
+            </p>
+
+            {/* Step indicators for signup */}
+            {!isLogin && !forgotPassword && (
+              <div className="mb-6 flex items-center gap-2">
+                <div
+                  className={`h-1 flex-1 rounded-full transition-all ${signupStep >= 1 ? "bg-gradient-racing" : "bg-border"}`}
+                />
+                <div
+                  className={`h-1 flex-1 rounded-full transition-all ${signupStep >= 2 ? "bg-gradient-racing" : "bg-border"}`}
+                />
+              </div>
+            )}
+
+            {/* Form */}
+            <form onSubmit={handleEmailAuth} className="flex flex-col gap-4">
+              <AnimatePresence mode="wait">
+                {forgotPassword ? (
+                  <motion.div
+                    key="forgot"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="flex flex-col gap-4"
+                  >
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Email</label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          type="email"
+                          placeholder="Το email σου"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                          className="h-11 pl-10 bg-secondary/50 border-border focus:border-primary"
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <Button type="submit" disabled={loading} className="h-11 bg-gradient-racing font-display text-sm font-semibold tracking-wider text-primary-foreground transition-all hover:shadow-racing hover:brightness-110">
-                    {loading ? "Περίμενε..." : "Αποστολή Link"}
-                  </Button>
-                </motion.div>
-              ) : isLogin ? (
-                <motion.div key="login" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col gap-4">
-                  <div>
-                    <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Email</label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input type="email" placeholder="Το email σου" value={email} onChange={(e) => setEmail(e.target.value)} required className="h-11 pl-10 bg-secondary/50 border-border focus:border-primary" />
+                    <Button
+                      type="submit"
+                      disabled={loading}
+                      className="h-11 bg-gradient-racing font-display text-sm font-semibold tracking-wider text-primary-foreground transition-all hover:shadow-racing hover:brightness-110"
+                    >
+                      {loading ? "Περίμενε..." : "Αποστολή Link"}
+                    </Button>
+                  </motion.div>
+                ) : isLogin ? (
+                  <motion.div
+                    key="login"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="flex flex-col gap-4"
+                  >
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Email</label>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          type="email"
+                          placeholder="Το email σου"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          required
+                          className="h-11 pl-10 bg-secondary/50 border-border focus:border-primary"
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <div>
-                    <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Κωδικός</label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                      <Input type={showPassword ? "text" : "password"} placeholder="Ο κωδικός σου" value={password} onChange={(e) => setPassword(e.target.value)} required className="h-11 pl-10 pr-10 bg-secondary/50 border-border focus:border-primary" />
-                      <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    <div>
+                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">Κωδικός</label>
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Ο κωδικός σου"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                          className="h-11 pl-10 pr-10 bg-secondary/50 border-border focus:border-primary"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-end">
+                      <button
+                        type="button"
+                        onClick={() => setForgotPassword(true)}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Ξέχασες τον κωδικό;
                       </button>
                     </div>
-                  </div>
-                  <div className="flex items-center justify-end">
-                    <button type="button" onClick={() => setForgotPassword(true)} className="text-xs text-primary hover:underline">
-                      Ξέχασες τον κωδικό;
-                    </button>
-                  </div>
-                  <Button type="submit" disabled={loading} className="h-11 bg-gradient-racing font-display text-sm font-semibold tracking-wider text-primary-foreground transition-all hover:shadow-racing hover:brightness-110">
-                    {loading ? "Περίμενε..." : "Σύνδεση"}
-                  </Button>
-                </motion.div>
-              ) : signupStep === 1 ? (
-                <motion.div key="signup1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col gap-4">
-                  {renderSignupStep1()}
-                </motion.div>
+                    <Button
+                      type="submit"
+                      disabled={loading}
+                      className="h-11 bg-gradient-racing font-display text-sm font-semibold tracking-wider text-primary-foreground transition-all hover:shadow-racing hover:brightness-110"
+                    >
+                      {loading ? "Περίμενε..." : "Σύνδεση"}
+                    </Button>
+                  </motion.div>
+                ) : signupStep === 1 ? (
+                  <motion.div
+                    key="signup1"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="flex flex-col gap-4"
+                  >
+                    {renderSignupStep1()}
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="signup2"
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    className="flex flex-col gap-4"
+                  >
+                    {renderSignupStep2()}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </form>
+
+            {/* Toggle */}
+            <p className="mt-8 text-center text-sm text-muted-foreground">
+              {forgotPassword ? (
+                <button onClick={() => setForgotPassword(false)} className="text-primary hover:underline">
+                  Πίσω στη σύνδεση
+                </button>
+              ) : isLogin ? (
+                <>
+                  Δεν έχεις λογαριασμό;{" "}
+                  <button
+                    onClick={() => {
+                      setIsLogin(false);
+                      resetForm();
+                    }}
+                    className="text-primary font-medium hover:underline"
+                  >
+                    Εγγραφή
+                  </button>
+                </>
               ) : (
-                <motion.div key="signup2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="flex flex-col gap-4">
-                  {renderSignupStep2()}
-                </motion.div>
+                <>
+                  Έχεις ήδη λογαριασμό;{" "}
+                  <button
+                    onClick={() => {
+                      setIsLogin(true);
+                      resetForm();
+                    }}
+                    className="text-primary font-medium hover:underline"
+                  >
+                    Σύνδεση
+                  </button>
+                </>
               )}
-            </AnimatePresence>
-          </form>
+            </p>
+          </motion.div>
+        </div>
 
-          {/* Toggle */}
-          <p className="mt-8 text-center text-sm text-muted-foreground">
-            {forgotPassword ? (
-              <button onClick={() => setForgotPassword(false)} className="text-primary hover:underline">
-                Πίσω στη σύνδεση
-              </button>
-            ) : isLogin ? (
-              <>
-                Δεν έχεις λογαριασμό;{" "}
-                <button onClick={() => { setIsLogin(false); resetForm(); }} className="text-primary font-medium hover:underline">
-                  Εγγραφή
-                </button>
-              </>
-            ) : (
-              <>
-                Έχεις ήδη λογαριασμό;{" "}
-                <button onClick={() => { setIsLogin(true); resetForm(); }} className="text-primary font-medium hover:underline">
-                  Σύνδεση
-                </button>
-              </>
-            )}
-          </p>
-        </motion.div>
+        {/* Right side - Animated Racing Background */}
+        <RightPanel />
       </div>
-
-      {/* Right side - Animated Racing Background */}
-      <RightPanel />
-    </div>
     </div>
   );
 };
