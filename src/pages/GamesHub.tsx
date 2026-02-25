@@ -1,15 +1,27 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion } from "framer-motion";
-import { Timer, Trophy, Volume2, VolumeX, Zap } from "lucide-react";
+import { Timer, Trophy, Volume2, VolumeX, Zap, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 // FantasyLeague coming soon
 
 type GameState = "idle" | "countdown" | "waiting" | "go" | "result" | "too-early";
 
 const F1_LIGHTS_COUNT = 5;
+
+interface LeaderboardEntry {
+  id: string;
+  user_id: string;
+  reaction_time: number;
+  created_at: string;
+  display_name?: string;
+  avatar_url?: string;
+}
 
 const ReactionTimeGame = () => {
   const [gameState, setGameState] = useState<GameState>("idle");
@@ -17,8 +29,80 @@ const ReactionTimeGame = () => {
   const [reactionTime, setReactionTime] = useState<number | null>(null);
   const [bestTime, setBestTime] = useState<number | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(false);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [userBest, setUserBest] = useState<number | null>(null);
   const goTimeRef = useRef<number>(0);
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  // Fetch leaderboard (top 10 best unique per user)
+  const fetchLeaderboard = useCallback(async () => {
+    const { data } = await supabase
+      .from("reaction_scores")
+      .select("id, user_id, reaction_time, created_at")
+      .order("reaction_time", { ascending: true })
+      .limit(50);
+
+    if (data) {
+      // Get unique best per user
+      const bestPerUser = new Map<string, typeof data[0]>();
+      data.forEach((entry) => {
+        if (!bestPerUser.has(entry.user_id) || entry.reaction_time < bestPerUser.get(entry.user_id)!.reaction_time) {
+          bestPerUser.set(entry.user_id, entry);
+        }
+      });
+      const top10 = Array.from(bestPerUser.values()).sort((a, b) => a.reaction_time - b.reaction_time).slice(0, 10);
+
+      // Fetch profiles
+      const userIds = top10.map((e) => e.user_id);
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, display_name, avatar_url")
+        .in("user_id", userIds);
+
+      const profileMap = new Map(profiles?.map((p) => [p.user_id, p]) || []);
+      setLeaderboard(
+        top10.map((e) => ({
+          ...e,
+          display_name: profileMap.get(e.user_id)?.display_name || "Anonymous",
+          avatar_url: profileMap.get(e.user_id)?.avatar_url || undefined,
+        }))
+      );
+    }
+  }, []);
+
+  // Fetch user's personal best
+  const fetchUserBest = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("reaction_scores")
+      .select("reaction_time")
+      .eq("user_id", user.id)
+      .order("reaction_time", { ascending: true })
+      .limit(1);
+    if (data && data.length > 0) {
+      setUserBest(data[0].reaction_time);
+      setBestTime(data[0].reaction_time);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    fetchLeaderboard();
+    fetchUserBest();
+  }, [fetchLeaderboard, fetchUserBest]);
+
+  // Save score to DB
+  const saveScore = useCallback(async (time: number) => {
+    if (!user) return;
+    await supabase.from("reaction_scores").insert({
+      user_id: user.id,
+      reaction_time: time,
+    });
+    // Refresh leaderboard & personal best
+    fetchLeaderboard();
+    if (!userBest || time < userBest) setUserBest(time);
+  }, [user, userBest, fetchLeaderboard]);
 
   const playBeep = useCallback(() => {
     if (!soundEnabled) return;
@@ -40,7 +124,6 @@ const ReactionTimeGame = () => {
     setLightsOn(0);
     setReactionTime(null);
 
-    // Light up one by one
     for (let i = 1; i <= F1_LIGHTS_COUNT; i++) {
       setTimeout(() => {
         setLightsOn(i);
@@ -48,7 +131,6 @@ const ReactionTimeGame = () => {
       }, i * 1000);
     }
 
-    // After all lights on, wait random 1-4s then turn off
     const randomDelay = 1000 + Math.random() * 3000;
     timeoutRef.current = setTimeout(() => {
       setLightsOn(0);
@@ -61,7 +143,6 @@ const ReactionTimeGame = () => {
     if (gameState === "idle" || gameState === "result" || gameState === "too-early") {
       startGame();
     } else if (gameState === "countdown") {
-      // Clicked too early
       clearTimeout(timeoutRef.current);
       setGameState("too-early");
       setLightsOn(0);
@@ -70,8 +151,9 @@ const ReactionTimeGame = () => {
       setReactionTime(time);
       if (!bestTime || time < bestTime) setBestTime(time);
       setGameState("result");
+      saveScore(time);
     }
-  }, [gameState, startGame, bestTime]);
+  }, [gameState, startGame, bestTime, saveScore]);
 
   useEffect(() => {
     return () => clearTimeout(timeoutRef.current);
@@ -98,7 +180,6 @@ const ReactionTimeGame = () => {
         </div>
 
         <div className="flex flex-col items-center py-8">
-          {/* Instruction text */}
           <p className="text-sm text-muted-foreground mb-8">
             {gameState === "idle" && "Πάτα START για να ξεκινήσει η F1 start sequence"}
             {gameState === "countdown" && "Περίμενε τα φώτα να σβήσουν..."}
@@ -107,7 +188,6 @@ const ReactionTimeGame = () => {
             {gameState === "result" && "Πάτα για να ξαναδοκιμάσεις"}
           </p>
 
-          {/* F1 Lights - 2 rows of 5 */}
           <div className="flex flex-col gap-3 mb-10">
             {[0, 1].map((row) => (
               <div key={row} className="flex gap-3">
@@ -125,7 +205,6 @@ const ReactionTimeGame = () => {
             ))}
           </div>
 
-          {/* Result display */}
           {gameState === "result" && reactionTime !== null && (
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
@@ -138,21 +217,19 @@ const ReactionTimeGame = () => {
               <p className="mt-2 text-sm text-muted-foreground">
                 {reactionTime < 200 ? "🏆 Εξαιρετικό!" : reactionTime < 250 ? "🔥 Πολύ καλό!" : reactionTime < 350 ? "👍 Καλό!" : "Προσπάθησε ξανά!"}
               </p>
+              {!user && (
+                <p className="mt-2 text-xs text-primary/70">Συνδέσου για να αποθηκευτεί το σκορ σου!</p>
+              )}
             </motion.div>
           )}
 
           {gameState === "too-early" && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="mb-8 text-center"
-            >
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-8 text-center">
               <p className="font-display text-3xl font-bold text-primary">False Start! 🚫</p>
               <p className="mt-2 text-sm text-muted-foreground">Πρέπει να περιμένεις να σβήσουν τα φώτα</p>
             </motion.div>
           )}
 
-          {/* Start / Click button */}
           <Button
             onClick={handleClick}
             className={`h-16 w-56 font-display text-lg font-bold tracking-wider transition-all ${
@@ -173,24 +250,62 @@ const ReactionTimeGame = () => {
       </div>
 
       {/* Leaderboard sidebar */}
-      <div className="w-full lg:w-72 rounded-xl border border-border bg-card p-6">
+      <div className="w-full lg:w-80 rounded-xl border border-border bg-card p-6">
         <div className="flex items-center gap-2 mb-4">
           <Trophy className="h-5 w-5 text-accent" />
-          <h3 className="font-display text-base font-bold text-foreground">Top Reaction Times</h3>
+          <h3 className="font-display text-base font-bold text-foreground">Leaderboard</h3>
         </div>
 
-        {bestTime ? (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between rounded-lg bg-secondary/50 p-3">
-              <span className="text-sm text-foreground">Το καλύτερό σου</span>
-              <span className={`font-display font-bold ${getTimeColor(bestTime)}`}>{bestTime}ms</span>
-            </div>
-            <p className="text-xs text-muted-foreground text-center mt-4">
-              Σύνδεσε τον λογαριασμό σου για να αποθηκεύσεις τα σκορ σου!
-            </p>
+        {/* Personal best */}
+        {user && userBest && (
+          <div className="flex items-center justify-between rounded-lg bg-primary/10 border border-primary/20 p-3 mb-4">
+            <span className="text-sm text-foreground font-medium">Το ρεκόρ σου</span>
+            <span className={`font-display font-bold ${getTimeColor(userBest)}`}>{userBest}ms</span>
+          </div>
+        )}
+
+        {!user && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="w-full mb-4 border-primary/30 text-primary hover:bg-primary/10"
+            onClick={() => navigate("/auth")}
+          >
+            <LogIn className="mr-2 h-4 w-4" /> Σύνδεση για σκορ
+          </Button>
+        )}
+
+        {/* Top 10 */}
+        {leaderboard.length > 0 ? (
+          <div className="space-y-2">
+            {leaderboard.map((entry, idx) => (
+              <div
+                key={entry.id}
+                className={`flex items-center gap-3 rounded-lg p-2.5 transition-colors ${
+                  entry.user_id === user?.id ? "bg-primary/10 border border-primary/20" : "bg-secondary/30"
+                }`}
+              >
+                <span className={`font-display text-sm font-bold w-6 text-center ${
+                  idx === 0 ? "text-yellow-400" : idx === 1 ? "text-gray-300" : idx === 2 ? "text-amber-600" : "text-muted-foreground"
+                }`}>
+                  {idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `#${idx + 1}`}
+                </span>
+                {entry.avatar_url ? (
+                  <img src={entry.avatar_url} alt="" className="h-7 w-7 rounded-full object-cover" />
+                ) : (
+                  <div className="h-7 w-7 rounded-full bg-primary/20 flex items-center justify-center text-xs font-bold text-primary">
+                    {(entry.display_name || "?")[0]}
+                  </div>
+                )}
+                <span className="flex-1 text-sm text-foreground truncate">{entry.display_name}</span>
+                <span className={`font-display text-sm font-bold ${getTimeColor(entry.reaction_time)}`}>
+                  {entry.reaction_time}ms
+                </span>
+              </div>
+            ))}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">No scores yet. Be the first!</p>
+          <p className="text-sm text-muted-foreground text-center py-4">Κανένα σκορ ακόμα. Γίνε ο πρώτος!</p>
         )}
       </div>
     </div>

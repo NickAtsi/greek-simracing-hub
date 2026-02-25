@@ -586,6 +586,27 @@ export type Database = {
         }
         Relationships: []
       }
+      reaction_scores: {
+        Row: {
+          created_at: string
+          id: string
+          reaction_time: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          reaction_time: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          reaction_time?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           key: string
