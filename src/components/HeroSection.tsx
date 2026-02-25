@@ -155,12 +155,12 @@ const HeroSection = () => {
             ΓΙΝΕ ΜΕΛΟΣ
             <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
-          <a
-            href="#live-races"
+          <Link
+            to="/forum"
             className="flex items-center gap-2 rounded-xl border border-border/60 bg-card/50 px-8 py-4 font-display text-sm font-semibold tracking-wider text-secondary-foreground backdrop-blur-sm transition-all hover:border-primary/40 hover:bg-card/80 hover:text-primary"
           >
-            Live Races
-          </a>
+            Forum
+          </Link>
           <Link
             to="/games-hub"
             className="flex items-center gap-2 rounded-xl border border-border/60 bg-card/50 px-8 py-4 font-display text-sm font-semibold tracking-wider text-secondary-foreground backdrop-blur-sm transition-all hover:border-accent/40 hover:bg-card/80 hover:text-accent"

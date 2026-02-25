@@ -1,7 +1,5 @@
 import Navbar from "@/components/Navbar";
 import HeroSection from "@/components/HeroSection";
-import LiveRacesSection from "@/components/LiveRacesSection";
-import GamesHubSection from "@/components/GamesHubSection";
 import PodcastsSection from "@/components/PodcastsSection";
 import CommunitySection from "@/components/CommunitySection";
 import Footer from "@/components/Footer";
@@ -14,8 +12,6 @@ const Index = () => {
       <ReactiveBackground />
       <Navbar />
       <HeroSection />
-      <LiveRacesSection />
-      <GamesHubSection />
       <PodcastsSection />
       <CommunitySection />
       <Footer />
