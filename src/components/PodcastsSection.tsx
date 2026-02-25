@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Play, Clock, Headphones, ChevronRight, ExternalLink } from "lucide-react";
+import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 const PodcastsSection = () => {
@@ -51,6 +52,9 @@ const PodcastsSection = () => {
             </h2>
             <p className="mt-3 font-body text-muted-foreground">Ακούστε τα τελευταία επεισόδια</p>
           </div>
+          <Link to="/podcasts" className="hidden sm:flex items-center gap-1 text-sm text-primary hover:underline font-medium">
+            Δες όλα <ChevronRight className="h-4 w-4" />
+          </Link>
         </motion.div>
 
         {loading ? (
