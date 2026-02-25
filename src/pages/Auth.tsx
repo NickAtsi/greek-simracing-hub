@@ -172,13 +172,12 @@ const Auth = () => {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
       } else {
-        // Sign up
+        // Sign up - no email confirmation needed, admin will approve
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
             data: { full_name: displayName },
-            emailRedirectTo: window.location.origin,
           },
         });
         if (error) throw error;
@@ -193,7 +192,9 @@ const Auth = () => {
           }).eq("user_id", data.user.id);
         }
 
-        toast({ title: "Επιτυχής εγγραφή! 🏁", description: "Έλεγξε το email σου για επιβεβαίωση." });
+        // Sign out immediately - admin needs to approve first
+        await supabase.auth.signOut();
+        toast({ title: "Εγγραφή επιτυχής! 🏁", description: "Ο λογαριασμός σου αναμένει έγκριση από τους διαχειριστές." });
         resetForm();
       }
     } catch (error: any) {
