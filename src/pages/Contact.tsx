@@ -67,7 +67,7 @@ const Contact = () => {
                   icon: MessageSquare,
                   title: "Discord",
                   desc: "Γίνε μέλος της κοινότητάς μας",
-                  value: "discord.gg/greeksimracers",
+                  value: "discord.gg/v5RsBTnPpY",
                   color: "text-indigo-400",
                   bg: "bg-indigo-400/10",
                 },

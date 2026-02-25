@@ -26,7 +26,7 @@ const statusColors: Record<string, string> = {
 };
 
 const DISCORD_SERVER_ID = "459797812251590677";
-const DISCORD_INVITE = "https://discord.gg/greeksimracers";
+const DISCORD_INVITE = "https://discord.gg/v5RsBTnPpY";
 
 const DiscordWidget = () => {
   const [data, setData] = useState<DiscordData | null>(null);
