@@ -104,4 +104,11 @@ const RichTextEditor = ({ value, onChange, placeholder = "Γράψε εδώ...",
   );
 };
 
+/** Read-only markdown renderer with proper dark theme styling */
+export const MarkdownContent = ({ content }: { content: string }) => (
+  <div data-color-mode="dark" className="markdown-body">
+    <MDEditor.Markdown source={content} style={{ backgroundColor: 'transparent' }} />
+  </div>
+);
+
 export default RichTextEditor;

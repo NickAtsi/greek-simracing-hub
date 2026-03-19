@@ -29,6 +29,11 @@ const Profile = () => {
   const [pendingRequests, setPendingRequests] = useState<any[]>([]);
   const [followingCount, setFollowingCount] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showFollowersDialog, setShowFollowersDialog] = useState(false);
+  const [showFollowingDialog, setShowFollowingDialog] = useState(false);
+  const [followersList, setFollowersList] = useState<any[]>([]);
+  const [followingList, setFollowingList] = useState<any[]>([]);
+  const [loadingFollowList, setLoadingFollowList] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editForm, setEditForm] = useState({ display_name: "", username: "", favorite_sim: "", favorite_track: "", setup_type: "", bio: "", location: "", discord_username: "", nationality: "", years_simracing: "", website_url: "" });
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -150,6 +155,42 @@ const Profile = () => {
     await supabase.from("follows" as any).delete().eq("id", followId);
     toast({ title: "Αίτημα απορρίφθηκε" });
     fetchPendingRequests();
+  };
+
+  const openFollowersList = async () => {
+    setShowFollowersDialog(true);
+    setLoadingFollowList(true);
+    const { data } = await supabase
+      .from("follows" as any)
+      .select("follower_id")
+      .eq("following_id", profileUserId)
+      .eq("status", "accepted");
+    const ids = ((data as any[]) || []).map((f: any) => f.follower_id);
+    if (ids.length > 0) {
+      const { data: profiles } = await supabase.from("profiles").select("user_id, display_name, username, avatar_url").in("user_id", ids);
+      setFollowersList((profiles as any[]) || []);
+    } else {
+      setFollowersList([]);
+    }
+    setLoadingFollowList(false);
+  };
+
+  const openFollowingList = async () => {
+    setShowFollowingDialog(true);
+    setLoadingFollowList(true);
+    const { data } = await supabase
+      .from("follows" as any)
+      .select("following_id")
+      .eq("follower_id", profileUserId)
+      .eq("status", "accepted");
+    const ids = ((data as any[]) || []).map((f: any) => f.following_id);
+    if (ids.length > 0) {
+      const { data: profiles } = await supabase.from("profiles").select("user_id, display_name, username, avatar_url").in("user_id", ids);
+      setFollowingList((profiles as any[]) || []);
+    } else {
+      setFollowingList([]);
+    }
+    setLoadingFollowList(false);
   };
 
   const handleLike = async () => {
@@ -357,8 +398,12 @@ const Profile = () => {
                   <p className="text-muted-foreground text-sm">@{profile.username}</p>
                 )}
                 <div className="flex items-center gap-4 mt-2">
-                  <span className="text-sm text-muted-foreground"><span className="text-foreground font-bold">{followersCount}</span> Followers</span>
-                  <span className="text-sm text-muted-foreground"><span className="text-foreground font-bold">{followingCount}</span> Following</span>
+                  <button onClick={openFollowersList} className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer">
+                    <span className="text-foreground font-bold">{followersCount}</span> Followers
+                  </button>
+                  <button onClick={openFollowingList} className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer">
+                    <span className="text-foreground font-bold">{followingCount}</span> Following
+                  </button>
                   <span className="flex items-center gap-1 text-sm text-muted-foreground">
                     <Heart className="h-3.5 w-3.5 text-primary" />
                     <span className="text-foreground font-bold">{likesCount}</span>
@@ -765,6 +810,78 @@ const Profile = () => {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Followers Dialog */}
+      <Dialog open={showFollowersDialog} onOpenChange={setShowFollowersDialog}>
+        <DialogContent className="max-w-md bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="font-display text-foreground flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" /> Followers
+            </DialogTitle>
+          </DialogHeader>
+          {loadingFollowList ? (
+            <div className="space-y-3 py-4">
+              {[1, 2, 3].map(i => <div key={i} className="h-12 rounded-lg bg-muted/30 animate-pulse" />)}
+            </div>
+          ) : followersList.length === 0 ? (
+            <p className="text-muted-foreground text-center py-8 text-sm">Δεν υπάρχουν followers ακόμα</p>
+          ) : (
+            <div className="space-y-2 max-h-80 overflow-y-auto">
+              {followersList.map((p: any) => (
+                <Link key={p.user_id} to={`/profile/${p.user_id}`} onClick={() => setShowFollowersDialog(false)}
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/30 transition-colors">
+                  <Avatar className="h-9 w-9">
+                    <AvatarImage src={p.avatar_url || ""} />
+                    <AvatarFallback className="bg-gradient-greek text-white text-xs font-bold">
+                      {(p.display_name || p.username || "?").slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{p.display_name || p.username || "Χρήστης"}</p>
+                    {p.username && <p className="text-xs text-muted-foreground">@{p.username}</p>}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Following Dialog */}
+      <Dialog open={showFollowingDialog} onOpenChange={setShowFollowingDialog}>
+        <DialogContent className="max-w-md bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="font-display text-foreground flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" /> Following
+            </DialogTitle>
+          </DialogHeader>
+          {loadingFollowList ? (
+            <div className="space-y-3 py-4">
+              {[1, 2, 3].map(i => <div key={i} className="h-12 rounded-lg bg-muted/30 animate-pulse" />)}
+            </div>
+          ) : followingList.length === 0 ? (
+            <p className="text-muted-foreground text-center py-8 text-sm">Δεν ακολουθεί κανέναν ακόμα</p>
+          ) : (
+            <div className="space-y-2 max-h-80 overflow-y-auto">
+              {followingList.map((p: any) => (
+                <Link key={p.user_id} to={`/profile/${p.user_id}`} onClick={() => setShowFollowingDialog(false)}
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/30 transition-colors">
+                  <Avatar className="h-9 w-9">
+                    <AvatarImage src={p.avatar_url || ""} />
+                    <AvatarFallback className="bg-gradient-greek text-white text-xs font-bold">
+                      {(p.display_name || p.username || "?").slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{p.display_name || p.username || "Χρήστης"}</p>
+                    {p.username && <p className="text-xs text-muted-foreground">@{p.username}</p>}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 

@@ -2,13 +2,13 @@ import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { MessageSquare, Plus, Pin, Lock, Eye, ChevronRight, Users, TrendingUp, Clock, ArrowLeft, Send, Pencil, Trash2 } from "lucide-react";
-import MDEditor from "@uiw/react-md-editor";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import RichTextEditor from "@/components/RichTextEditor";
+import RichTextEditor, { MarkdownContent } from "@/components/RichTextEditor";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -461,16 +461,14 @@ const ThreadView = ({ threadId }: { threadId: string }) => {
                       </div>
                       {isEditingThis ? (
                         <div className="space-y-2">
-                          <Textarea value={editPostContent} onChange={(e) => setEditPostContent(e.target.value)} rows={4} className="resize-none bg-secondary/50 border-border text-sm" />
+                          <RichTextEditor value={editPostContent} onChange={setEditPostContent} minHeight={150} placeholder="Επεξεργασία..." />
                           <div className="flex gap-2 justify-end">
                             <Button size="sm" variant="outline" onClick={() => setEditingPostId(null)}>Ακύρωση</Button>
                             <Button size="sm" onClick={() => handleEditPost(msg.id)} className="bg-gradient-greek text-white hover:brightness-110">Αποθήκευση</Button>
                           </div>
                         </div>
                       ) : (
-                        <div data-color-mode="dark">
-                          <MDEditor.Markdown source={msg.content} style={{ backgroundColor: 'transparent' }} />
-                        </div>
+                        <MarkdownContent content={msg.content} />
                       )}
                     </div>
                   </div>
@@ -484,14 +482,8 @@ const ThreadView = ({ threadId }: { threadId: string }) => {
             user ? (
               <div className="rounded-xl border border-border bg-card p-5">
                 <h3 className="font-display text-sm font-bold text-foreground mb-3">Απάντηση</h3>
-                <Textarea
-                  placeholder="Γράψε την απάντησή σου..."
-                  value={newPost}
-                  onChange={(e) => setNewPost(e.target.value)}
-                  rows={4}
-                  className="resize-none bg-secondary/50 border-border mb-3"
-                />
-                <div className="flex justify-end">
+                <RichTextEditor value={newPost} onChange={setNewPost} placeholder="Γράψε την απάντησή σου..." minHeight={200} />
+                <div className="flex justify-end mt-3">
                   <Button onClick={handleReply} disabled={submitting} className="gap-2 bg-gradient-greek text-white hover:brightness-110">
                     <Send className="h-4 w-4" /> {submitting ? "Αποστολή..." : "Απάντηση"}
                   </Button>
@@ -519,7 +511,7 @@ const ThreadView = ({ threadId }: { threadId: string }) => {
           </DialogHeader>
           <div className="space-y-4">
             <Input placeholder="Τίτλος thread..." value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="bg-secondary/50 border-border" />
-            <Textarea placeholder="Περιεχόμενο..." value={editContent} onChange={(e) => setEditContent(e.target.value)} rows={6} className="resize-none bg-secondary/50 border-border" />
+            <RichTextEditor value={editContent} onChange={setEditContent} placeholder="Περιεχόμενο..." minHeight={250} />
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setShowEditThread(false)}>Ακύρωση</Button>
               <Button onClick={handleEditThread} className="bg-gradient-greek text-white hover:brightness-110">Αποθήκευση</Button>
