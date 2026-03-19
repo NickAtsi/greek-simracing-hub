@@ -193,6 +193,7 @@ const Profile = () => {
     setLoadingFollowList(false);
   };
 
+  const handleLike = async () => {
     if (!user) { toast({ title: "Συνδέσου πρώτα", variant: "destructive" }); return; }
     if (isOwnProfile) return;
     if (hasLiked) {
