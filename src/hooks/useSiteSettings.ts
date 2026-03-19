@@ -6,7 +6,7 @@ const defaultSettings: Record<string, string> = {
   discord_invite: "https://discord.gg/v5RsBTnPpY",
   contact_email: "info@greeksimracers.gr",
   site_name: "Greek SimRacers",
-  site_tagline: "Η #1 ελληνική πλατφόρμα SimRacing",
+  site_tagline: "Η #1 Ελληνική πλατφόρμα SimRacing",
   footer_text: "Made with ❤️ in Greece",
   youtube_url: "https://www.youtube.com/@GreekSimracers",
   facebook_url: "https://www.facebook.com/groups/greeksimracers",
@@ -20,7 +20,7 @@ let cachedSettings: Record<string, string> | null = null;
 let listeners: Array<(s: Record<string, string>) => void> = [];
 
 const notifyListeners = (s: Record<string, string>) => {
-  listeners.forEach(fn => fn(s));
+  listeners.forEach((fn) => fn(s));
 };
 
 export const useSiteSettings = () => {
@@ -32,13 +32,15 @@ export const useSiteSettings = () => {
     listeners.push(handler);
 
     if (!cachedSettings) {
-      fetchSettings().then(s => {
+      fetchSettings().then((s) => {
         setSettings(s);
         setLoading(false);
       });
     }
 
-    return () => { listeners = listeners.filter(l => l !== handler); };
+    return () => {
+      listeners = listeners.filter((l) => l !== handler);
+    };
   }, []);
 
   return { settings, loading };
