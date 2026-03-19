@@ -21,6 +21,7 @@ import About from "./pages/About";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Podcasts from "./pages/Podcasts";
+import Shop from "./pages/Shop";
 
 const queryClient = new QueryClient();
 
