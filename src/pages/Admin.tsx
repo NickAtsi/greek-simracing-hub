@@ -5,7 +5,7 @@ import {
   Users, FileText, MessageSquare, Headphones, BarChart3, Settings,
   Trash2, Edit, Plus, Shield, Pin, Lock, Eye, TrendingUp, Activity,
   ChevronRight, Check, X, RefreshCw, BookOpen, Ticket, CheckCircle, Clock, AlertCircle, Send,
-  Globe, Link2, Mail, Youtube, Music
+  Globe, Link2, Mail, Youtube, Music, ShoppingCart, Package
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { refreshSettingsCache, defaultSettings } from "@/hooks/useSiteSettings";
 
-type AdminTab = "dashboard" | "users" | "articles" | "forum" | "podcasts" | "categories" | "support" | "settings";
+type AdminTab = "dashboard" | "users" | "articles" | "forum" | "podcasts" | "categories" | "support" | "shop" | "settings";
 
 const StatCard = ({ icon: Icon, label, value, color }: any) => (
   <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
@@ -71,6 +71,12 @@ const Admin = () => {
   const [profileForm, setProfileForm] = useState({ display_name: "", username: "", favorite_sim: "", favorite_track: "", setup_type: "" });
   const [siteSettings, setSiteSettings] = useState<Record<string, string>>({ ...defaultSettings });
   const [confirmAction, setConfirmAction] = useState<{ title: string; description: string; action: () => void } | null>(null);
+  const [shopProducts, setShopProducts] = useState<any[]>([]);
+  const [shopOrders, setShopOrders] = useState<any[]>([]);
+  const [shopTab, setShopTab] = useState<"products" | "orders">("orders");
+  const [showProductForm, setShowProductForm] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [productForm, setProductForm] = useState({ name: "", description: "", price: "", original_price: "", image_url: "", category: "Ρούχα", badge: "", sizes: "", stock: "10", active: true });
 
   useEffect(() => {
     if (!loading && user) checkAdmin();
@@ -86,6 +92,7 @@ const Admin = () => {
       if (tab === "podcasts") fetchPodcasts();
       if (tab === "categories") { fetchCategories(); fetchForumCats(); }
       if (tab === "support") fetchSupportTickets();
+      if (tab === "shop") { fetchShopProducts(); fetchShopOrders(); }
       if (tab === "settings") fetchSiteSettings();
     }
   }, [isAdmin, tab]);
@@ -199,7 +206,71 @@ const Admin = () => {
     setForumCats((data as any[]) || []);
   };
 
-  // CRUD operations
+  const fetchShopProducts = async () => {
+    const { data } = await supabase.from("shop_products" as any).select("*").order("created_at", { ascending: false });
+    setShopProducts((data as any[]) || []);
+  };
+
+  const fetchShopOrders = async () => {
+    const { data } = await supabase.from("shop_orders" as any).select("*, shop_order_items(*), profiles!user_id(display_name, username)").order("created_at", { ascending: false });
+    setShopOrders((data as any[]) || []);
+  };
+
+  const saveProduct = async () => {
+    const payload = {
+      name: productForm.name,
+      description: productForm.description || null,
+      price: parseFloat(productForm.price) || 0,
+      original_price: productForm.original_price ? parseFloat(productForm.original_price) : null,
+      image_url: productForm.image_url || null,
+      category: productForm.category,
+      badge: productForm.badge || null,
+      sizes: productForm.sizes ? productForm.sizes.split(",").map((s: string) => s.trim()).filter(Boolean) : null,
+      stock: parseInt(productForm.stock) || 0,
+      active: productForm.active,
+    };
+    if (editingProduct) {
+      await supabase.from("shop_products" as any).update(payload as any).eq("id", editingProduct.id);
+      toast({ title: "Προϊόν ενημερώθηκε!" });
+    } else {
+      await supabase.from("shop_products" as any).insert(payload as any);
+      toast({ title: "Προϊόν προστέθηκε!" });
+    }
+    setShowProductForm(false);
+    setEditingProduct(null);
+    fetchShopProducts();
+  };
+
+  const deleteProduct = async (id: string) => {
+    await supabase.from("shop_products" as any).delete().eq("id", id);
+    toast({ title: "Προϊόν διαγράφηκε" });
+    fetchShopProducts();
+  };
+
+  const updateOrderStatus = async (orderId: string, status: string) => {
+    await supabase.from("shop_orders" as any).update({ status } as any).eq("id", orderId);
+    toast({ title: "Κατάσταση παραγγελίας ενημερώθηκε!" });
+    fetchShopOrders();
+  };
+
+  const openEditProduct = (p: any) => {
+    setEditingProduct(p);
+    setProductForm({
+      name: p.name || "",
+      description: p.description || "",
+      price: p.price?.toString() || "",
+      original_price: p.original_price?.toString() || "",
+      image_url: p.image_url || "",
+      category: p.category || "Ρούχα",
+      badge: p.badge || "",
+      sizes: (p.sizes || []).join(", "),
+      stock: p.stock?.toString() || "0",
+      active: p.active ?? true,
+    });
+    setShowProductForm(true);
+  };
+
+
   const deleteArticle = async (id: string) => {
     await supabase.from("articles" as any).delete().eq("id", id);
     toast({ title: "Άρθρο διαγράφηκε" }); fetchArticles();
@@ -372,6 +443,7 @@ const Admin = () => {
     { key: "podcasts", icon: Headphones, label: "Podcasts" },
     { key: "categories", icon: BookOpen, label: "Κατηγορίες" },
     { key: "support", icon: Ticket, label: "Support Tickets" },
+    { key: "shop", icon: ShoppingCart, label: "Shop" },
     { key: "settings", icon: Settings, label: "Ρυθμίσεις" },
   ];
 
@@ -980,6 +1052,76 @@ const Admin = () => {
             </div>
           )}
 
+          {/* Shop */}
+          {tab === "shop" && (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h1 className="font-display text-2xl font-black text-foreground">Shop Management</h1>
+                <div className="flex gap-2">
+                  <Button variant={shopTab === "orders" ? "default" : "outline"} size="sm" onClick={() => setShopTab("orders")} className="gap-1"><Package className="h-3.5 w-3.5" /> Παραγγελίες ({shopOrders.length})</Button>
+                  <Button variant={shopTab === "products" ? "default" : "outline"} size="sm" onClick={() => setShopTab("products")} className="gap-1"><ShoppingCart className="h-3.5 w-3.5" /> Προϊόντα ({shopProducts.length})</Button>
+                  <Button size="sm" onClick={() => { setEditingProduct(null); setProductForm({ name: "", description: "", price: "", original_price: "", image_url: "", category: "Ρούχα", badge: "", sizes: "", stock: "10", active: true }); setShowProductForm(true); }} className="gap-1 bg-primary hover:bg-primary/90"><Plus className="h-3.5 w-3.5" /> Νέο Προϊόν</Button>
+                </div>
+              </div>
+
+              {shopTab === "orders" && (
+                <div className="space-y-3">
+                  {shopOrders.length === 0 ? <p className="text-muted-foreground text-center py-12">Δεν υπάρχουν παραγγελίες ακόμα.</p> : shopOrders.map((order: any) => (
+                    <div key={order.id} className="rounded-xl border border-border bg-card p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-muted-foreground font-mono">#{order.id.slice(0, 8)}</span>
+                          <span className="text-sm font-medium text-foreground">{order.full_name}</span>
+                          <span className="text-xs text-muted-foreground">{order.email}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <select value={order.status} onChange={e => updateOrderStatus(order.id, e.target.value)}
+                            className="h-7 rounded-md border border-border bg-secondary/50 px-2 text-xs text-foreground">
+                            <option value="pending">Σε αναμονή</option>
+                            <option value="confirmed">Επιβεβαιωμένη</option>
+                            <option value="shipped">Απεστάλη</option>
+                            <option value="delivered">Παραδόθηκε</option>
+                            <option value="cancelled">Ακυρώθηκε</option>
+                          </select>
+                          <span className="font-display text-sm font-bold text-primary">€{Number(order.total).toFixed(2)}</span>
+                        </div>
+                      </div>
+                      <div className="text-xs text-muted-foreground mb-1">{order.address}, {order.city} {order.postal_code} {order.phone ? `| ${order.phone}` : ""}</div>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {(order.shop_order_items || []).map((item: any) => (
+                          <span key={item.id} className="text-[10px] bg-secondary/50 text-foreground px-2 py-1 rounded-lg">{item.product_name} {item.size ? `(${item.size})` : ""} ×{item.quantity}</span>
+                        ))}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground mt-2">{new Date(order.created_at).toLocaleString("el-GR")}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {shopTab === "products" && (
+                <div className="space-y-2">
+                  {shopProducts.map((p: any) => (
+                    <div key={p.id} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
+                      {p.image_url && <img src={p.image_url} alt="" className="w-12 h-12 rounded-lg object-cover" />}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-foreground text-sm">{p.name}</p>
+                          {!p.active && <span className="text-[10px] bg-secondary px-1.5 rounded text-muted-foreground">Ανενεργό</span>}
+                          {p.badge && <span className="text-[10px] bg-primary/20 text-primary px-1.5 rounded">{p.badge}</span>}
+                        </div>
+                        <p className="text-xs text-muted-foreground">{p.category} · €{Number(p.price).toFixed(2)} · Stock: {p.stock}</p>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button size="sm" variant="outline" onClick={() => openEditProduct(p)} className="h-7 px-2 text-xs"><Edit className="h-3 w-3" /></Button>
+                        <Button size="sm" variant="outline" onClick={() => deleteProduct(p.id)} className="h-7 px-2 text-xs text-destructive border-destructive/30"><Trash2 className="h-3 w-3" /></Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Settings */}
           {tab === "settings" && (
             <div>
@@ -1199,7 +1341,45 @@ const Admin = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Confirmation Dialog */}
+      {/* Product Form Dialog */}
+      <Dialog open={showProductForm} onOpenChange={(v) => { setShowProductForm(v); if (!v) setEditingProduct(null); }}>
+        <DialogContent className="max-w-lg bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="font-display text-foreground">{editingProduct ? "Επεξεργασία Προϊόντος" : "Νέο Προϊόν"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Input placeholder="Όνομα προϊόντος *" value={productForm.name} onChange={e => setProductForm(p => ({ ...p, name: e.target.value }))} className="bg-secondary/50" />
+            <Textarea placeholder="Περιγραφή..." value={productForm.description} onChange={e => setProductForm(p => ({ ...p, description: e.target.value }))} rows={2} className="bg-secondary/50 resize-none" />
+            <div className="grid grid-cols-2 gap-3">
+              <Input placeholder="Τιμή *" type="number" value={productForm.price} onChange={e => setProductForm(p => ({ ...p, price: e.target.value }))} className="bg-secondary/50" />
+              <Input placeholder="Αρχική τιμή" type="number" value={productForm.original_price} onChange={e => setProductForm(p => ({ ...p, original_price: e.target.value }))} className="bg-secondary/50" />
+            </div>
+            <Input placeholder="Image URL ή key (π.χ. tshirt-black)" value={productForm.image_url} onChange={e => setProductForm(p => ({ ...p, image_url: e.target.value }))} className="bg-secondary/50" />
+            <div className="grid grid-cols-3 gap-3">
+              <select value={productForm.category} onChange={e => setProductForm(p => ({ ...p, category: e.target.value }))} className="rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm text-foreground">
+                <option>Ρούχα</option><option>Αξεσουάρ</option><option>Μπρελόκ</option>
+              </select>
+              <Input placeholder="Badge" value={productForm.badge} onChange={e => setProductForm(p => ({ ...p, badge: e.target.value }))} className="bg-secondary/50" />
+              <Input placeholder="Stock" type="number" value={productForm.stock} onChange={e => setProductForm(p => ({ ...p, stock: e.target.value }))} className="bg-secondary/50" />
+            </div>
+            <Input placeholder="Μεγέθη (S, M, L, XL)" value={productForm.sizes} onChange={e => setProductForm(p => ({ ...p, sizes: e.target.value }))} className="bg-secondary/50" />
+            <div className="flex items-center justify-between rounded-lg border border-border bg-secondary/20 px-4 py-3">
+              <div><p className="text-sm font-medium text-foreground">Ενεργό</p><p className="text-xs text-muted-foreground">Εμφανίζεται στο Shop</p></div>
+              <button onClick={() => setProductForm(p => ({ ...p, active: !p.active }))} className={`relative h-6 w-11 rounded-full transition-colors ${productForm.active ? "bg-primary" : "bg-secondary"}`}>
+                <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-card transition-transform ${productForm.active ? "translate-x-5" : "translate-x-0"}`} />
+              </button>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => { setShowProductForm(false); setEditingProduct(null); }}>Ακύρωση</Button>
+              <Button onClick={saveProduct} disabled={!productForm.name || !productForm.price} className="bg-primary hover:bg-primary/90 gap-2">
+                {editingProduct ? <><Edit className="h-4 w-4" /> Ενημέρωση</> : <><Plus className="h-4 w-4" /> Προσθήκη</>}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+
       <AlertDialog open={!!confirmAction} onOpenChange={(open) => { if (!open) setConfirmAction(null); }}>
         <AlertDialogContent className="bg-card border-border">
           <AlertDialogHeader>
