@@ -362,8 +362,12 @@ const Profile = () => {
                   <p className="text-muted-foreground text-sm">@{profile.username}</p>
                 )}
                 <div className="flex items-center gap-4 mt-2">
-                  <span className="text-sm text-muted-foreground"><span className="text-foreground font-bold">{followersCount}</span> Followers</span>
-                  <span className="text-sm text-muted-foreground"><span className="text-foreground font-bold">{followingCount}</span> Following</span>
+                  <button onClick={openFollowersList} className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer">
+                    <span className="text-foreground font-bold">{followersCount}</span> Followers
+                  </button>
+                  <button onClick={openFollowingList} className="text-sm text-muted-foreground hover:text-primary transition-colors cursor-pointer">
+                    <span className="text-foreground font-bold">{followingCount}</span> Following
+                  </button>
                   <span className="flex items-center gap-1 text-sm text-muted-foreground">
                     <Heart className="h-3.5 w-3.5 text-primary" />
                     <span className="text-foreground font-bold">{likesCount}</span>
