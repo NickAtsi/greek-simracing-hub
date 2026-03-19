@@ -134,7 +134,7 @@ const Shop = () => {
       await supabase.from("shop_order_items" as any).insert(items as any);
 
       // Notify admin via Discord
-      supabase.functions.invoke('notify-admin-order', {
+      const { error: notifyError } = await supabase.functions.invoke('notify-admin-order', {
         body: {
           order_id: (order as any).id,
           full_name: checkoutForm.full_name,
@@ -142,7 +142,11 @@ const Shop = () => {
           total: cartTotal,
           items_count: cart.reduce((s, c) => s + c.qty, 0),
         },
-      }).catch(console.error);
+      });
+
+      if (notifyError) {
+        console.error('notify-admin-order failed:', notifyError);
+      }
 
       setOrderSuccess(true);
       setCart([]);
