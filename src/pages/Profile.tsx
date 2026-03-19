@@ -481,6 +481,41 @@ const Profile = () => {
                     <p className="text-xs text-muted-foreground">Following</p>
                   </div>
                 </div>
+
+                {/* Pending Follow Requests - only on own profile */}
+                {isOwnProfile && pendingRequests.length > 0 && (
+                  <div className="mt-4">
+                    <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                      <UserPlus className="h-3 w-3" /> Αιτήματα ({pendingRequests.length})
+                    </h4>
+                    <div className="space-y-2">
+                      {pendingRequests.map((req: any) => {
+                        const reqProfile = req.profiles;
+                        return (
+                          <div key={req.id} className="flex items-center gap-2 rounded-lg bg-secondary/30 p-2">
+                            <Link to={`/profile/${reqProfile?.user_id || req.follower_id}`} className="flex items-center gap-2 flex-1 min-w-0">
+                              <Avatar className="h-7 w-7">
+                                <AvatarImage src={reqProfile?.avatar_url || ""} />
+                                <AvatarFallback className="bg-primary/20 text-primary text-[10px] font-bold">
+                                  {(reqProfile?.display_name || "?")[0].toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="text-xs font-medium text-foreground truncate">
+                                {reqProfile?.display_name || reqProfile?.username || "Χρήστης"}
+                              </span>
+                            </Link>
+                            <Button size="sm" variant="ghost" onClick={() => acceptFollow(req.id)} className="h-6 w-6 p-0 text-green-500 hover:text-green-400 hover:bg-green-500/10">
+                              <UserCheck className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button size="sm" variant="ghost" onClick={() => rejectFollow(req.id)} className="h-6 w-6 p-0 text-destructive hover:text-destructive hover:bg-destructive/10">
+                              <X className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </motion.div>
             </div>
 
