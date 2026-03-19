@@ -69,7 +69,8 @@ const Admin = () => {
   const [catForm, setCatForm] = useState({ name: "", slug: "", color: "#1565C0", type: "article" });
   const [editProfile, setEditProfile] = useState<any>(null);
   const [profileForm, setProfileForm] = useState({ display_name: "", username: "", favorite_sim: "", favorite_track: "", setup_type: "" });
-  const [siteSettings, setSiteSettings] = useState<Record<string, string>>({ discord_server_id: "", discord_invite: "", contact_email: "" });
+  const [siteSettings, setSiteSettings] = useState<Record<string, string>>({ ...defaultSettings });
+  const [confirmAction, setConfirmAction] = useState<{ title: string; description: string; action: () => void } | null>(null);
 
   useEffect(() => {
     if (!loading && user) checkAdmin();
