@@ -1076,12 +1076,21 @@ const Admin = () => {
               {shopTab === "orders" && (
                 <div className="space-y-3">
                   {shopOrders.length === 0 ? <p className="text-muted-foreground text-center py-12">Δεν υπάρχουν παραγγελίες ακόμα.</p> : shopOrders.map((order: any) => (
-                    <div key={order.id} className="rounded-xl border border-border bg-card p-4">
-                      <div className="flex items-center justify-between mb-2">
+                    <div key={order.id} className="rounded-xl border border-border bg-card overflow-hidden">
+                      {/* Header */}
+                      <div className="flex items-center justify-between p-4 bg-secondary/30 border-b border-border">
                         <div className="flex items-center gap-3">
-                          <span className="text-xs text-muted-foreground font-mono">#{order.id.slice(0, 8)}</span>
-                          <span className="text-sm font-medium text-foreground">{order.full_name}</span>
-                          <span className="text-xs text-muted-foreground">{order.email}</span>
+                          <span className="text-xs text-muted-foreground font-mono bg-secondary px-2 py-0.5 rounded">#{order.id.slice(0, 8)}</span>
+                          <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                            order.status === "pending" ? "bg-yellow-500/20 text-yellow-400" :
+                            order.status === "confirmed" ? "bg-blue-500/20 text-blue-400" :
+                            order.status === "shipped" ? "bg-purple-500/20 text-purple-400" :
+                            order.status === "delivered" ? "bg-green-500/20 text-green-400" :
+                            "bg-red-500/20 text-red-400"
+                          }`}>
+                            {order.status === "pending" ? "Σε αναμονή" : order.status === "confirmed" ? "Επιβεβαιωμένη" : order.status === "shipped" ? "Απεστάλη" : order.status === "delivered" ? "Παραδόθηκε" : "Ακυρώθηκε"}
+                          </span>
+                          <span className="text-[10px] text-muted-foreground">{new Date(order.created_at).toLocaleString("el-GR")}</span>
                         </div>
                         <div className="flex items-center gap-2">
                           <select value={order.status} onChange={e => updateOrderStatus(order.id, e.target.value)}
@@ -1095,13 +1104,66 @@ const Admin = () => {
                           <span className="font-display text-sm font-bold text-primary">€{Number(order.total).toFixed(2)}</span>
                         </div>
                       </div>
-                      <div className="text-xs text-muted-foreground mb-1">{order.address}, {order.city} {order.postal_code} {order.phone ? `| ${order.phone}` : ""}</div>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {(order.shop_order_items || []).map((item: any) => (
-                          <span key={item.id} className="text-[10px] bg-secondary/50 text-foreground px-2 py-1 rounded-lg">{item.product_name} {item.size ? `(${item.size})` : ""} ×{item.quantity}</span>
-                        ))}
+
+                      <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Customer Info */}
+                        <div className="space-y-2">
+                          <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                            <Users className="h-3 w-3" /> Στοιχεία Πελάτη
+                          </h4>
+                          <div className="space-y-1 text-sm">
+                            <p className="font-medium text-foreground">{order.full_name}</p>
+                            <p className="text-muted-foreground flex items-center gap-1.5"><Mail className="h-3 w-3" /> {order.email}</p>
+                            {order.phone && <p className="text-muted-foreground">📞 {order.phone}</p>}
+                            {order.profiles && (
+                              <p className="text-xs text-primary">Χρήστης: {order.profiles.display_name || order.profiles.username || "—"}</p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Shipping Info */}
+                        <div className="space-y-2">
+                          <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                            <Package className="h-3 w-3" /> Στοιχεία Αποστολής
+                          </h4>
+                          <div className="space-y-1 text-sm text-muted-foreground">
+                            <p>{order.address}</p>
+                            <p>{order.city}, {order.postal_code}</p>
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-[10px] text-muted-foreground mt-2">{new Date(order.created_at).toLocaleString("el-GR")}</div>
+
+                      {/* Order Notes */}
+                      {order.notes && (
+                        <div className="px-4 pb-3">
+                          <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-1">📝 Σημειώσεις</h4>
+                          <p className="text-sm text-muted-foreground bg-secondary/30 rounded-lg p-2">{order.notes}</p>
+                        </div>
+                      )}
+
+                      {/* Order Items */}
+                      <div className="px-4 pb-4">
+                        <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                          <ShoppingCart className="h-3 w-3" /> Προϊόντα ({(order.shop_order_items || []).length})
+                        </h4>
+                        <div className="space-y-1.5">
+                          {(order.shop_order_items || []).map((item: any) => (
+                            <div key={item.id} className="flex items-center justify-between text-sm bg-secondary/20 rounded-lg px-3 py-2">
+                              <div className="flex items-center gap-2">
+                                {item.product_image && <img src={item.product_image} alt="" className="w-8 h-8 rounded object-cover" />}
+                                <div>
+                                  <span className="text-foreground font-medium">{item.product_name}</span>
+                                  {item.size && <span className="text-xs text-muted-foreground ml-1.5">({item.size})</span>}
+                                </div>
+                              </div>
+                              <div className="text-right text-xs">
+                                <span className="text-muted-foreground">×{item.quantity}</span>
+                                <span className="ml-2 font-medium text-foreground">€{(Number(item.price) * item.quantity).toFixed(2)}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </div>

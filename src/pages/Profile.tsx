@@ -26,6 +26,7 @@ const Profile = () => {
   const [hasLiked, setHasLiked] = useState(false);
   const [followStatus, setFollowStatus] = useState<"none" | "pending" | "accepted">("none");
   const [followersCount, setFollowersCount] = useState(0);
+  const [pendingRequests, setPendingRequests] = useState<any[]>([]);
   const [followingCount, setFollowingCount] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
