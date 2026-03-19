@@ -301,11 +301,9 @@ const Navbar = () => {
                     >
                       <div className="p-3 border-b border-border/50 flex items-center justify-between">
                         <span className="text-sm font-bold text-foreground">Ειδοποιήσεις</span>
-                        {notifications.length > 0 && (
-                          <button onClick={markAllRead} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-                            Σήμανση ως αναγνωσμένα
-                          </button>
-                        )}
+                        <Link to="/notifications" onClick={() => setShowNotifs(false)} className="text-xs text-primary hover:text-primary/80 transition-colors">
+                          Προβολή όλων
+                        </Link>
                       </div>
                       <div className="max-h-72 overflow-y-auto">
                         {notifications.length === 0 ? (
