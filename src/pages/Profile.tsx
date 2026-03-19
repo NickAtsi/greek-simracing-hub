@@ -813,6 +813,78 @@ const Profile = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Followers Dialog */}
+      <Dialog open={showFollowersDialog} onOpenChange={setShowFollowersDialog}>
+        <DialogContent className="max-w-md bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="font-display text-foreground flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" /> Followers
+            </DialogTitle>
+          </DialogHeader>
+          {loadingFollowList ? (
+            <div className="space-y-3 py-4">
+              {[1, 2, 3].map(i => <div key={i} className="h-12 rounded-lg bg-muted/30 animate-pulse" />)}
+            </div>
+          ) : followersList.length === 0 ? (
+            <p className="text-muted-foreground text-center py-8 text-sm">Δεν υπάρχουν followers ακόμα</p>
+          ) : (
+            <div className="space-y-2 max-h-80 overflow-y-auto">
+              {followersList.map((p: any) => (
+                <Link key={p.user_id} to={`/profile/${p.user_id}`} onClick={() => setShowFollowersDialog(false)}
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/30 transition-colors">
+                  <Avatar className="h-9 w-9">
+                    <AvatarImage src={p.avatar_url || ""} />
+                    <AvatarFallback className="bg-gradient-greek text-white text-xs font-bold">
+                      {(p.display_name || p.username || "?").slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{p.display_name || p.username || "Χρήστης"}</p>
+                    {p.username && <p className="text-xs text-muted-foreground">@{p.username}</p>}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Following Dialog */}
+      <Dialog open={showFollowingDialog} onOpenChange={setShowFollowingDialog}>
+        <DialogContent className="max-w-md bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="font-display text-foreground flex items-center gap-2">
+              <Users className="h-5 w-5 text-primary" /> Following
+            </DialogTitle>
+          </DialogHeader>
+          {loadingFollowList ? (
+            <div className="space-y-3 py-4">
+              {[1, 2, 3].map(i => <div key={i} className="h-12 rounded-lg bg-muted/30 animate-pulse" />)}
+            </div>
+          ) : followingList.length === 0 ? (
+            <p className="text-muted-foreground text-center py-8 text-sm">Δεν ακολουθεί κανέναν ακόμα</p>
+          ) : (
+            <div className="space-y-2 max-h-80 overflow-y-auto">
+              {followingList.map((p: any) => (
+                <Link key={p.user_id} to={`/profile/${p.user_id}`} onClick={() => setShowFollowingDialog(false)}
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/30 transition-colors">
+                  <Avatar className="h-9 w-9">
+                    <AvatarImage src={p.avatar_url || ""} />
+                    <AvatarFallback className="bg-gradient-greek text-white text-xs font-bold">
+                      {(p.display_name || p.username || "?").slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="text-sm font-medium text-foreground">{p.display_name || p.username || "Χρήστης"}</p>
+                    {p.username && <p className="text-xs text-muted-foreground">@{p.username}</p>}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       <Footer />
     </div>
   );
