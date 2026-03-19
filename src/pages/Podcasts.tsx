@@ -178,9 +178,9 @@ const Podcasts = () => {
             transition={{ delay: 0.3 }}
           >
             <div className="h-px w-12 bg-primary" />
-            <EqualizerBars count={8} />
+            <EqualizerBars count={8} height={30} />
             <span className="font-display text-[11px] tracking-[0.5em] text-primary uppercase">Greek SimRacers</span>
-            <EqualizerBars count={8} />
+            <EqualizerBars count={8} height={30} />
             <div className="h-px w-12 bg-primary" />
           </motion.div>
 
