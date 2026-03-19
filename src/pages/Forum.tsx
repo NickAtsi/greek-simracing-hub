@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { MessageSquare, Plus, Pin, Lock, Eye, ChevronRight, Users, TrendingUp, Clock, ArrowLeft, Send, Pencil, Trash2 } from "lucide-react";
-import MDEditor from "@uiw/react-md-editor";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
