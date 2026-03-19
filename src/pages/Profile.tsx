@@ -157,7 +157,42 @@ const Profile = () => {
     fetchPendingRequests();
   };
 
-  const handleLike = async () => {
+  const openFollowersList = async () => {
+    setShowFollowersDialog(true);
+    setLoadingFollowList(true);
+    const { data } = await supabase
+      .from("follows" as any)
+      .select("follower_id")
+      .eq("following_id", profileUserId)
+      .eq("status", "accepted");
+    const ids = ((data as any[]) || []).map((f: any) => f.follower_id);
+    if (ids.length > 0) {
+      const { data: profiles } = await supabase.from("profiles").select("user_id, display_name, username, avatar_url").in("user_id", ids);
+      setFollowersList((profiles as any[]) || []);
+    } else {
+      setFollowersList([]);
+    }
+    setLoadingFollowList(false);
+  };
+
+  const openFollowingList = async () => {
+    setShowFollowingDialog(true);
+    setLoadingFollowList(true);
+    const { data } = await supabase
+      .from("follows" as any)
+      .select("following_id")
+      .eq("follower_id", profileUserId)
+      .eq("status", "accepted");
+    const ids = ((data as any[]) || []).map((f: any) => f.following_id);
+    if (ids.length > 0) {
+      const { data: profiles } = await supabase.from("profiles").select("user_id, display_name, username, avatar_url").in("user_id", ids);
+      setFollowingList((profiles as any[]) || []);
+    } else {
+      setFollowingList([]);
+    }
+    setLoadingFollowList(false);
+  };
+
     if (!user) { toast({ title: "Συνδέσου πρώτα", variant: "destructive" }); return; }
     if (isOwnProfile) return;
     if (hasLiked) {
