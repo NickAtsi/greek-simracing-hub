@@ -461,7 +461,7 @@ const ThreadView = ({ threadId }: { threadId: string }) => {
                       </div>
                       {isEditingThis ? (
                         <div className="space-y-2">
-                          <Textarea value={editPostContent} onChange={(e) => setEditPostContent(e.target.value)} rows={4} className="resize-none bg-secondary/50 border-border text-sm" />
+                          <RichTextEditor value={editPostContent} onChange={setEditPostContent} minHeight={150} placeholder="Επεξεργασία..." />
                           <div className="flex gap-2 justify-end">
                             <Button size="sm" variant="outline" onClick={() => setEditingPostId(null)}>Ακύρωση</Button>
                             <Button size="sm" onClick={() => handleEditPost(msg.id)} className="bg-gradient-greek text-white hover:brightness-110">Αποθήκευση</Button>
