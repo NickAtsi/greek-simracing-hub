@@ -75,6 +75,7 @@ const Admin = () => {
   useEffect(() => {
     if (isAdmin) {
       fetchStats();
+      if (tab === "dashboard") { fetchRecentActivity(); }
       if (tab === "users") fetchUsers();
       if (tab === "articles") fetchArticles();
       if (tab === "forum") fetchThreads();
