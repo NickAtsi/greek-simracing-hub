@@ -1341,7 +1341,45 @@ const Admin = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Confirmation Dialog */}
+      {/* Product Form Dialog */}
+      <Dialog open={showProductForm} onOpenChange={(v) => { setShowProductForm(v); if (!v) setEditingProduct(null); }}>
+        <DialogContent className="max-w-lg bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="font-display text-foreground">{editingProduct ? "Επεξεργασία Προϊόντος" : "Νέο Προϊόν"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Input placeholder="Όνομα προϊόντος *" value={productForm.name} onChange={e => setProductForm(p => ({ ...p, name: e.target.value }))} className="bg-secondary/50" />
+            <Textarea placeholder="Περιγραφή..." value={productForm.description} onChange={e => setProductForm(p => ({ ...p, description: e.target.value }))} rows={2} className="bg-secondary/50 resize-none" />
+            <div className="grid grid-cols-2 gap-3">
+              <Input placeholder="Τιμή *" type="number" value={productForm.price} onChange={e => setProductForm(p => ({ ...p, price: e.target.value }))} className="bg-secondary/50" />
+              <Input placeholder="Αρχική τιμή" type="number" value={productForm.original_price} onChange={e => setProductForm(p => ({ ...p, original_price: e.target.value }))} className="bg-secondary/50" />
+            </div>
+            <Input placeholder="Image URL ή key (π.χ. tshirt-black)" value={productForm.image_url} onChange={e => setProductForm(p => ({ ...p, image_url: e.target.value }))} className="bg-secondary/50" />
+            <div className="grid grid-cols-3 gap-3">
+              <select value={productForm.category} onChange={e => setProductForm(p => ({ ...p, category: e.target.value }))} className="rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm text-foreground">
+                <option>Ρούχα</option><option>Αξεσουάρ</option><option>Μπρελόκ</option>
+              </select>
+              <Input placeholder="Badge" value={productForm.badge} onChange={e => setProductForm(p => ({ ...p, badge: e.target.value }))} className="bg-secondary/50" />
+              <Input placeholder="Stock" type="number" value={productForm.stock} onChange={e => setProductForm(p => ({ ...p, stock: e.target.value }))} className="bg-secondary/50" />
+            </div>
+            <Input placeholder="Μεγέθη (S, M, L, XL)" value={productForm.sizes} onChange={e => setProductForm(p => ({ ...p, sizes: e.target.value }))} className="bg-secondary/50" />
+            <div className="flex items-center justify-between rounded-lg border border-border bg-secondary/20 px-4 py-3">
+              <div><p className="text-sm font-medium text-foreground">Ενεργό</p><p className="text-xs text-muted-foreground">Εμφανίζεται στο Shop</p></div>
+              <button onClick={() => setProductForm(p => ({ ...p, active: !p.active }))} className={`relative h-6 w-11 rounded-full transition-colors ${productForm.active ? "bg-primary" : "bg-secondary"}`}>
+                <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-card transition-transform ${productForm.active ? "translate-x-5" : "translate-x-0"}`} />
+              </button>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => { setShowProductForm(false); setEditingProduct(null); }}>Ακύρωση</Button>
+              <Button onClick={saveProduct} disabled={!productForm.name || !productForm.price} className="bg-primary hover:bg-primary/90 gap-2">
+                {editingProduct ? <><Edit className="h-4 w-4" /> Ενημέρωση</> : <><Plus className="h-4 w-4" /> Προσθήκη</>}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+
       <AlertDialog open={!!confirmAction} onOpenChange={(open) => { if (!open) setConfirmAction(null); }}>
         <AlertDialogContent className="bg-card border-border">
           <AlertDialogHeader>
