@@ -61,7 +61,7 @@ const Contact = () => {
                   icon: Mail,
                   title: "Email",
                   desc: "Στείλτε μας email για οποιοδήποτε θέμα",
-                  value: "info@greeksimracers.gr",
+                  value: settings.contact_email || "info@greeksimracers.gr",
                   color: "text-blue-400",
                   bg: "bg-blue-400/10",
                 },
