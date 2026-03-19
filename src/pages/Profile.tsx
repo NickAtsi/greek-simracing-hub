@@ -168,6 +168,15 @@ const Profile = () => {
     if (!user) { toast({ title: "Συνδέσου πρώτα", variant: "destructive" }); return; }
     if (followStatus === "none") {
       await supabase.from("follows" as any).insert({ follower_id: user.id, following_id: profileUserId, status: "pending" });
+      // Send notification
+      await supabase.from("notifications" as any).insert({
+        user_id: profileUserId,
+        from_user_id: user.id,
+        type: "follow_request",
+        title: "Νέο αίτημα φιλίας",
+        message: `${user.user_metadata?.full_name || user.email?.split("@")[0]} σου έστειλε αίτημα φιλίας`,
+        link: `/profile/${user.id}`
+      });
       setFollowStatus("pending");
       toast({ title: "Αίτημα φιλίας στάλθηκε!" });
     } else {
