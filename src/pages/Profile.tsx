@@ -119,7 +119,30 @@ const Profile = () => {
     }
   };
 
-  const handleLike = async () => {
+  const fetchPendingRequests = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("follows" as any)
+      .select("*, profiles!follower_id(display_name, username, avatar_url, user_id)")
+      .eq("following_id", user.id)
+      .eq("status", "pending")
+      .order("created_at", { ascending: false });
+    setPendingRequests((data as any[]) || []);
+  };
+
+  const acceptFollow = async (followId: string) => {
+    await supabase.from("follows" as any).update({ status: "accepted" } as any).eq("id", followId);
+    toast({ title: "Αίτημα αποδεκτό! ✅" });
+    fetchPendingRequests();
+    fetchFollowData();
+  };
+
+  const rejectFollow = async (followId: string) => {
+    await supabase.from("follows" as any).delete().eq("id", followId);
+    toast({ title: "Αίτημα απορρίφθηκε" });
+    fetchPendingRequests();
+  };
+
     if (!user) { toast({ title: "Συνδέσου πρώτα", variant: "destructive" }); return; }
     if (isOwnProfile) return;
     if (hasLiked) {
