@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Users, FileText, MessageSquare, Headphones, BarChart3, Settings,
   Trash2, Edit, Plus, Shield, Pin, Lock, Eye, TrendingUp, Activity,
   ChevronRight, Check, X, RefreshCw, BookOpen, Ticket, CheckCircle, Clock, AlertCircle, Send,
-  Globe, Link2, Mail, Youtube, Music, ShoppingCart, Package
+  Globe, Link2, Mail, Youtube, Music, ShoppingCart, Package, Upload, Image
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -212,8 +212,17 @@ const Admin = () => {
   };
 
   const fetchShopOrders = async () => {
-    const { data } = await supabase.from("shop_orders" as any).select("*, shop_order_items(*), profiles!user_id(display_name, username)").order("created_at", { ascending: false });
-    setShopOrders((data as any[]) || []);
+    const { data: ordersData } = await supabase.from("shop_orders" as any).select("*, shop_order_items(*)").order("created_at", { ascending: false });
+    const orders = (ordersData as any[]) || [];
+    // Fetch profile display names for each unique user_id
+    const userIds = [...new Set(orders.map((o: any) => o.user_id))];
+    if (userIds.length > 0) {
+      const { data: profilesData } = await supabase.from("profiles").select("user_id, display_name, username").in("user_id", userIds);
+      const profilesMap: Record<string, any> = {};
+      ((profilesData as any[]) || []).forEach((p: any) => { profilesMap[p.user_id] = p; });
+      orders.forEach((o: any) => { o.profiles = profilesMap[o.user_id] || null; });
+    }
+    setShopOrders(orders);
   };
 
   const saveProduct = async () => {
@@ -1354,7 +1363,32 @@ const Admin = () => {
               <Input placeholder="Τιμή *" type="number" value={productForm.price} onChange={e => setProductForm(p => ({ ...p, price: e.target.value }))} className="bg-secondary/50" />
               <Input placeholder="Αρχική τιμή" type="number" value={productForm.original_price} onChange={e => setProductForm(p => ({ ...p, original_price: e.target.value }))} className="bg-secondary/50" />
             </div>
-            <Input placeholder="Image URL ή key (π.χ. tshirt-black)" value={productForm.image_url} onChange={e => setProductForm(p => ({ ...p, image_url: e.target.value }))} className="bg-secondary/50" />
+            {/* Image Upload */}
+            <div>
+              <label className="text-xs text-muted-foreground mb-1 block">Εικόνα Προϊόντος</label>
+              {productForm.image_url && productForm.image_url.startsWith("http") && (
+                <img src={productForm.image_url} alt="Preview" className="w-20 h-20 rounded-lg object-cover mb-2 border border-border" />
+              )}
+              <div className="flex gap-2">
+                <Input placeholder="Image URL ή key (π.χ. tshirt-black)" value={productForm.image_url} onChange={e => setProductForm(p => ({ ...p, image_url: e.target.value }))} className="bg-secondary/50 flex-1" />
+                <label className="cursor-pointer">
+                  <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const ext = file.name.split(".").pop();
+                    const fileName = `${Date.now()}.${ext}`;
+                    const { error } = await supabase.storage.from("product-images").upload(fileName, file, { contentType: file.type });
+                    if (error) { toast({ title: "Σφάλμα upload", description: error.message, variant: "destructive" }); return; }
+                    const { data: { publicUrl } } = supabase.storage.from("product-images").getPublicUrl(fileName);
+                    setProductForm(p => ({ ...p, image_url: publicUrl }));
+                    toast({ title: "Εικόνα ανέβηκε! 📸" });
+                  }} />
+                  <div className="h-9 px-3 rounded-md border border-border bg-secondary/50 hover:bg-secondary flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    <Upload className="h-3.5 w-3.5" /> Upload
+                  </div>
+                </label>
+              </div>
+            </div>
             <div className="grid grid-cols-3 gap-3">
               <select value={productForm.category} onChange={e => setProductForm(p => ({ ...p, category: e.target.value }))} className="rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm text-foreground">
                 <option>Ρούχα</option><option>Αξεσουάρ</option><option>Μπρελόκ</option>

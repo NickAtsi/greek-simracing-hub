@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.delete-user]
 verify_jwt = true
+
+[functions.notify-admin-order]
+verify_jwt = false
