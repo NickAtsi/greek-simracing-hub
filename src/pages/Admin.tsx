@@ -102,6 +102,15 @@ const Admin = () => {
   const fetchUsers = async () => {
     const { data } = await supabase.from("profiles").select("*").order("created_at", { ascending: false });
     setUsers((data as any[]) || []);
+    // Fetch roles for all users
+    const { data: rolesData } = await supabase.from("user_roles" as any).select("user_id, role");
+    const rolesMap: Record<string, string> = {};
+    ((rolesData as any[]) || []).forEach((r: any) => {
+      if (r.role === "admin") rolesMap[r.user_id] = "Admin";
+      else if (r.role === "moderator") rolesMap[r.user_id] = "Moderator";
+      else rolesMap[r.user_id] = "Member";
+    });
+    setUserRoles(rolesMap);
   };
 
   const fetchArticles = async () => {
