@@ -512,7 +512,7 @@ const ThreadView = ({ threadId }: { threadId: string }) => {
           </DialogHeader>
           <div className="space-y-4">
             <Input placeholder="Τίτλος thread..." value={editTitle} onChange={(e) => setEditTitle(e.target.value)} className="bg-secondary/50 border-border" />
-            <Textarea placeholder="Περιεχόμενο..." value={editContent} onChange={(e) => setEditContent(e.target.value)} rows={6} className="resize-none bg-secondary/50 border-border" />
+            <RichTextEditor value={editContent} onChange={setEditContent} placeholder="Περιεχόμενο..." minHeight={250} />
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setShowEditThread(false)}>Ακύρωση</Button>
               <Button onClick={handleEditThread} className="bg-gradient-greek text-white hover:brightness-110">Αποθήκευση</Button>
