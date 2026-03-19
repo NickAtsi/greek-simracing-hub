@@ -698,6 +698,9 @@ const Admin = () => {
                             <Button size="sm" variant="outline" onClick={() => handleGrantAdmin(u.user_id)} className="h-7 px-2.5 text-xs text-primary border-primary/30 hover:bg-primary/10 gap-1">
                               Make Admin
                             </Button>
+                            <Button size="sm" variant="outline" onClick={() => handleDeleteUser(u.user_id, u.display_name)} className="h-7 px-2.5 text-xs text-destructive border-destructive/30 hover:bg-destructive/10 gap-1">
+                              <Trash2 className="h-3 w-3" /> Διαγραφή
+                            </Button>
                           </div>
                         </td>
                       </tr>
