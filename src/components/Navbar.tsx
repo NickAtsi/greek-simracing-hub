@@ -11,6 +11,7 @@ const navItems = [
   { label: "Αρχική", href: "/home" },
   { label: "Άρθρα", href: "/articles" },
   { label: "Forum", href: "/forum" },
+  { label: "Μέλη", href: "/members" },
   { label: "Games Hub", href: "/games-hub" },
   { label: "Podcasts", href: "/podcasts" },
   { label: "Shop", href: "/shop" },
