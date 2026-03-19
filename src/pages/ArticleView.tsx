@@ -227,8 +227,8 @@ const ArticleView = () => {
             )}
 
             {/* Content */}
-            <div className="prose prose-invert max-w-none mb-8">
-              <p className="text-foreground leading-relaxed whitespace-pre-wrap text-[15px]">{article.content}</p>
+            <div className="prose prose-invert max-w-none mb-8" data-color-mode="dark">
+              <MDEditor.Markdown source={article.content} style={{ backgroundColor: 'transparent' }} />
             </div>
 
             {/* Like + Stats bar */}

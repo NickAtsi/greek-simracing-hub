@@ -468,7 +468,9 @@ const ThreadView = ({ threadId }: { threadId: string }) => {
                           </div>
                         </div>
                       ) : (
-                        <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                        <div data-color-mode="dark">
+                          <MDEditor.Markdown source={msg.content} style={{ backgroundColor: 'transparent' }} />
+                        </div>
                       )}
                     </div>
                   </div>
