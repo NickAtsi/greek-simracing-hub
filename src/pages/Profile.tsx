@@ -29,6 +29,11 @@ const Profile = () => {
   const [pendingRequests, setPendingRequests] = useState<any[]>([]);
   const [followingCount, setFollowingCount] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showFollowersDialog, setShowFollowersDialog] = useState(false);
+  const [showFollowingDialog, setShowFollowingDialog] = useState(false);
+  const [followersList, setFollowersList] = useState<any[]>([]);
+  const [followingList, setFollowingList] = useState<any[]>([]);
+  const [loadingFollowList, setLoadingFollowList] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editForm, setEditForm] = useState({ display_name: "", username: "", favorite_sim: "", favorite_track: "", setup_type: "", bio: "", location: "", discord_username: "", nationality: "", years_simracing: "", website_url: "" });
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
