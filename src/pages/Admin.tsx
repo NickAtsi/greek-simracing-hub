@@ -36,7 +36,10 @@ const Admin = () => {
   const { toast } = useToast();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [tab, setTab] = useState<AdminTab>("dashboard");
-  const [stats, setStats] = useState({ users: 0, articles: 0, threads: 0, posts: 0, podcasts: 0 });
+  const [stats, setStats] = useState({ users: 0, articles: 0, threads: 0, posts: 0, podcasts: 0, pendingUsers: 0, openTickets: 0, totalViews: 0 });
+  const [recentUsers, setRecentUsers] = useState<any[]>([]);
+  const [recentArticles, setRecentArticles] = useState<any[]>([]);
+  const [recentThreads, setRecentThreads] = useState<any[]>([]);
   const [userSearch, setUserSearch] = useState("");
   const [userRoleFilter, setUserRoleFilter] = useState("all");
   const [userSort, setUserSort] = useState("newest");
