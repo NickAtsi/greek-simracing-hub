@@ -1052,6 +1052,76 @@ const Admin = () => {
             </div>
           )}
 
+          {/* Shop */}
+          {tab === "shop" && (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h1 className="font-display text-2xl font-black text-foreground">Shop Management</h1>
+                <div className="flex gap-2">
+                  <Button variant={shopTab === "orders" ? "default" : "outline"} size="sm" onClick={() => setShopTab("orders")} className="gap-1"><Package className="h-3.5 w-3.5" /> Παραγγελίες ({shopOrders.length})</Button>
+                  <Button variant={shopTab === "products" ? "default" : "outline"} size="sm" onClick={() => setShopTab("products")} className="gap-1"><ShoppingCart className="h-3.5 w-3.5" /> Προϊόντα ({shopProducts.length})</Button>
+                  <Button size="sm" onClick={() => { setEditingProduct(null); setProductForm({ name: "", description: "", price: "", original_price: "", image_url: "", category: "Ρούχα", badge: "", sizes: "", stock: "10", active: true }); setShowProductForm(true); }} className="gap-1 bg-primary hover:bg-primary/90"><Plus className="h-3.5 w-3.5" /> Νέο Προϊόν</Button>
+                </div>
+              </div>
+
+              {shopTab === "orders" && (
+                <div className="space-y-3">
+                  {shopOrders.length === 0 ? <p className="text-muted-foreground text-center py-12">Δεν υπάρχουν παραγγελίες ακόμα.</p> : shopOrders.map((order: any) => (
+                    <div key={order.id} className="rounded-xl border border-border bg-card p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-muted-foreground font-mono">#{order.id.slice(0, 8)}</span>
+                          <span className="text-sm font-medium text-foreground">{order.full_name}</span>
+                          <span className="text-xs text-muted-foreground">{order.email}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <select value={order.status} onChange={e => updateOrderStatus(order.id, e.target.value)}
+                            className="h-7 rounded-md border border-border bg-secondary/50 px-2 text-xs text-foreground">
+                            <option value="pending">Σε αναμονή</option>
+                            <option value="confirmed">Επιβεβαιωμένη</option>
+                            <option value="shipped">Απεστάλη</option>
+                            <option value="delivered">Παραδόθηκε</option>
+                            <option value="cancelled">Ακυρώθηκε</option>
+                          </select>
+                          <span className="font-display text-sm font-bold text-primary">€{Number(order.total).toFixed(2)}</span>
+                        </div>
+                      </div>
+                      <div className="text-xs text-muted-foreground mb-1">{order.address}, {order.city} {order.postal_code} {order.phone ? `| ${order.phone}` : ""}</div>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {(order.shop_order_items || []).map((item: any) => (
+                          <span key={item.id} className="text-[10px] bg-secondary/50 text-foreground px-2 py-1 rounded-lg">{item.product_name} {item.size ? `(${item.size})` : ""} ×{item.quantity}</span>
+                        ))}
+                      </div>
+                      <div className="text-[10px] text-muted-foreground mt-2">{new Date(order.created_at).toLocaleString("el-GR")}</div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {shopTab === "products" && (
+                <div className="space-y-2">
+                  {shopProducts.map((p: any) => (
+                    <div key={p.id} className="flex items-center gap-3 rounded-xl border border-border bg-card p-4">
+                      {p.image_url && <img src={p.image_url} alt="" className="w-12 h-12 rounded-lg object-cover" />}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium text-foreground text-sm">{p.name}</p>
+                          {!p.active && <span className="text-[10px] bg-secondary px-1.5 rounded text-muted-foreground">Ανενεργό</span>}
+                          {p.badge && <span className="text-[10px] bg-primary/20 text-primary px-1.5 rounded">{p.badge}</span>}
+                        </div>
+                        <p className="text-xs text-muted-foreground">{p.category} · €{Number(p.price).toFixed(2)} · Stock: {p.stock}</p>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button size="sm" variant="outline" onClick={() => openEditProduct(p)} className="h-7 px-2 text-xs"><Edit className="h-3 w-3" /></Button>
+                        <Button size="sm" variant="outline" onClick={() => deleteProduct(p.id)} className="h-7 px-2 text-xs text-destructive border-destructive/30"><Trash2 className="h-3 w-3" /></Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Settings */}
           {tab === "settings" && (
             <div>
