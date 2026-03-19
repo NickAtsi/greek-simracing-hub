@@ -206,7 +206,71 @@ const Admin = () => {
     setForumCats((data as any[]) || []);
   };
 
-  // CRUD operations
+  const fetchShopProducts = async () => {
+    const { data } = await supabase.from("shop_products" as any).select("*").order("created_at", { ascending: false });
+    setShopProducts((data as any[]) || []);
+  };
+
+  const fetchShopOrders = async () => {
+    const { data } = await supabase.from("shop_orders" as any).select("*, shop_order_items(*), profiles!user_id(display_name, username)").order("created_at", { ascending: false });
+    setShopOrders((data as any[]) || []);
+  };
+
+  const saveProduct = async () => {
+    const payload = {
+      name: productForm.name,
+      description: productForm.description || null,
+      price: parseFloat(productForm.price) || 0,
+      original_price: productForm.original_price ? parseFloat(productForm.original_price) : null,
+      image_url: productForm.image_url || null,
+      category: productForm.category,
+      badge: productForm.badge || null,
+      sizes: productForm.sizes ? productForm.sizes.split(",").map((s: string) => s.trim()).filter(Boolean) : null,
+      stock: parseInt(productForm.stock) || 0,
+      active: productForm.active,
+    };
+    if (editingProduct) {
+      await supabase.from("shop_products" as any).update(payload as any).eq("id", editingProduct.id);
+      toast({ title: "Προϊόν ενημερώθηκε!" });
+    } else {
+      await supabase.from("shop_products" as any).insert(payload as any);
+      toast({ title: "Προϊόν προστέθηκε!" });
+    }
+    setShowProductForm(false);
+    setEditingProduct(null);
+    fetchShopProducts();
+  };
+
+  const deleteProduct = async (id: string) => {
+    await supabase.from("shop_products" as any).delete().eq("id", id);
+    toast({ title: "Προϊόν διαγράφηκε" });
+    fetchShopProducts();
+  };
+
+  const updateOrderStatus = async (orderId: string, status: string) => {
+    await supabase.from("shop_orders" as any).update({ status } as any).eq("id", orderId);
+    toast({ title: "Κατάσταση παραγγελίας ενημερώθηκε!" });
+    fetchShopOrders();
+  };
+
+  const openEditProduct = (p: any) => {
+    setEditingProduct(p);
+    setProductForm({
+      name: p.name || "",
+      description: p.description || "",
+      price: p.price?.toString() || "",
+      original_price: p.original_price?.toString() || "",
+      image_url: p.image_url || "",
+      category: p.category || "Ρούχα",
+      badge: p.badge || "",
+      sizes: (p.sizes || []).join(", "),
+      stock: p.stock?.toString() || "0",
+      active: p.active ?? true,
+    });
+    setShowProductForm(true);
+  };
+
+
   const deleteArticle = async (id: string) => {
     await supabase.from("articles" as any).delete().eq("id", id);
     toast({ title: "Άρθρο διαγράφηκε" }); fetchArticles();
