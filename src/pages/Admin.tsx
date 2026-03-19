@@ -1198,6 +1198,24 @@ const Admin = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={!!confirmAction} onOpenChange={(open) => { if (!open) setConfirmAction(null); }}>
+        <AlertDialogContent className="bg-card border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-display text-foreground">{confirmAction?.title}</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground whitespace-pre-line">
+              {confirmAction?.description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-border">Ακύρωση</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { confirmAction?.action(); setConfirmAction(null); }} className="bg-primary hover:bg-primary/90">
+              Επιβεβαίωση
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
