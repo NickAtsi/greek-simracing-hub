@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import RichTextEditor from "@/components/RichTextEditor";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -261,12 +262,11 @@ const Articles = () => {
                 <option key={cat.id} value={cat.id}>{cat.name}</option>
               ))}
             </select>
-            <Textarea
-              placeholder="Περιεχόμενο άρθρου..."
+            <RichTextEditor
               value={newContent}
-              onChange={(e) => setNewContent(e.target.value)}
-              rows={8}
-              className="resize-none bg-secondary/50 border-border"
+              onChange={setNewContent}
+              placeholder="Γράψε το περιεχόμενο του άρθρου..."
+              minHeight={350}
             />
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setShowCreate(false)}>Ακύρωση</Button>

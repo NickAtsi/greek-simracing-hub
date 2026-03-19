@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { MessageSquare, Plus, Pin, Lock, Eye, ChevronRight, Users, TrendingUp, Clock, ArrowLeft, Send, Pencil, Trash2 } from "lucide-react";
+import MDEditor from "@uiw/react-md-editor";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import RichTextEditor from "@/components/RichTextEditor";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -245,7 +247,7 @@ const CategoryThreads = ({ categoryId }: { categoryId: string }) => {
           </DialogHeader>
           <div className="space-y-4">
             <Input placeholder="Τίτλος thread..." value={newTitle} onChange={(e) => setNewTitle(e.target.value)} className="bg-secondary/50 border-border" />
-            <Textarea placeholder="Περιεχόμενο..." value={newContent} onChange={(e) => setNewContent(e.target.value)} rows={6} className="resize-none bg-secondary/50 border-border" />
+            <RichTextEditor value={newContent} onChange={setNewContent} placeholder="Γράψε το περιεχόμενο..." minHeight={250} />
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setShowCreate(false)}>Ακύρωση</Button>
               <Button onClick={handleCreate} disabled={submitting} className="bg-gradient-greek text-white hover:brightness-110">
@@ -466,7 +468,9 @@ const ThreadView = ({ threadId }: { threadId: string }) => {
                           </div>
                         </div>
                       ) : (
-                        <p className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                        <div data-color-mode="dark">
+                          <MDEditor.Markdown source={msg.content} style={{ backgroundColor: 'transparent' }} />
+                        </div>
                       )}
                     </div>
                   </div>

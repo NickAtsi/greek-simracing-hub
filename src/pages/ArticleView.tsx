@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Heart, MessageCircle, Eye, ArrowLeft, Clock, Pin, Pencil, Trash2, Send } from "lucide-react";
+import MDEditor from "@uiw/react-md-editor";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -226,8 +227,8 @@ const ArticleView = () => {
             )}
 
             {/* Content */}
-            <div className="prose prose-invert max-w-none mb-8">
-              <p className="text-foreground leading-relaxed whitespace-pre-wrap text-[15px]">{article.content}</p>
+            <div className="prose prose-invert max-w-none mb-8" data-color-mode="dark">
+              <MDEditor.Markdown source={article.content} style={{ backgroundColor: 'transparent' }} />
             </div>
 
             {/* Like + Stats bar */}

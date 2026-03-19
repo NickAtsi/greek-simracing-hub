@@ -36,7 +36,10 @@ const Admin = () => {
   const { toast } = useToast();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [tab, setTab] = useState<AdminTab>("dashboard");
-  const [stats, setStats] = useState({ users: 0, articles: 0, threads: 0, posts: 0, podcasts: 0 });
+  const [stats, setStats] = useState({ users: 0, articles: 0, threads: 0, posts: 0, podcasts: 0, pendingUsers: 0, openTickets: 0, totalViews: 0 });
+  const [recentUsers, setRecentUsers] = useState<any[]>([]);
+  const [recentArticles, setRecentArticles] = useState<any[]>([]);
+  const [recentThreads, setRecentThreads] = useState<any[]>([]);
   const [userSearch, setUserSearch] = useState("");
   const [userRoleFilter, setUserRoleFilter] = useState("all");
   const [userSort, setUserSort] = useState("newest");
@@ -72,6 +75,7 @@ const Admin = () => {
   useEffect(() => {
     if (isAdmin) {
       fetchStats();
+      if (tab === "dashboard") { fetchRecentActivity(); }
       if (tab === "users") fetchUsers();
       if (tab === "articles") fetchArticles();
       if (tab === "forum") fetchThreads();
@@ -89,14 +93,28 @@ const Admin = () => {
   };
 
   const fetchStats = async () => {
-    const [{ count: u }, { count: a }, { count: t }, { count: p }, { count: pods }] = await Promise.all([
+    const [{ count: u }, { count: a }, { count: t }, { count: p }, { count: pods }, { count: pending }, { count: openTix }] = await Promise.all([
       supabase.from("profiles").select("*", { count: "exact", head: true }),
       supabase.from("articles" as any).select("*", { count: "exact", head: true }),
       supabase.from("forum_threads" as any).select("*", { count: "exact", head: true }),
       supabase.from("forum_posts" as any).select("*", { count: "exact", head: true }),
       supabase.from("podcast_episodes" as any).select("*", { count: "exact", head: true }),
+      supabase.from("profiles").select("*", { count: "exact", head: true }).eq("is_approved", false),
+      supabase.from("support_tickets" as any).select("*", { count: "exact", head: true }).in("status", ["open", "in_progress"]),
     ]);
-    setStats({ users: u || 0, articles: a || 0, threads: t || 0, posts: p || 0, podcasts: pods || 0 });
+    // Get total article views
+    const { data: viewsData } = await supabase.from("articles" as any).select("views");
+    const totalViews = ((viewsData as any[]) || []).reduce((sum: number, a: any) => sum + (a.views || 0), 0);
+    setStats({ users: u || 0, articles: a || 0, threads: t || 0, posts: p || 0, podcasts: pods || 0, pendingUsers: pending || 0, openTickets: openTix || 0, totalViews });
+  };
+
+  const fetchRecentActivity = async () => {
+    const { data: ru } = await supabase.from("profiles").select("*").order("created_at", { ascending: false }).limit(5);
+    setRecentUsers((ru as any[]) || []);
+    const { data: ra } = await supabase.from("articles" as any).select("id, title, created_at, views, author_id").order("created_at", { ascending: false }).limit(5);
+    setRecentArticles((ra as any[]) || []);
+    const { data: rt } = await supabase.from("forum_threads" as any).select("id, title, created_at, views, author_id").order("created_at", { ascending: false }).limit(5);
+    setRecentThreads((rt as any[]) || []);
   };
 
   const fetchUsers = async () => {
@@ -371,32 +389,174 @@ const Admin = () => {
           {/* Dashboard */}
           {tab === "dashboard" && (
             <div>
-              <h1 className="font-display text-2xl font-black text-foreground mb-6">Dashboard</h1>
-              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4 mb-8">
-                <StatCard icon={Users} label="Χρήστες" value={stats.users} color="bg-primary" />
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h1 className="font-display text-2xl font-black text-foreground">Dashboard</h1>
+                  <p className="text-sm text-muted-foreground">Καλώς ήρθες πίσω! Ορίστε μια σύνοψη της πλατφόρμας.</p>
+                </div>
+                <Button onClick={() => { fetchStats(); fetchRecentActivity(); }} variant="outline" size="sm" className="gap-2">
+                  <RefreshCw className="h-3.5 w-3.5" /> Ανανέωση
+                </Button>
+              </div>
+
+              {/* Primary Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <StatCard icon={Users} label="Σύνολο Χρηστών" value={stats.users} color="bg-primary" />
                 <StatCard icon={FileText} label="Άρθρα" value={stats.articles} color="bg-green-700" />
                 <StatCard icon={MessageSquare} label="Threads" value={stats.threads} color="bg-purple-700" />
-                <StatCard icon={Activity} label="Posts" value={stats.posts} color="bg-orange-700" />
-                <StatCard icon={Headphones} label="Podcasts" value={stats.podcasts} color="bg-blue-700" />
+                <StatCard icon={Eye} label="Συνολικές Προβολές" value={stats.totalViews.toLocaleString()} color="bg-blue-700" />
               </div>
-              <div className="rounded-xl border border-border bg-card p-6">
-                <h2 className="font-display text-base font-bold text-foreground mb-4 flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-primary" /> Γρήγορες Ενέργειες
-                </h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {[
-                    { label: "Διαχείριση Χρηστών", onClick: () => setTab("users") },
-                    { label: "Νέο Podcast", onClick: () => { setTab("podcasts"); setShowPodcastForm(true); } },
-                    { label: "Κατηγορίες Forum", onClick: () => setTab("categories") },
-                    { label: "Διαχείριση Άρθρων", onClick: () => setTab("articles") },
-                    { label: "Διαχείριση Forum", onClick: () => setTab("forum") },
-                    { label: "Ρυθμίσεις Site", onClick: () => setTab("settings") },
-                  ].map((a) => (
-                    <button key={a.label} onClick={a.onClick}
-                      className="flex items-center justify-between rounded-lg border border-border bg-secondary/30 hover:bg-secondary/60 transition-all px-4 py-3 text-sm font-medium text-foreground">
-                      {a.label} <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                    </button>
-                  ))}
+
+              {/* Secondary Stats */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-amber-500/20 flex items-center justify-center">
+                    <Clock className="h-5 w-5 text-amber-500" />
+                  </div>
+                  <div>
+                    <p className="text-xl font-display font-black text-amber-500">{stats.pendingUsers}</p>
+                    <p className="text-xs text-muted-foreground">Σε αναμονή</p>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-orange-500/20 flex items-center justify-center">
+                    <Ticket className="h-5 w-5 text-orange-500" />
+                  </div>
+                  <div>
+                    <p className="text-xl font-display font-black text-orange-500">{stats.openTickets}</p>
+                    <p className="text-xs text-muted-foreground">Ανοιχτά Tickets</p>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                    <Activity className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-xl font-display font-black text-foreground">{stats.posts}</p>
+                    <p className="text-xs text-muted-foreground">Forum Posts</p>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-border bg-card p-4 flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-lg bg-green-500/20 flex items-center justify-center">
+                    <Headphones className="h-5 w-5 text-green-500" />
+                  </div>
+                  <div>
+                    <p className="text-xl font-display font-black text-foreground">{stats.podcasts}</p>
+                    <p className="text-xs text-muted-foreground">Επεισόδια Podcast</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recent Activity Grid */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                {/* Recent Users */}
+                <div className="rounded-xl border border-border bg-card">
+                  <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+                    <h3 className="font-display text-sm font-bold text-foreground flex items-center gap-2">
+                      <Users className="h-4 w-4 text-primary" /> Πρόσφατοι Χρήστες
+                    </h3>
+                    <button onClick={() => setTab("users")} className="text-xs text-primary hover:underline">Δες όλους →</button>
+                  </div>
+                  <div className="divide-y divide-border/50">
+                    {recentUsers.map((u: any) => (
+                      <div key={u.id} className="flex items-center gap-3 px-5 py-3">
+                        <Avatar className="h-8 w-8">
+                          <AvatarFallback className="bg-primary/20 text-primary text-xs font-bold">{(u.display_name || "?").slice(0, 1).toUpperCase()}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{u.display_name || "—"}</p>
+                          <p className="text-xs text-muted-foreground">@{u.username || "—"}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {u.is_approved ? (
+                            <span className="inline-flex items-center rounded-full bg-green-500/15 px-2 py-0.5 text-[10px] font-bold text-green-500">Εγκρίθηκε</span>
+                          ) : (
+                            <span className="inline-flex items-center rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold text-amber-500">Αναμονή</span>
+                          )}
+                          <span className="text-[10px] text-muted-foreground">{new Date(u.created_at).toLocaleDateString("el-GR")}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Recent Articles */}
+                <div className="rounded-xl border border-border bg-card">
+                  <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+                    <h3 className="font-display text-sm font-bold text-foreground flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-primary" /> Πρόσφατα Άρθρα
+                    </h3>
+                    <button onClick={() => setTab("articles")} className="text-xs text-primary hover:underline">Δες όλα →</button>
+                  </div>
+                  <div className="divide-y divide-border/50">
+                    {recentArticles.length === 0 ? (
+                      <p className="px-5 py-8 text-center text-sm text-muted-foreground">Δεν υπάρχουν άρθρα ακόμα.</p>
+                    ) : recentArticles.map((a: any) => (
+                      <div key={a.id} className="flex items-center gap-3 px-5 py-3">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{a.title}</p>
+                          <p className="text-xs text-muted-foreground">{new Date(a.created_at).toLocaleDateString("el-GR")}</p>
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Eye className="h-3 w-3" /> {a.views || 0}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Recent Threads + Quick Actions */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Recent Threads */}
+                <div className="rounded-xl border border-border bg-card">
+                  <div className="flex items-center justify-between px-5 py-4 border-b border-border">
+                    <h3 className="font-display text-sm font-bold text-foreground flex items-center gap-2">
+                      <MessageSquare className="h-4 w-4 text-primary" /> Πρόσφατα Threads
+                    </h3>
+                    <button onClick={() => setTab("forum")} className="text-xs text-primary hover:underline">Δες όλα →</button>
+                  </div>
+                  <div className="divide-y divide-border/50">
+                    {recentThreads.length === 0 ? (
+                      <p className="px-5 py-8 text-center text-sm text-muted-foreground">Δεν υπάρχουν threads ακόμα.</p>
+                    ) : recentThreads.map((t: any) => (
+                      <div key={t.id} className="flex items-center gap-3 px-5 py-3">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{t.title}</p>
+                          <p className="text-xs text-muted-foreground">{new Date(t.created_at).toLocaleDateString("el-GR")}</p>
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Eye className="h-3 w-3" /> {t.views || 0}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Quick Actions */}
+                <div className="rounded-xl border border-border bg-card">
+                  <div className="px-5 py-4 border-b border-border">
+                    <h3 className="font-display text-sm font-bold text-foreground flex items-center gap-2">
+                      <TrendingUp className="h-4 w-4 text-primary" /> Γρήγορες Ενέργειες
+                    </h3>
+                  </div>
+                  <div className="p-4 grid grid-cols-2 gap-3">
+                    {[
+                      { label: "Διαχείριση Χρηστών", onClick: () => setTab("users"), icon: Users },
+                      { label: "Νέο Podcast", onClick: () => { setTab("podcasts"); setShowPodcastForm(true); }, icon: Headphones },
+                      { label: "Support Tickets", onClick: () => setTab("support"), icon: Ticket },
+                      { label: "Διαχείριση Άρθρων", onClick: () => setTab("articles"), icon: FileText },
+                      { label: "Κατηγορίες", onClick: () => setTab("categories"), icon: BookOpen },
+                      { label: "Ρυθμίσεις", onClick: () => setTab("settings"), icon: Settings },
+                    ].map((a) => (
+                      <button key={a.label} onClick={a.onClick}
+                        className="flex items-center gap-3 rounded-lg border border-border bg-secondary/30 hover:bg-secondary/60 transition-all px-4 py-3 text-sm font-medium text-foreground text-left">
+                        <a.icon className="h-4 w-4 text-primary flex-shrink-0" />
+                        <span className="flex-1">{a.label}</span>
+                        <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
