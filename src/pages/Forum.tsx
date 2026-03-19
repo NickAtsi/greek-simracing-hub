@@ -483,13 +483,7 @@ const ThreadView = ({ threadId }: { threadId: string }) => {
             user ? (
               <div className="rounded-xl border border-border bg-card p-5">
                 <h3 className="font-display text-sm font-bold text-foreground mb-3">Απάντηση</h3>
-                <Textarea
-                  placeholder="Γράψε την απάντησή σου..."
-                  value={newPost}
-                  onChange={(e) => setNewPost(e.target.value)}
-                  rows={4}
-                  className="resize-none bg-secondary/50 border-border mb-3"
-                />
+                <RichTextEditor value={newPost} onChange={setNewPost} placeholder="Γράψε την απάντησή σου..." minHeight={200} />
                 <div className="flex justify-end">
                   <Button onClick={handleReply} disabled={submitting} className="gap-2 bg-gradient-greek text-white hover:brightness-110">
                     <Send className="h-4 w-4" /> {submitting ? "Αποστολή..." : "Απάντηση"}
