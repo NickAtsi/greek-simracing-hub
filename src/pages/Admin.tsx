@@ -71,6 +71,12 @@ const Admin = () => {
   const [profileForm, setProfileForm] = useState({ display_name: "", username: "", favorite_sim: "", favorite_track: "", setup_type: "" });
   const [siteSettings, setSiteSettings] = useState<Record<string, string>>({ ...defaultSettings });
   const [confirmAction, setConfirmAction] = useState<{ title: string; description: string; action: () => void } | null>(null);
+  const [shopProducts, setShopProducts] = useState<any[]>([]);
+  const [shopOrders, setShopOrders] = useState<any[]>([]);
+  const [shopTab, setShopTab] = useState<"products" | "orders">("orders");
+  const [showProductForm, setShowProductForm] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [productForm, setProductForm] = useState({ name: "", description: "", price: "", original_price: "", image_url: "", category: "Ρούχα", badge: "", sizes: "", stock: "10", active: true });
 
   useEffect(() => {
     if (!loading && user) checkAdmin();
