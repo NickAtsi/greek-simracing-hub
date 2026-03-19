@@ -130,11 +130,11 @@ const Footer = () => {
           ))}
         </div>
 
-        <div className="mt-12 border-t border-border/40 pt-6 flex flex-col items-center justify-between gap-4 sm:flex-row">
+        <div className="mt-12 border-t border-border/40 pt-6 pb-14 sm:pb-0 flex flex-col items-center justify-between gap-4 sm:flex-row">
           <p className="font-body text-xs text-muted-foreground">
             © {new Date().getFullYear()} {settings.site_name || "GreekSimRacers"}. Όλα τα δικαιώματα κατοχυρωμένα.
           </p>
-          <p className="font-body text-xs text-muted-foreground/50">
+          <p className="font-body text-xs text-muted-foreground/50 sm:pr-16">
             {settings.footer_text || "Made with ❤️ in Greece"}
           </p>
         </div>
