@@ -92,6 +92,7 @@ const Admin = () => {
       if (tab === "podcasts") fetchPodcasts();
       if (tab === "categories") { fetchCategories(); fetchForumCats(); }
       if (tab === "support") fetchSupportTickets();
+      if (tab === "shop") { fetchShopProducts(); fetchShopOrders(); }
       if (tab === "settings") fetchSiteSettings();
     }
   }, [isAdmin, tab]);
