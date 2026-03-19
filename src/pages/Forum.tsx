@@ -246,7 +246,7 @@ const CategoryThreads = ({ categoryId }: { categoryId: string }) => {
           </DialogHeader>
           <div className="space-y-4">
             <Input placeholder="Τίτλος thread..." value={newTitle} onChange={(e) => setNewTitle(e.target.value)} className="bg-secondary/50 border-border" />
-            <Textarea placeholder="Περιεχόμενο..." value={newContent} onChange={(e) => setNewContent(e.target.value)} rows={6} className="resize-none bg-secondary/50 border-border" />
+            <RichTextEditor value={newContent} onChange={setNewContent} placeholder="Γράψε το περιεχόμενο..." minHeight={250} />
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={() => setShowCreate(false)}>Ακύρωση</Button>
               <Button onClick={handleCreate} disabled={submitting} className="bg-gradient-greek text-white hover:brightness-110">
