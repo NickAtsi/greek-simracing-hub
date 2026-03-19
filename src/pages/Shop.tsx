@@ -133,6 +133,17 @@ const Shop = () => {
 
       await supabase.from("shop_order_items" as any).insert(items as any);
 
+      // Notify admin via Discord
+      supabase.functions.invoke('notify-admin-order', {
+        body: {
+          order_id: (order as any).id,
+          full_name: checkoutForm.full_name,
+          email: checkoutForm.email,
+          total: cartTotal,
+          items_count: cart.reduce((s, c) => s + c.qty, 0),
+        },
+      }).catch(console.error);
+
       setOrderSuccess(true);
       setCart([]);
       setCheckoutForm({ full_name: "", email: "", address: "", city: "", postal_code: "", phone: "", notes: "" });
