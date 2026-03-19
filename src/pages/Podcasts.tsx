@@ -7,16 +7,16 @@ import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
 
 // Equalizer bar animation component
-const EqualizerBars = ({ count = 12, className = "" }: { count?: number; className?: string }) => {
+const EqualizerBars = ({ count = 12, className = "", height = 60 }: { count?: number; className?: string; height?: number }) => {
   return (
-    <div className={`flex items-end gap-[3px] ${className}`}>
+    <div className={`flex items-end gap-[3px] ${className}`} style={{ height, minHeight: height }}>
       {Array.from({ length: count }).map((_, i) => (
         <motion.div
           key={i}
           className="w-[3px] rounded-t-sm bg-primary"
           style={{ originY: 1 }}
           animate={{
-            height: ["8px", `${20 + Math.random() * 40}px`, "8px", `${15 + Math.random() * 35}px`, "8px"],
+            height: ["8px", `${Math.min(20 + Math.random() * 40, height)}px`, "8px", `${Math.min(15 + Math.random() * 35, height)}px`, "8px"],
             opacity: [0.4, 1, 0.6, 1, 0.4],
           }}
           transition={{
