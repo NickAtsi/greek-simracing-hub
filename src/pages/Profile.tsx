@@ -70,10 +70,19 @@ const Profile = () => {
   const fetchComments = async () => {
     const { data } = await supabase
       .from("profile_comments" as any)
-      .select("*, profiles!author_id(display_name, username, avatar_url)")
+      .select("*")
       .eq("profile_user_id", profileUserId)
       .order("created_at", { ascending: false });
-    setComments((data as any[]) || []);
+    const commentsArr = (data as any[]) || [];
+    // Fetch author profiles separately since there's no FK
+    const authorIds = [...new Set(commentsArr.map((c: any) => c.author_id))];
+    if (authorIds.length > 0) {
+      const { data: profilesData } = await supabase.from("profiles").select("user_id, display_name, username, avatar_url").in("user_id", authorIds);
+      const profilesMap: Record<string, any> = {};
+      ((profilesData as any[]) || []).forEach((p: any) => { profilesMap[p.user_id] = p; });
+      commentsArr.forEach((c: any) => { c.profiles = profilesMap[c.author_id] || null; });
+    }
+    setComments(commentsArr);
   };
 
   const fetchLikes = async () => {
