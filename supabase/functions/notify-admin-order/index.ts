@@ -41,12 +41,10 @@ serve(async (req) => {
       }),
     });
 
+    const responseText = await response.text().catch(() => '');
     if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`Discord webhook failed [${response.status}]: ${text}`);
+      throw new Error(`Discord webhook failed [${response.status}]: ${responseText}`);
     }
-
-    await response.text().catch(() => {});
 
     return new Response(JSON.stringify({ success: true }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
