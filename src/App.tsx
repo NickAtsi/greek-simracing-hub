@@ -23,6 +23,7 @@ import Privacy from "./pages/Privacy";
 import Podcasts from "./pages/Podcasts";
 import Shop from "./pages/Shop";
 import Members from "./pages/Members";
+import Championships from "./pages/Championships";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +56,7 @@ const App = () => (
             <Route path="/podcasts" element={<Podcasts />} />
             <Route path="/shop" element={<Shop />} />
             <Route path="/members" element={<Members />} />
+            <Route path="/championships" element={<Championships />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
