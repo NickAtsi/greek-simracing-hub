@@ -405,56 +405,138 @@ const Admin = () => {
           {/* Users */}
           {tab === "users" && (
             <div>
-              <div className="flex items-center justify-between mb-6">
-                <h1 className="font-display text-2xl font-black text-foreground">Χρήστες ({stats.users})</h1>
-                <Button onClick={fetchUsers} variant="outline" size="sm" className="gap-1"><RefreshCw className="h-3.5 w-3.5" /></Button>
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h1 className="font-display text-2xl font-black text-foreground">Χρήστες ({users.length})</h1>
+                  <p className="text-sm text-muted-foreground">Διαχείριση εγκρίσεων, admin ρόλων και στοιχείων προφίλ.</p>
+                </div>
+                <Button onClick={fetchUsers} variant="outline" size="sm" className="gap-2">
+                  <RefreshCw className="h-3.5 w-3.5" /> Ανανέωση
+                </Button>
               </div>
+
+              {/* Stats Cards */}
+              <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <p className="text-sm text-muted-foreground">Εγκεκριμένοι</p>
+                  <p className="text-2xl font-display font-black text-primary">{users.filter((u: any) => u.is_approved).length}</p>
+                </div>
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <p className="text-sm text-muted-foreground">Σε αναμονή</p>
+                  <p className="text-2xl font-display font-black text-amber-500">{users.filter((u: any) => !u.is_approved).length}</p>
+                </div>
+                <div className="rounded-xl border border-border bg-card p-4">
+                  <p className="text-sm text-muted-foreground">Admins</p>
+                  <p className="text-2xl font-display font-black text-primary">{Object.values(userRoles).filter(r => r === "Admin").length}</p>
+                </div>
+              </div>
+
+              {/* Search & Filters */}
+              <div className="grid grid-cols-[1fr_auto_auto_auto] gap-3 mb-6">
+                <Input
+                  placeholder="Αναζήτηση χρήστη, username, sim, track..."
+                  value={userSearch}
+                  onChange={(e) => setUserSearch(e.target.value)}
+                  className="h-10 bg-secondary/50 border-border"
+                />
+                <select
+                  value={userRoleFilter}
+                  onChange={(e) => setUserRoleFilter(e.target.value)}
+                  className="h-10 rounded-md border border-border bg-secondary/50 px-3 text-sm text-foreground"
+                >
+                  <option value="all">Όλοι</option>
+                  <option value="approved">Εγκεκριμένοι</option>
+                  <option value="pending">Σε αναμονή</option>
+                  <option value="admin">Admins</option>
+                </select>
+                <select
+                  value={userSort}
+                  onChange={(e) => setUserSort(e.target.value)}
+                  className="h-10 rounded-md border border-border bg-secondary/50 px-3 text-sm text-foreground"
+                >
+                  <option value="newest">Νεότεροι πρώτα</option>
+                  <option value="oldest">Παλαιότεροι πρώτα</option>
+                  <option value="name">Αλφαβητικά</option>
+                </select>
+                <Button variant="outline" className="h-10" onClick={() => { setUserSearch(""); setUserRoleFilter("all"); setUserSort("newest"); }}>
+                  Καθαρισμός φίλτρων
+                </Button>
+              </div>
+
+              {/* Users Table */}
               <div className="rounded-xl border border-border overflow-hidden">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="bg-secondary/30 border-b border-border">
                       <th className="text-left px-4 py-3 font-display text-xs text-muted-foreground uppercase">Χρήστης</th>
-                      <th className="text-left px-4 py-3 font-display text-xs text-muted-foreground uppercase">Username</th>
                       <th className="text-left px-4 py-3 font-display text-xs text-muted-foreground uppercase">Κατάσταση</th>
+                      <th className="text-left px-4 py-3 font-display text-xs text-muted-foreground uppercase">Ρόλος</th>
                       <th className="text-left px-4 py-3 font-display text-xs text-muted-foreground uppercase">Εγγραφή</th>
                       <th className="text-left px-4 py-3 font-display text-xs text-muted-foreground uppercase">Sim</th>
+                      <th className="text-left px-4 py-3 font-display text-xs text-muted-foreground uppercase">Track</th>
                       <th className="text-right px-4 py-3 font-display text-xs text-muted-foreground uppercase">Ενέργειες</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {users.map((u: any) => (
+                    {users
+                      .filter((u: any) => {
+                        const search = userSearch.toLowerCase();
+                        const matchesSearch = !search ||
+                          (u.display_name || "").toLowerCase().includes(search) ||
+                          (u.username || "").toLowerCase().includes(search) ||
+                          (u.favorite_sim || "").toLowerCase().includes(search) ||
+                          (u.favorite_track || "").toLowerCase().includes(search);
+                        const matchesRole =
+                          userRoleFilter === "all" ||
+                          (userRoleFilter === "approved" && u.is_approved) ||
+                          (userRoleFilter === "pending" && !u.is_approved) ||
+                          (userRoleFilter === "admin" && userRoles[u.user_id] === "Admin");
+                        return matchesSearch && matchesRole;
+                      })
+                      .sort((a: any, b: any) => {
+                        if (userSort === "newest") return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+                        if (userSort === "oldest") return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+                        return (a.display_name || "").localeCompare(b.display_name || "");
+                      })
+                      .map((u: any) => (
                       <tr key={u.id} className="border-b border-border/50 hover:bg-secondary/10 transition-colors">
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
-                            <Avatar className="h-7 w-7">
-                              <AvatarFallback className="bg-primary/20 text-primary text-xs">{(u.display_name || u.username || "?").slice(0, 1).toUpperCase()}</AvatarFallback>
+                            <Avatar className="h-8 w-8">
+                              <AvatarFallback className="bg-primary/20 text-primary text-xs font-bold">{(u.display_name || u.username || "?").slice(0, 1).toUpperCase()}</AvatarFallback>
                             </Avatar>
-                            <span className="font-medium text-foreground">{u.display_name || "—"}</span>
+                            <div>
+                              <span className="font-medium text-foreground block">{u.display_name || "—"}</span>
+                              <span className="text-xs text-muted-foreground">@{u.username || "—"}</span>
+                            </div>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-muted-foreground">@{u.username || "—"}</td>
                         <td className="px-4 py-3">
                           {u.is_approved ? (
                             <span className="inline-flex items-center gap-1 rounded-full bg-green-500/15 px-2.5 py-0.5 text-[10px] font-bold text-green-500 uppercase tracking-wider">
-                              <Check className="h-3 w-3" /> Εγκρίθηκε
+                              Εγκρίθηκε
                             </span>
                           ) : (
                             <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2.5 py-0.5 text-[10px] font-bold text-amber-500 uppercase tracking-wider">
-                              <Clock className="h-3 w-3" /> Αναμονή
+                              Αναμονή
                             </span>
                           )}
                         </td>
+                        <td className="px-4 py-3 text-muted-foreground text-xs">{userRoles[u.user_id] || "Member"}</td>
                         <td className="px-4 py-3 text-muted-foreground text-xs">{new Date(u.created_at).toLocaleDateString("el-GR")}</td>
                         <td className="px-4 py-3 text-muted-foreground text-xs">{u.favorite_sim || "—"}</td>
+                        <td className="px-4 py-3 text-muted-foreground text-xs">{u.favorite_track || "—"}</td>
                         <td className="px-4 py-3">
-                          <div className="flex items-center justify-end gap-1">
+                          <div className="flex items-center justify-end gap-1.5">
                             <Button size="sm" variant="outline" onClick={() => toggleApproval(u.user_id, u.is_approved)}
-                              className={`h-7 px-2 text-xs gap-1 ${u.is_approved ? "text-amber-500 border-amber-500/30" : "text-green-500 border-green-500/30"}`}>
-                              {u.is_approved ? <><X className="h-3 w-3" />Απόρριψη</> : <><Check className="h-3 w-3" />Έγκριση</>}
+                              className={`h-7 px-2.5 text-xs gap-1 ${u.is_approved ? "text-amber-500 border-amber-500/30 hover:bg-amber-500/10" : "text-green-500 border-green-500/30 hover:bg-green-500/10"}`}>
+                              {u.is_approved ? "Αφαίρεση έγκρισης" : "Έγκριση"}
                             </Button>
-                            <Button size="sm" variant="outline" onClick={() => openEditProfile(u)} className="h-7 px-2 text-xs gap-1"><Edit className="h-3 w-3" /></Button>
-                            <Button size="sm" variant="outline" onClick={() => handleGrantAdmin(u.user_id)} className="h-7 px-2 text-xs text-primary border-primary/30 gap-1">
-                              <Shield className="h-3 w-3" />Admin
+                            <Button size="sm" variant="outline" onClick={() => openEditProfile(u)} className="h-7 px-2.5 text-xs gap-1">
+                              <Edit className="h-3 w-3" /> Edit
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => handleGrantAdmin(u.user_id)} className="h-7 px-2.5 text-xs text-primary border-primary/30 hover:bg-primary/10 gap-1">
+                              Make Admin
                             </Button>
                           </div>
                         </td>
