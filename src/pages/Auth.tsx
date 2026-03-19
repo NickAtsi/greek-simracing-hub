@@ -203,9 +203,13 @@ const Auth = () => {
         }
 
         // Notify admin via Discord webhook
-        supabase.functions.invoke('notify-admin-signup', {
+        const { error: notifyError } = await supabase.functions.invoke('notify-admin-signup', {
           body: { email, display_name: displayName },
-        }).catch(console.error);
+        });
+
+        if (notifyError) {
+          console.error('notify-admin-signup failed:', notifyError);
+        }
 
         // Sign out immediately - admin needs to approve first
         await supabase.auth.signOut();
