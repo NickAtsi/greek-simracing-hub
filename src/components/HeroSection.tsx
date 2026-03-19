@@ -17,22 +17,15 @@ const HeroSection = () => {
 
   return (
     <section ref={ref} className="relative flex min-h-screen items-center justify-center overflow-hidden pt-16">
-
       {/* === PARALLAX LAYER 0: deep ambient orbs === */}
-      <motion.div
-        className="absolute inset-0 pointer-events-none"
-        style={{ y: yBg, scale }}
-      >
+      <motion.div className="absolute inset-0 pointer-events-none" style={{ y: yBg, scale }}>
         <div className="absolute top-1/4 left-1/4 h-[600px] w-[600px] rounded-full bg-primary/8 blur-[180px]" />
         <div className="absolute bottom-1/4 right-1/4 h-[400px] w-[400px] rounded-full bg-accent/6 blur-[150px]" />
         <div className="absolute top-3/4 left-1/2 h-[300px] w-[300px] rounded-full bg-primary/4 blur-[120px]" />
       </motion.div>
 
       {/* === PARALLAX LAYER 1: grid lines === */}
-      <motion.div
-        className="absolute inset-0 pointer-events-none"
-        style={{ y: yMid }}
-      >
+      <motion.div className="absolute inset-0 pointer-events-none" style={{ y: yMid }}>
         {/* Horizontal speed lines */}
         <div className="absolute top-[35%] left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/15 to-transparent" />
         <div className="absolute top-[65%] left-0 right-0 h-px bg-gradient-to-r from-transparent via-accent/10 to-transparent" />
@@ -136,7 +129,7 @@ const HeroSection = () => {
           className="mx-auto mt-8 max-w-lg font-body text-base text-muted-foreground leading-relaxed sm:text-lg"
         >
           Η #1 πλατφόρμα για Έλληνες SimRacers.{" "}
-          <span className="text-foreground/70">Forum, Podcasts, Fantasy League και Gaming κοινότητα.</span>
+          <span className="text-foreground/70">Forum, Podcasts, Reaction Time και Gaming κοινότητα.</span>
         </motion.p>
 
         {/* CTAs */}
