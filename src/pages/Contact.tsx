@@ -69,7 +69,7 @@ const Contact = () => {
                   icon: MessageSquare,
                   title: "Discord",
                   desc: "Γίνε μέλος της κοινότητάς μας",
-                  value: "discord.gg/v5RsBTnPpY",
+                  value: (settings.discord_invite || "discord.gg/v5RsBTnPpY").replace("https://", ""),
                   color: "text-indigo-400",
                   bg: "bg-indigo-400/10",
                 },
