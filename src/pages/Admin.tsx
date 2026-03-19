@@ -37,6 +37,10 @@ const Admin = () => {
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [tab, setTab] = useState<AdminTab>("dashboard");
   const [stats, setStats] = useState({ users: 0, articles: 0, threads: 0, posts: 0, podcasts: 0 });
+  const [userSearch, setUserSearch] = useState("");
+  const [userRoleFilter, setUserRoleFilter] = useState("all");
+  const [userSort, setUserSort] = useState("newest");
+  const [userRoles, setUserRoles] = useState<Record<string, string>>({});
 
   // Data states
   const [users, setUsers] = useState<any[]>([]);
