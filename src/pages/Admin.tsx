@@ -164,7 +164,8 @@ const Admin = () => {
 
   const saveSiteSetting = async (key: string, value: string) => {
     await supabase.from("site_settings" as any).upsert({ key, value, updated_at: new Date().toISOString() } as any, { onConflict: "key" });
-    toast({ title: "Ρύθμιση αποθηκεύτηκε!" });
+    await refreshSettingsCache();
+    toast({ title: "Ρύθμιση αποθηκεύτηκε! ✅", description: "Η αλλαγή εφαρμόστηκε αμέσως στο site." });
   };
 
   const handleAdminReply = async () => {
