@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   Users, FileText, MessageSquare, Headphones, BarChart3, Settings,
   Trash2, Edit, Plus, Shield, Pin, Lock, Eye, TrendingUp, Activity,
   ChevronRight, Check, X, RefreshCw, BookOpen, Ticket, CheckCircle, Clock, AlertCircle, Send,
-  Globe, Link2, Mail, Youtube, Music, ShoppingCart, Package
+  Globe, Link2, Mail, Youtube, Music, ShoppingCart, Package, Upload, Image
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
