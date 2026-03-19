@@ -470,7 +470,6 @@ const ThreadView = ({ threadId }: { threadId: string }) => {
                       ) : (
                         <MarkdownContent content={msg.content} />
                       )}
-                      )}
                     </div>
                   </div>
                 </motion.div>
