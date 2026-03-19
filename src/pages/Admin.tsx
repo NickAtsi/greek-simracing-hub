@@ -17,6 +17,7 @@ import Navbar from "@/components/Navbar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { refreshSettingsCache, defaultSettings } from "@/hooks/useSiteSettings";
 
 type AdminTab = "dashboard" | "users" | "articles" | "forum" | "podcasts" | "categories" | "support" | "settings";
 
