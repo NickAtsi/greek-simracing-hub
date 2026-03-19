@@ -24,6 +24,7 @@ import Podcasts from "./pages/Podcasts";
 import Shop from "./pages/Shop";
 import Members from "./pages/Members";
 import Championships from "./pages/Championships";
+import Notifications from "./pages/Notifications";
 
 const queryClient = new QueryClient();
 
