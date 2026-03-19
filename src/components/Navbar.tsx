@@ -182,15 +182,50 @@ const Navbar = () => {
   const { user, signOut } = useAuth();
   const location = useLocation();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [showNotifs, setShowNotifs] = useState(false);
+  const notifsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (user) {
       supabase.from("user_roles" as any).select("role").eq("user_id", user.id).eq("role", "admin").single()
         .then(({ data }) => setIsAdmin(!!data));
+      fetchNotifications();
+      // Subscribe to realtime notifications
+      const channel = supabase.channel('notifications')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, () => {
+          fetchNotifications();
+        })
+        .subscribe();
+      return () => { supabase.removeChannel(channel); };
     } else {
       setIsAdmin(false);
+      setUnreadCount(0);
     }
   }, [user]);
+
+  const fetchNotifications = async () => {
+    if (!user) return;
+    const { data } = await supabase.from("notifications" as any).select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20);
+    const notifs = (data as any[]) || [];
+    setNotifications(notifs);
+    setUnreadCount(notifs.filter((n: any) => !n.read).length);
+  };
+
+  const markAllRead = async () => {
+    if (!user || unreadCount === 0) return;
+    await supabase.from("notifications" as any).update({ read: true } as any).eq("user_id", user.id).eq("read", false);
+    fetchNotifications();
+  };
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (notifsRef.current && !notifsRef.current.contains(e.target as Node)) setShowNotifs(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   const isActive = (href: string) => {
     if (href === "/home") return location.pathname === "/home" || location.pathname === "/";
