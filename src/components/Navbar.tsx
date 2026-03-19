@@ -1,16 +1,21 @@
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { Menu, X, LogIn, LogOut, Shield } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Menu, X, LogIn, LogOut, Shield, ChevronDown, Newspaper, MessageSquare, Trophy } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import gsrLogo from "@/assets/gsr-logo.png";
 import SocialIcon from "@/components/SocialIcon";
 import { supabase } from "@/integrations/supabase/client";
 
+const communityItems = [
+  { label: "Άρθρα", href: "/articles", icon: Newspaper, desc: "Νέα & αναλύσεις" },
+  { label: "Forum", href: "/forum", icon: MessageSquare, desc: "Συζητήσεις" },
+  { label: "Αγώνες", href: "/championships", icon: Trophy, desc: "Πρωταθλήματα" },
+];
+
 const navItems = [
   { label: "Αρχική", href: "/home" },
-  { label: "Άρθρα", href: "/articles" },
-  { label: "Forum", href: "/forum" },
+  { label: "Κοινότητα", href: "#", dropdown: true },
   { label: "Μέλη", href: "/members" },
   { label: "Games Hub", href: "/games-hub" },
   { label: "Podcasts", href: "/podcasts" },
@@ -65,6 +70,113 @@ const NavLinkItem = ({ item, active, onClick }: { item: typeof navItems[0]; acti
   );
 };
 
+const CommunityDropdown = ({ onNavigate }: { onNavigate?: () => void }) => {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const location = useLocation();
+  const timeoutRef = useRef<NodeJS.Timeout>();
+
+  const isActive = communityItems.some(i => location.pathname.startsWith(i.href));
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const handleEnter = () => {
+    clearTimeout(timeoutRef.current);
+    setOpen(true);
+  };
+  const handleLeave = () => {
+    timeoutRef.current = setTimeout(() => setOpen(false), 150);
+  };
+
+  return (
+    <div ref={ref} className="relative" onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
+      <button
+        onClick={() => setOpen(!open)}
+        className={`group relative flex items-center gap-1 px-4 py-2 rounded-lg font-body text-sm font-medium transition-all overflow-hidden ${
+          isActive ? "text-primary" : "text-muted-foreground hover:text-foreground"
+        }`}
+      >
+        <span className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-primary/0 via-primary/10 to-primary/0 blur-sm" />
+        <span className="absolute inset-0 overflow-hidden pointer-events-none rounded-lg">
+          <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12" />
+        </span>
+        <motion.span className="relative" whileHover={{ rotate: [0, -3, 3, -2, 2, 0], transition: { duration: 0.4 } }}>
+          Κοινότητα
+          {isActive && (
+            <motion.div layoutId="nav-underline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-racing rounded-full"
+              transition={{ type: "spring", bounce: 0.2, duration: 0.5 }} />
+          )}
+        </motion.span>
+        <motion.span animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }} className="relative">
+          <ChevronDown className="h-3.5 w-3.5" />
+        </motion.span>
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -8, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -8, scale: 0.95 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-56 rounded-xl border border-border/60 bg-card/95 backdrop-blur-xl shadow-xl shadow-primary/5 overflow-hidden z-50"
+          >
+            <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
+            <div className="p-1.5 relative">
+              {communityItems.map((item, i) => {
+                const Icon = item.icon;
+                const active = location.pathname.startsWith(item.href);
+                return (
+                  <motion.div
+                    key={item.href}
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.05, duration: 0.2 }}
+                  >
+                    <Link
+                      to={item.href}
+                      onClick={() => { setOpen(false); onNavigate?.(); }}
+                      className={`group/item flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200 ${
+                        active
+                          ? "bg-primary/15 text-primary"
+                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                      }`}
+                    >
+                      <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 ${
+                        active
+                          ? "bg-primary/20 text-primary"
+                          : "bg-muted/50 text-muted-foreground group-hover/item:bg-primary/10 group-hover/item:text-primary"
+                      }`}>
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium leading-tight">{item.label}</span>
+                        <span className="text-[11px] text-muted-foreground leading-tight">{item.desc}</span>
+                      </div>
+                      {active && (
+                        <motion.div
+                          layoutId="dropdown-active"
+                          className="ml-auto w-1.5 h-1.5 rounded-full bg-primary"
+                        />
+                      )}
+                    </Link>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, signOut } = useAuth();
@@ -112,9 +224,13 @@ const Navbar = () => {
         </Link>
 
         <div className="hidden items-center gap-1 md:flex">
-          {navItems.map((item) => (
-            <NavLinkItem key={item.label} item={item} active={isActive(item.href)} />
-          ))}
+          {navItems.map((item) =>
+            item.dropdown ? (
+              <CommunityDropdown key={item.label} />
+            ) : (
+              <NavLinkItem key={item.label} item={item} active={isActive(item.href)} />
+            )
+          )}
         </div>
 
         <div className="hidden md:flex items-center gap-2">
@@ -166,9 +282,27 @@ const Navbar = () => {
           className="border-t border-border/50 bg-background/95 backdrop-blur-xl md:hidden"
         >
           <div className="flex flex-col gap-1 px-4 py-4">
-            {navItems.map((item) => (
+            {navItems.filter(i => !i.dropdown).map((item) => (
               <NavLinkItem key={item.label} item={item} active={isActive(item.href)} onClick={() => setIsOpen(false)} />
             ))}
+            {/* Mobile community items inline */}
+            <div className="px-4 py-1 text-xs font-display text-muted-foreground uppercase tracking-wider">Κοινότητα</div>
+            {communityItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  onClick={() => setIsOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    location.pathname.startsWith(item.href) ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              );
+            })}
             <div className="mt-2 pt-2 border-t border-border/50 flex items-center gap-2 px-4">
               {socials.map((s) => (
                 <SocialIcon key={s.label} href={s.href} label={s.label} icon={s.icon} hoverColor={s.hoverColor} size="sm" />
