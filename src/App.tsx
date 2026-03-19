@@ -23,6 +23,7 @@ import Privacy from "./pages/Privacy";
 import Podcasts from "./pages/Podcasts";
 import Shop from "./pages/Shop";
 import Members from "./pages/Members";
+import Championships from "./pages/Championships";
 
 const queryClient = new QueryClient();
 
