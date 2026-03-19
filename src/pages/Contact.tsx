@@ -87,7 +87,7 @@ const Contact = () => {
                   icon: Clock,
                   title: "Ώρες Υποστήριξης",
                   desc: "Διαθέσιμοι για βοήθεια",
-                  value: "Δευτ–Παρ: 10:00–22:00",
+                  value: settings.support_hours || "Δευτ–Παρ: 10:00–22:00",
                   color: "text-green-400",
                   bg: "bg-green-400/10",
                 },
