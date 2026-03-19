@@ -8,9 +8,11 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 
 const Contact = () => {
   const { toast } = useToast();
+  const { settings } = useSiteSettings();
   const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
   const [submitting, setSubmitting] = useState(false);
 
@@ -59,7 +61,7 @@ const Contact = () => {
                   icon: Mail,
                   title: "Email",
                   desc: "Στείλτε μας email για οποιοδήποτε θέμα",
-                  value: "info@greeksimracers.gr",
+                  value: settings.contact_email || "info@greeksimracers.gr",
                   color: "text-blue-400",
                   bg: "bg-blue-400/10",
                 },
@@ -67,7 +69,7 @@ const Contact = () => {
                   icon: MessageSquare,
                   title: "Discord",
                   desc: "Γίνε μέλος της κοινότητάς μας",
-                  value: "discord.gg/v5RsBTnPpY",
+                  value: (settings.discord_invite || "discord.gg/v5RsBTnPpY").replace("https://", ""),
                   color: "text-indigo-400",
                   bg: "bg-indigo-400/10",
                 },
@@ -85,7 +87,7 @@ const Contact = () => {
                   icon: Clock,
                   title: "Ώρες Υποστήριξης",
                   desc: "Διαθέσιμοι για βοήθεια",
-                  value: "Δευτ–Παρ: 10:00–22:00",
+                  value: settings.support_hours || "Δευτ–Παρ: 10:00–22:00",
                   color: "text-green-400",
                   bg: "bg-green-400/10",
                 },

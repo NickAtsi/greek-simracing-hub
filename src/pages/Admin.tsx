@@ -4,17 +4,20 @@ import { motion } from "framer-motion";
 import {
   Users, FileText, MessageSquare, Headphones, BarChart3, Settings,
   Trash2, Edit, Plus, Shield, Pin, Lock, Eye, TrendingUp, Activity,
-  ChevronRight, Check, X, RefreshCw, BookOpen, Ticket, CheckCircle, Clock, AlertCircle, Send
+  ChevronRight, Check, X, RefreshCw, BookOpen, Ticket, CheckCircle, Clock, AlertCircle, Send,
+  Globe, Link2, Mail, Youtube, Music
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from "@/components/ui/alert-dialog";
 import Navbar from "@/components/Navbar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { refreshSettingsCache, defaultSettings } from "@/hooks/useSiteSettings";
 
 type AdminTab = "dashboard" | "users" | "articles" | "forum" | "podcasts" | "categories" | "support" | "settings";
 
@@ -66,7 +69,8 @@ const Admin = () => {
   const [catForm, setCatForm] = useState({ name: "", slug: "", color: "#1565C0", type: "article" });
   const [editProfile, setEditProfile] = useState<any>(null);
   const [profileForm, setProfileForm] = useState({ display_name: "", username: "", favorite_sim: "", favorite_track: "", setup_type: "" });
-  const [siteSettings, setSiteSettings] = useState<Record<string, string>>({ discord_server_id: "", discord_invite: "", contact_email: "" });
+  const [siteSettings, setSiteSettings] = useState<Record<string, string>>({ ...defaultSettings });
+  const [confirmAction, setConfirmAction] = useState<{ title: string; description: string; action: () => void } | null>(null);
 
   useEffect(() => {
     if (!loading && user) checkAdmin();
@@ -160,7 +164,8 @@ const Admin = () => {
 
   const saveSiteSetting = async (key: string, value: string) => {
     await supabase.from("site_settings" as any).upsert({ key, value, updated_at: new Date().toISOString() } as any, { onConflict: "key" });
-    toast({ title: "Ρύθμιση αποθηκεύτηκε!" });
+    await refreshSettingsCache();
+    toast({ title: "Ρύθμιση αποθηκεύτηκε! ✅", description: "Η αλλαγή εφαρμόστηκε αμέσως στο site." });
   };
 
   const handleAdminReply = async () => {
@@ -700,14 +705,24 @@ const Admin = () => {
                         <td className="px-4 py-3 text-muted-foreground text-xs">{u.favorite_track || "—"}</td>
                         <td className="px-4 py-3">
                           <div className="flex items-center justify-end gap-1.5">
-                            <Button size="sm" variant="outline" onClick={() => toggleApproval(u.user_id, u.is_approved)}
+                            <Button size="sm" variant="outline" onClick={() => setConfirmAction({
+                              title: u.is_approved ? "Αφαίρεση έγκρισης" : "Έγκριση χρήστη",
+                              description: u.is_approved
+                                ? `Σίγουρα θέλεις να αφαιρέσεις την έγκριση του "${u.display_name || u.username}";\nΔεν θα μπορεί πλέον να χρησιμοποιήσει την πλατφόρμα.`
+                                : `Σίγουρα θέλεις να εγκρίνεις τον χρήστη "${u.display_name || u.username}";`,
+                              action: () => toggleApproval(u.user_id, u.is_approved),
+                            })}
                               className={`h-7 px-2.5 text-xs gap-1 ${u.is_approved ? "text-amber-500 border-amber-500/30 hover:bg-amber-500/10" : "text-green-500 border-green-500/30 hover:bg-green-500/10"}`}>
                               {u.is_approved ? "Αφαίρεση έγκρισης" : "Έγκριση"}
                             </Button>
                             <Button size="sm" variant="outline" onClick={() => openEditProfile(u)} className="h-7 px-2.5 text-xs gap-1">
                               <Edit className="h-3 w-3" /> Edit
                             </Button>
-                            <Button size="sm" variant="outline" onClick={() => handleGrantAdmin(u.user_id)} className="h-7 px-2.5 text-xs text-primary border-primary/30 hover:bg-primary/10 gap-1">
+                            <Button size="sm" variant="outline" onClick={() => setConfirmAction({
+                              title: "Χορήγηση Admin δικαιωμάτων",
+                              description: `Σίγουρα θέλεις να κάνεις τον "${u.display_name || u.username}" Admin;\n\nΘα έχει πλήρη πρόσβαση στο Admin Panel.`,
+                              action: () => handleGrantAdmin(u.user_id),
+                            })} className="h-7 px-2.5 text-xs text-primary border-primary/30 hover:bg-primary/10 gap-1">
                               Make Admin
                             </Button>
                             <Button size="sm" variant="outline" onClick={() => handleDeleteUser(u.user_id, u.display_name)} className="h-7 px-2.5 text-xs text-destructive border-destructive/30 hover:bg-destructive/10 gap-1">
@@ -968,31 +983,105 @@ const Admin = () => {
           {/* Settings */}
           {tab === "settings" && (
             <div>
-              <h1 className="font-display text-2xl font-black text-foreground mb-6">Ρυθμίσεις Site</h1>
-              <div className="max-w-lg space-y-4">
-                {[
-                  { key: "discord_server_id", label: "Discord Server ID", placeholder: "459797812251590677" },
-                  { key: "discord_invite", label: "Discord Invite Link", placeholder: "https://discord.gg/..." },
-                  { key: "contact_email", label: "Email Επικοινωνίας", placeholder: "info@greeksimracers.gr" },
-                ].map(field => (
-                  <div key={field.key} className="rounded-xl border border-border bg-card p-4">
-                    <label className="text-xs font-display font-bold text-muted-foreground uppercase tracking-wider mb-2 block">{field.label}</label>
-                    <div className="flex gap-2">
-                      <input value={siteSettings[field.key] || ""}
-                        onChange={(e) => setSiteSettings(p => ({ ...p, [field.key]: e.target.value }))}
-                        placeholder={field.placeholder}
-                        className="flex-1 rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm text-foreground" />
-                      <Button size="sm" onClick={() => saveSiteSetting(field.key, siteSettings[field.key] || "")} className="bg-gradient-greek text-white hover:brightness-110">
-                        <Check className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-                <div className="rounded-xl border border-border bg-card p-4">
-                  <p className="text-xs font-display font-bold text-muted-foreground uppercase tracking-wider mb-2">Admin Panel</p>
-                  <p className="text-xs text-muted-foreground">Greek SimRacers Admin Panel v2.0</p>
-                  <p className="text-xs text-muted-foreground mt-1">Για να δώσεις Admin δικαιώματα, πήγαινε στο tab <strong>Χρήστες</strong>.</p>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h1 className="font-display text-2xl font-black text-foreground">Ρυθμίσεις Site</h1>
+                  <p className="text-sm text-muted-foreground">Οι αλλαγές εφαρμόζονται αμέσως σε όλο το site.</p>
                 </div>
+                <Button onClick={fetchSiteSettings} variant="outline" size="sm" className="gap-2">
+                  <RefreshCw className="h-3.5 w-3.5" /> Ανανέωση
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* General */}
+                <div>
+                  <h3 className="font-display text-sm font-bold text-foreground mb-3 flex items-center gap-2"><Globe className="h-4 w-4 text-primary" /> Γενικές Ρυθμίσεις</h3>
+                  <div className="space-y-3">
+                    {[
+                      { key: "site_name", label: "Όνομα Site", placeholder: "Greek SimRacers", icon: Globe },
+                      { key: "site_tagline", label: "Tagline / Περιγραφή", placeholder: "Η #1 ελληνική πλατφόρμα SimRacing", icon: FileText },
+                      { key: "footer_text", label: "Footer Text", placeholder: "Made with ❤️ in Greece", icon: FileText },
+                      { key: "contact_email", label: "Email Επικοινωνίας", placeholder: "info@greeksimracers.gr", icon: Mail },
+                      { key: "support_hours", label: "Ώρες Υποστήριξης", placeholder: "Δευτ–Παρ: 10:00–22:00", icon: Clock },
+                    ].map(field => (
+                      <div key={field.key} className="rounded-xl border border-border bg-card p-4">
+                        <label className="text-xs font-display font-bold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                          <field.icon className="h-3 w-3" /> {field.label}
+                        </label>
+                        <div className="flex gap-2">
+                          <input value={siteSettings[field.key] || ""}
+                            onChange={(e) => setSiteSettings(p => ({ ...p, [field.key]: e.target.value }))}
+                            placeholder={field.placeholder}
+                            className="flex-1 rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm text-foreground" />
+                          <Button size="sm" onClick={() => saveSiteSetting(field.key, siteSettings[field.key] || "")} className="bg-primary hover:bg-primary/90">
+                            <Check className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Social & Discord */}
+                <div>
+                  <h3 className="font-display text-sm font-bold text-foreground mb-3 flex items-center gap-2"><Link2 className="h-4 w-4 text-primary" /> Social Links & Discord</h3>
+                  <div className="space-y-3">
+                    {[
+                      { key: "discord_server_id", label: "Discord Server ID", placeholder: "459797812251590677", icon: MessageSquare },
+                      { key: "discord_invite", label: "Discord Invite Link", placeholder: "https://discord.gg/...", icon: MessageSquare },
+                      { key: "youtube_url", label: "YouTube URL", placeholder: "https://www.youtube.com/@...", icon: Youtube },
+                      { key: "facebook_url", label: "Facebook URL", placeholder: "https://www.facebook.com/...", icon: Users },
+                      { key: "spotify_url", label: "Spotify URL", placeholder: "https://open.spotify.com/show/...", icon: Music },
+                    ].map(field => (
+                      <div key={field.key} className="rounded-xl border border-border bg-card p-4">
+                        <label className="text-xs font-display font-bold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                          <field.icon className="h-3 w-3" /> {field.label}
+                        </label>
+                        <div className="flex gap-2">
+                          <input value={siteSettings[field.key] || ""}
+                            onChange={(e) => setSiteSettings(p => ({ ...p, [field.key]: e.target.value }))}
+                            placeholder={field.placeholder}
+                            className="flex-1 rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm text-foreground" />
+                          <Button size="sm" onClick={() => saveSiteSetting(field.key, siteSettings[field.key] || "")} className="bg-primary hover:bg-primary/90">
+                            <Check className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Toggles */}
+                  <h3 className="font-display text-sm font-bold text-foreground mt-6 mb-3 flex items-center gap-2"><Settings className="h-4 w-4 text-primary" /> Λειτουργικές Ρυθμίσεις</h3>
+                  <div className="space-y-3">
+                    {[
+                      { key: "maintenance_mode", label: "Maintenance Mode", desc: "Εμφανίζει μήνυμα συντήρησης στους χρήστες" },
+                      { key: "registration_enabled", label: "Εγγραφές Ενεργές", desc: "Επιτρέπει νέες εγγραφές χρηστών" },
+                    ].map(toggle => (
+                      <div key={toggle.key} className="flex items-center justify-between rounded-xl border border-border bg-card px-4 py-3">
+                        <div>
+                          <p className="text-sm font-medium text-foreground">{toggle.label}</p>
+                          <p className="text-xs text-muted-foreground">{toggle.desc}</p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            const newVal = siteSettings[toggle.key] === "true" ? "false" : "true";
+                            setSiteSettings(p => ({ ...p, [toggle.key]: newVal }));
+                            saveSiteSetting(toggle.key, newVal);
+                          }}
+                          className={`relative h-6 w-11 rounded-full transition-colors ${siteSettings[toggle.key] === "true" ? "bg-primary" : "bg-secondary"}`}
+                        >
+                          <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-card transition-transform ${siteSettings[toggle.key] === "true" ? "translate-x-5" : "translate-x-0"}`} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Info Box */}
+              <div className="mt-6 rounded-xl border border-primary/20 bg-primary/5 p-4 max-w-2xl">
+                <p className="text-xs font-display font-bold text-primary uppercase tracking-wider mb-1">💡 Πληροφορία</p>
+                <p className="text-xs text-muted-foreground">Κάθε αλλαγή εφαρμόζεται αμέσως σε: Footer, Σελίδα Επικοινωνίας, Discord Widget, Social Links. Οι ρυθμίσεις αποθηκεύονται στη βάση δεδομένων.</p>
               </div>
             </div>
           )}
@@ -1109,6 +1198,24 @@ const Admin = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={!!confirmAction} onOpenChange={(open) => { if (!open) setConfirmAction(null); }}>
+        <AlertDialogContent className="bg-card border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-display text-foreground">{confirmAction?.title}</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground whitespace-pre-line">
+              {confirmAction?.description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-border">Ακύρωση</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { confirmAction?.action(); setConfirmAction(null); }} className="bg-primary hover:bg-primary/90">
+              Επιβεβαίωση
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
