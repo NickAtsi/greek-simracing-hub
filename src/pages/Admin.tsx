@@ -93,14 +93,28 @@ const Admin = () => {
   };
 
   const fetchStats = async () => {
-    const [{ count: u }, { count: a }, { count: t }, { count: p }, { count: pods }] = await Promise.all([
+    const [{ count: u }, { count: a }, { count: t }, { count: p }, { count: pods }, { count: pending }, { count: openTix }] = await Promise.all([
       supabase.from("profiles").select("*", { count: "exact", head: true }),
       supabase.from("articles" as any).select("*", { count: "exact", head: true }),
       supabase.from("forum_threads" as any).select("*", { count: "exact", head: true }),
       supabase.from("forum_posts" as any).select("*", { count: "exact", head: true }),
       supabase.from("podcast_episodes" as any).select("*", { count: "exact", head: true }),
+      supabase.from("profiles").select("*", { count: "exact", head: true }).eq("is_approved", false),
+      supabase.from("support_tickets" as any).select("*", { count: "exact", head: true }).in("status", ["open", "in_progress"]),
     ]);
-    setStats({ users: u || 0, articles: a || 0, threads: t || 0, posts: p || 0, podcasts: pods || 0 });
+    // Get total article views
+    const { data: viewsData } = await supabase.from("articles" as any).select("views");
+    const totalViews = ((viewsData as any[]) || []).reduce((sum: number, a: any) => sum + (a.views || 0), 0);
+    setStats({ users: u || 0, articles: a || 0, threads: t || 0, posts: p || 0, podcasts: pods || 0, pendingUsers: pending || 0, openTickets: openTix || 0, totalViews });
+  };
+
+  const fetchRecentActivity = async () => {
+    const { data: ru } = await supabase.from("profiles").select("*").order("created_at", { ascending: false }).limit(5);
+    setRecentUsers((ru as any[]) || []);
+    const { data: ra } = await supabase.from("articles" as any).select("id, title, created_at, views, author_id").order("created_at", { ascending: false }).limit(5);
+    setRecentArticles((ra as any[]) || []);
+    const { data: rt } = await supabase.from("forum_threads" as any).select("id, title, created_at, views, author_id").order("created_at", { ascending: false }).limit(5);
+    setRecentThreads((rt as any[]) || []);
   };
 
   const fetchUsers = async () => {
