@@ -48,7 +48,10 @@ const Profile = () => {
     fetchComments();
     fetchLikes();
     fetchFollowData();
-    if (user) checkAdminStatus();
+    if (user) {
+      checkAdminStatus();
+      if (isOwnProfile) fetchPendingRequests();
+    }
   }, [profileUserId, user]);
 
   const checkAdminStatus = async () => {
