@@ -193,7 +193,20 @@ const Profile = () => {
       profile_user_id: profileUserId,
       content: newComment.trim()
     });
-    if (!error) { setNewComment(""); fetchComments(); toast({ title: "Σχόλιο προστέθηκε!" }); }
+    if (!error) {
+      // Send notification (only if commenting on someone else's profile)
+      if (!isOwnProfile) {
+        await supabase.from("notifications" as any).insert({
+          user_id: profileUserId,
+          from_user_id: user.id,
+          type: "profile_comment",
+          title: "Νέο σχόλιο στο προφίλ σου",
+          message: `${user.user_metadata?.full_name || user.email?.split("@")[0]} σχολίασε στο προφίλ σου`,
+          link: `/profile/${profileUserId}`
+        });
+      }
+      setNewComment(""); fetchComments(); toast({ title: "Σχόλιο προστέθηκε!" });
+    }
   };
 
   const handleDeleteComment = async (commentId: string) => {

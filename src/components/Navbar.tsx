@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, LogIn, LogOut, Shield, ChevronDown, Newspaper, MessageSquare, Trophy } from "lucide-react";
+import { Menu, X, LogIn, LogOut, Shield, ChevronDown, Newspaper, MessageSquare, Trophy, Bell } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import gsrLogo from "@/assets/gsr-logo.png";
