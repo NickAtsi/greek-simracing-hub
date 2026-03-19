@@ -314,6 +314,18 @@ const Admin = () => {
     fetchUsers();
   };
 
+  const handleDeleteUser = async (userId: string, displayName: string) => {
+    if (!confirm(`Σίγουρα θέλεις να διαγράψεις τον χρήστη "${displayName || userId}";\n\nΑυτή η ενέργεια δεν μπορεί να αναιρεθεί!`)) return;
+    const { data, error } = await supabase.functions.invoke("delete-user", { body: { user_id: userId } });
+    if (error) {
+      toast({ title: "Σφάλμα κατά τη διαγραφή", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Ο χρήστης διαγράφηκε επιτυχώς! 🗑️" });
+      fetchUsers();
+      fetchStats();
+    }
+  };
+
   const openEditProfile = (profile: any) => {
     setEditProfile(profile);
     setProfileForm({
