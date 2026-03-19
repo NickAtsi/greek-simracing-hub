@@ -705,14 +705,24 @@ const Admin = () => {
                         <td className="px-4 py-3 text-muted-foreground text-xs">{u.favorite_track || "—"}</td>
                         <td className="px-4 py-3">
                           <div className="flex items-center justify-end gap-1.5">
-                            <Button size="sm" variant="outline" onClick={() => toggleApproval(u.user_id, u.is_approved)}
+                            <Button size="sm" variant="outline" onClick={() => setConfirmAction({
+                              title: u.is_approved ? "Αφαίρεση έγκρισης" : "Έγκριση χρήστη",
+                              description: u.is_approved
+                                ? `Σίγουρα θέλεις να αφαιρέσεις την έγκριση του "${u.display_name || u.username}";\nΔεν θα μπορεί πλέον να χρησιμοποιήσει την πλατφόρμα.`
+                                : `Σίγουρα θέλεις να εγκρίνεις τον χρήστη "${u.display_name || u.username}";`,
+                              action: () => toggleApproval(u.user_id, u.is_approved),
+                            })}
                               className={`h-7 px-2.5 text-xs gap-1 ${u.is_approved ? "text-amber-500 border-amber-500/30 hover:bg-amber-500/10" : "text-green-500 border-green-500/30 hover:bg-green-500/10"}`}>
                               {u.is_approved ? "Αφαίρεση έγκρισης" : "Έγκριση"}
                             </Button>
                             <Button size="sm" variant="outline" onClick={() => openEditProfile(u)} className="h-7 px-2.5 text-xs gap-1">
                               <Edit className="h-3 w-3" /> Edit
                             </Button>
-                            <Button size="sm" variant="outline" onClick={() => handleGrantAdmin(u.user_id)} className="h-7 px-2.5 text-xs text-primary border-primary/30 hover:bg-primary/10 gap-1">
+                            <Button size="sm" variant="outline" onClick={() => setConfirmAction({
+                              title: "Χορήγηση Admin δικαιωμάτων",
+                              description: `Σίγουρα θέλεις να κάνεις τον "${u.display_name || u.username}" Admin;\n\nΘα έχει πλήρη πρόσβαση στο Admin Panel.`,
+                              action: () => handleGrantAdmin(u.user_id),
+                            })} className="h-7 px-2.5 text-xs text-primary border-primary/30 hover:bg-primary/10 gap-1">
                               Make Admin
                             </Button>
                             <Button size="sm" variant="outline" onClick={() => handleDeleteUser(u.user_id, u.display_name)} className="h-7 px-2.5 text-xs text-destructive border-destructive/30 hover:bg-destructive/10 gap-1">
