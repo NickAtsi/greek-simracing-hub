@@ -468,9 +468,8 @@ const ThreadView = ({ threadId }: { threadId: string }) => {
                           </div>
                         </div>
                       ) : (
-                        <div data-color-mode="dark">
-                          <MDEditor.Markdown source={msg.content} style={{ backgroundColor: 'transparent' }} />
-                        </div>
+                        <MarkdownContent content={msg.content} />
+                      )}
                       )}
                     </div>
                   </div>
