@@ -5,7 +5,7 @@ import {
   Users, FileText, MessageSquare, Headphones, BarChart3, Settings,
   Trash2, Edit, Plus, Shield, Pin, Lock, Eye, TrendingUp, Activity,
   ChevronRight, Check, X, RefreshCw, BookOpen, Ticket, CheckCircle, Clock, AlertCircle, Send,
-  Globe, Link2, Mail, Youtube, Music, ShoppingCart, Package, Upload, Image
+  Globe, Link2, Mail, Youtube, Music, ShoppingCart, Package, Upload, Image, Download
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1066,10 +1066,24 @@ const Admin = () => {
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h1 className="font-display text-2xl font-black text-foreground">Shop Management</h1>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
                   <Button variant={shopTab === "orders" ? "default" : "outline"} size="sm" onClick={() => setShopTab("orders")} className="gap-1"><Package className="h-3.5 w-3.5" /> Παραγγελίες ({shopOrders.length})</Button>
                   <Button variant={shopTab === "products" ? "default" : "outline"} size="sm" onClick={() => setShopTab("products")} className="gap-1"><ShoppingCart className="h-3.5 w-3.5" /> Προϊόντα ({shopProducts.length})</Button>
                   <Button size="sm" onClick={() => { setEditingProduct(null); setProductForm({ name: "", description: "", price: "", original_price: "", image_url: "", category: "Ρούχα", badge: "", sizes: "", stock: "10", active: true }); setShowProductForm(true); }} className="gap-1 bg-primary hover:bg-primary/90"><Plus className="h-3.5 w-3.5" /> Νέο Προϊόν</Button>
+                  {shopOrders.length > 0 && (
+                    <Button size="sm" variant="outline" onClick={() => {
+                      const headers = ["ID", "Ημερομηνία", "Ονοματεπώνυμο", "Email", "Τηλέφωνο", "Διεύθυνση", "Πόλη", "Τ.Κ.", "Σύνολο", "Κατάσταση", "Σημειώσεις", "Προϊόντα"];
+                      const rows = shopOrders.map((o: any) => {
+                        const items = (o.shop_order_items || []).map((i: any) => `${i.product_name}${i.size ? ` (${i.size})` : ""} x${i.quantity}`).join(" | ");
+                        return [o.id, new Date(o.created_at).toLocaleDateString("el-GR"), o.full_name, o.email, o.phone || "", o.address, o.city, o.postal_code, `€${o.total}`, o.status, o.notes || "", items].map(v => `"${String(v).replace(/"/g, '""')}"`).join(",");
+                      });
+                      const csv = [headers.join(","), ...rows].join("\n");
+                      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement("a"); a.href = url; a.download = `orders_${new Date().toISOString().slice(0,10)}.csv`; a.click();
+                      URL.revokeObjectURL(url);
+                    }} className="gap-1"><Download className="h-3.5 w-3.5" /> Εξαγωγή CSV</Button>
+                  )}
                 </div>
               </div>
 

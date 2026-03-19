@@ -70,10 +70,19 @@ const Profile = () => {
   const fetchComments = async () => {
     const { data } = await supabase
       .from("profile_comments" as any)
-      .select("*, profiles!author_id(display_name, username, avatar_url)")
+      .select("*")
       .eq("profile_user_id", profileUserId)
       .order("created_at", { ascending: false });
-    setComments((data as any[]) || []);
+    const commentsArr = (data as any[]) || [];
+    // Fetch author profiles separately since there's no FK
+    const authorIds = [...new Set(commentsArr.map((c: any) => c.author_id))];
+    if (authorIds.length > 0) {
+      const { data: profilesData } = await supabase.from("profiles").select("user_id, display_name, username, avatar_url").in("user_id", authorIds);
+      const profilesMap: Record<string, any> = {};
+      ((profilesData as any[]) || []).forEach((p: any) => { profilesMap[p.user_id] = p; });
+      commentsArr.forEach((c: any) => { c.profiles = profilesMap[c.author_id] || null; });
+    }
+    setComments(commentsArr);
   };
 
   const fetchLikes = async () => {
@@ -159,6 +168,15 @@ const Profile = () => {
     if (!user) { toast({ title: "Συνδέσου πρώτα", variant: "destructive" }); return; }
     if (followStatus === "none") {
       await supabase.from("follows" as any).insert({ follower_id: user.id, following_id: profileUserId, status: "pending" });
+      // Send notification
+      await supabase.from("notifications" as any).insert({
+        user_id: profileUserId,
+        from_user_id: user.id,
+        type: "follow_request",
+        title: "Νέο αίτημα φιλίας",
+        message: `${user.user_metadata?.full_name || user.email?.split("@")[0]} σου έστειλε αίτημα φιλίας`,
+        link: `/profile/${user.id}`
+      });
       setFollowStatus("pending");
       toast({ title: "Αίτημα φιλίας στάλθηκε!" });
     } else {
@@ -175,7 +193,20 @@ const Profile = () => {
       profile_user_id: profileUserId,
       content: newComment.trim()
     });
-    if (!error) { setNewComment(""); fetchComments(); toast({ title: "Σχόλιο προστέθηκε!" }); }
+    if (!error) {
+      // Send notification (only if commenting on someone else's profile)
+      if (!isOwnProfile) {
+        await supabase.from("notifications" as any).insert({
+          user_id: profileUserId,
+          from_user_id: user.id,
+          type: "profile_comment",
+          title: "Νέο σχόλιο στο προφίλ σου",
+          message: `${user.user_metadata?.full_name || user.email?.split("@")[0]} σχολίασε στο προφίλ σου`,
+          link: `/profile/${profileUserId}`
+        });
+      }
+      setNewComment(""); fetchComments(); toast({ title: "Σχόλιο προστέθηκε!" });
+    }
   };
 
   const handleDeleteComment = async (commentId: string) => {

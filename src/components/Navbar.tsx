@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, LogIn, LogOut, Shield, ChevronDown, Newspaper, MessageSquare, Trophy } from "lucide-react";
+import { Menu, X, LogIn, LogOut, Shield, ChevronDown, Newspaper, MessageSquare, Trophy, Bell } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import gsrLogo from "@/assets/gsr-logo.png";
@@ -182,15 +182,50 @@ const Navbar = () => {
   const { user, signOut } = useAuth();
   const location = useLocation();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [showNotifs, setShowNotifs] = useState(false);
+  const notifsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (user) {
       supabase.from("user_roles" as any).select("role").eq("user_id", user.id).eq("role", "admin").single()
         .then(({ data }) => setIsAdmin(!!data));
+      fetchNotifications();
+      // Subscribe to realtime notifications
+      const channel = supabase.channel('notifications')
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, () => {
+          fetchNotifications();
+        })
+        .subscribe();
+      return () => { supabase.removeChannel(channel); };
     } else {
       setIsAdmin(false);
+      setUnreadCount(0);
     }
   }, [user]);
+
+  const fetchNotifications = async () => {
+    if (!user) return;
+    const { data } = await supabase.from("notifications" as any).select("*").eq("user_id", user.id).order("created_at", { ascending: false }).limit(20);
+    const notifs = (data as any[]) || [];
+    setNotifications(notifs);
+    setUnreadCount(notifs.filter((n: any) => !n.read).length);
+  };
+
+  const markAllRead = async () => {
+    if (!user || unreadCount === 0) return;
+    await supabase.from("notifications" as any).update({ read: true } as any).eq("user_id", user.id).eq("read", false);
+    fetchNotifications();
+  };
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (notifsRef.current && !notifsRef.current.contains(e.target as Node)) setShowNotifs(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
 
   const isActive = (href: string) => {
     if (href === "/home") return location.pathname === "/home" || location.pathname === "/";
@@ -242,6 +277,59 @@ const Navbar = () => {
 
           {user ? (
             <>
+              {/* Notifications Bell */}
+              <div ref={notifsRef} className="relative">
+                <button
+                  onClick={() => { setShowNotifs(!showNotifs); if (!showNotifs) markAllRead(); }}
+                  className="relative flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                >
+                  <Bell className="h-4 w-4" />
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center h-4 min-w-[16px] rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
+                </button>
+                <AnimatePresence>
+                  {showNotifs && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -8, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -8, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute right-0 top-full mt-2 w-80 rounded-xl border border-border/60 bg-card/95 backdrop-blur-xl shadow-xl z-50 overflow-hidden"
+                    >
+                      <div className="p-3 border-b border-border/50 flex items-center justify-between">
+                        <span className="text-sm font-bold text-foreground">Ειδοποιήσεις</span>
+                        {notifications.length > 0 && (
+                          <button onClick={markAllRead} className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                            Σήμανση ως αναγνωσμένα
+                          </button>
+                        )}
+                      </div>
+                      <div className="max-h-72 overflow-y-auto">
+                        {notifications.length === 0 ? (
+                          <p className="text-center text-muted-foreground text-sm py-8">Καμία ειδοποίηση</p>
+                        ) : (
+                          notifications.map((n: any) => (
+                            <Link
+                              key={n.id}
+                              to={n.link || "#"}
+                              onClick={() => setShowNotifs(false)}
+                              className={`block px-3 py-2.5 text-sm border-b border-border/30 hover:bg-muted/50 transition-colors ${!n.read ? "bg-primary/5" : ""}`}
+                            >
+                              <p className="font-medium text-foreground text-xs">{n.title}</p>
+                              <p className="text-muted-foreground text-xs mt-0.5">{n.message}</p>
+                              <p className="text-muted-foreground/60 text-[10px] mt-1">{new Date(n.created_at).toLocaleDateString("el-GR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
+                            </Link>
+                          ))
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
               <Link to="/profile" className="text-sm text-muted-foreground hover:text-foreground transition-colors truncate max-w-[150px]">
                 {user.user_metadata?.full_name || user.email?.split("@")[0]}
               </Link>
