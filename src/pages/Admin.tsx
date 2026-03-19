@@ -5,7 +5,7 @@ import {
   Users, FileText, MessageSquare, Headphones, BarChart3, Settings,
   Trash2, Edit, Plus, Shield, Pin, Lock, Eye, TrendingUp, Activity,
   ChevronRight, Check, X, RefreshCw, BookOpen, Ticket, CheckCircle, Clock, AlertCircle, Send,
-  Globe, Link2, Mail, Youtube, Music
+  Globe, Link2, Mail, Youtube, Music, ShoppingCart, Package
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
