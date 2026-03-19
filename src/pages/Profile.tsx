@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Heart, MessageCircle, UserPlus, UserCheck, UserX, Trophy, Gamepad2, Flag, Calendar, Users, Camera, Save, Edit2, Globe, MapPin, Hash, Clock3, ExternalLink, Mail, Lock } from "lucide-react";
+import { Heart, MessageCircle, UserPlus, UserCheck, UserX, X, Trophy, Gamepad2, Flag, Calendar, Users, Camera, Save, Edit2, Globe, MapPin, Hash, Clock3, ExternalLink, Mail, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -26,6 +26,7 @@ const Profile = () => {
   const [hasLiked, setHasLiked] = useState(false);
   const [followStatus, setFollowStatus] = useState<"none" | "pending" | "accepted">("none");
   const [followersCount, setFollowersCount] = useState(0);
+  const [pendingRequests, setPendingRequests] = useState<any[]>([]);
   const [followingCount, setFollowingCount] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -47,7 +48,10 @@ const Profile = () => {
     fetchComments();
     fetchLikes();
     fetchFollowData();
-    if (user) checkAdminStatus();
+    if (user) {
+      checkAdminStatus();
+      if (isOwnProfile) fetchPendingRequests();
+    }
   }, [profileUserId, user]);
 
   const checkAdminStatus = async () => {
@@ -115,7 +119,30 @@ const Profile = () => {
     }
   };
 
-  const handleLike = async () => {
+  const fetchPendingRequests = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("follows" as any)
+      .select("*, profiles!follower_id(display_name, username, avatar_url, user_id)")
+      .eq("following_id", user.id)
+      .eq("status", "pending")
+      .order("created_at", { ascending: false });
+    setPendingRequests((data as any[]) || []);
+  };
+
+  const acceptFollow = async (followId: string) => {
+    await supabase.from("follows" as any).update({ status: "accepted" } as any).eq("id", followId);
+    toast({ title: "Αίτημα αποδεκτό! ✅" });
+    fetchPendingRequests();
+    fetchFollowData();
+  };
+
+  const rejectFollow = async (followId: string) => {
+    await supabase.from("follows" as any).delete().eq("id", followId);
+    toast({ title: "Αίτημα απορρίφθηκε" });
+    fetchPendingRequests();
+  };
+
     if (!user) { toast({ title: "Συνδέσου πρώτα", variant: "destructive" }); return; }
     if (isOwnProfile) return;
     if (hasLiked) {
@@ -454,6 +481,41 @@ const Profile = () => {
                     <p className="text-xs text-muted-foreground">Following</p>
                   </div>
                 </div>
+
+                {/* Pending Follow Requests - only on own profile */}
+                {isOwnProfile && pendingRequests.length > 0 && (
+                  <div className="mt-4">
+                    <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                      <UserPlus className="h-3 w-3" /> Αιτήματα ({pendingRequests.length})
+                    </h4>
+                    <div className="space-y-2">
+                      {pendingRequests.map((req: any) => {
+                        const reqProfile = req.profiles;
+                        return (
+                          <div key={req.id} className="flex items-center gap-2 rounded-lg bg-secondary/30 p-2">
+                            <Link to={`/profile/${reqProfile?.user_id || req.follower_id}`} className="flex items-center gap-2 flex-1 min-w-0">
+                              <Avatar className="h-7 w-7">
+                                <AvatarImage src={reqProfile?.avatar_url || ""} />
+                                <AvatarFallback className="bg-primary/20 text-primary text-[10px] font-bold">
+                                  {(reqProfile?.display_name || "?")[0].toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="text-xs font-medium text-foreground truncate">
+                                {reqProfile?.display_name || reqProfile?.username || "Χρήστης"}
+                              </span>
+                            </Link>
+                            <Button size="sm" variant="ghost" onClick={() => acceptFollow(req.id)} className="h-6 w-6 p-0 text-green-500 hover:text-green-400 hover:bg-green-500/10">
+                              <UserCheck className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button size="sm" variant="ghost" onClick={() => rejectFollow(req.id)} className="h-6 w-6 p-0 text-destructive hover:text-destructive hover:bg-destructive/10">
+                              <X className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </motion.div>
             </div>
 
