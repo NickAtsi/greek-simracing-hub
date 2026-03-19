@@ -314,6 +314,18 @@ const Admin = () => {
     fetchUsers();
   };
 
+  const handleDeleteUser = async (userId: string, displayName: string) => {
+    if (!confirm(`Σίγουρα θέλεις να διαγράψεις τον χρήστη "${displayName || userId}";\n\nΑυτή η ενέργεια δεν μπορεί να αναιρεθεί!`)) return;
+    const { data, error } = await supabase.functions.invoke("delete-user", { body: { user_id: userId } });
+    if (error) {
+      toast({ title: "Σφάλμα κατά τη διαγραφή", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Ο χρήστης διαγράφηκε επιτυχώς! 🗑️" });
+      fetchUsers();
+      fetchStats();
+    }
+  };
+
   const openEditProfile = (profile: any) => {
     setEditProfile(profile);
     setProfileForm({
@@ -697,6 +709,9 @@ const Admin = () => {
                             </Button>
                             <Button size="sm" variant="outline" onClick={() => handleGrantAdmin(u.user_id)} className="h-7 px-2.5 text-xs text-primary border-primary/30 hover:bg-primary/10 gap-1">
                               Make Admin
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => handleDeleteUser(u.user_id, u.display_name)} className="h-7 px-2.5 text-xs text-destructive border-destructive/30 hover:bg-destructive/10 gap-1">
+                              <Trash2 className="h-3 w-3" /> Διαγραφή
                             </Button>
                           </div>
                         </td>
