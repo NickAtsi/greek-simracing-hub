@@ -322,10 +322,22 @@ const Admin = () => {
   const fetchTicketMessages = async (ticketId: string) => {
     const { data } = await supabase
       .from("support_messages" as any)
-      .select("*, profiles!sender_id(display_name, username)")
+      .select("*")
       .eq("ticket_id", ticketId)
       .order("created_at");
-    setTicketMessages((data as any[]) || []);
+    const messages = (data as any[]) || [];
+    // Manually fetch profile info for message senders
+    if (messages.length > 0) {
+      const senderIds = [...new Set(messages.map((m: any) => m.sender_id))];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, display_name, username")
+        .in("user_id", senderIds);
+      const profileMap: Record<string, any> = {};
+      ((profiles as any[]) || []).forEach((p: any) => { profileMap[p.user_id] = p; });
+      messages.forEach((m: any) => { m.profiles = profileMap[m.sender_id] || null; });
+    }
+    setTicketMessages(messages);
   };
 
   const fetchSiteSettings = async () => {
