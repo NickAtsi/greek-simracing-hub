@@ -756,6 +756,23 @@ const Profile = () => {
               </div>
             </div>
 
+            {/* Online Visibility */}
+            <div className="border-t border-border pt-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-foreground">Online Status</p>
+                  <p className="text-xs text-muted-foreground">Δείξε αν είσαι συνδεδεμένος</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditForm(p => ({ ...p, show_online: !p.show_online }))}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${editForm.show_online ? 'bg-primary' : 'bg-muted'}`}
+                >
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${editForm.show_online ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
+              </div>
+            </div>
+
             {/* Account Settings */}
             <div className="border-t border-border pt-4">
               <p className="text-xs font-display font-bold text-muted-foreground uppercase tracking-wider mb-3">Ρυθμίσεις Λογαριασμού</p>
