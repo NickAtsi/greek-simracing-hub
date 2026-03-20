@@ -31,6 +31,7 @@ const perks = [
 ];
 
 const CommunitySection = () => {
+  const { user } = useAuth();
   const [threads, setThreads] = useState<(ForumThread & { category?: ForumCategory; reply_count: number })[]>([]);
   const [loading, setLoading] = useState(true);
 
