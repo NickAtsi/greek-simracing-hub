@@ -57,7 +57,7 @@ const Members = () => {
   const fetchProfiles = async () => {
     const { data } = await supabase
       .from("profiles")
-      .select("id, user_id, display_name, username, avatar_url, bio, location, nationality, favorite_sim, setup_type, years_simracing, created_at")
+      .select("id, user_id, display_name, username, avatar_url, bio, location, nationality, favorite_sim, setup_type, years_simracing, created_at, last_seen, show_online")
       .eq("is_approved", true);
     if (data) setProfiles(data);
     setLoading(false);
