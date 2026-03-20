@@ -322,10 +322,22 @@ const Admin = () => {
   const fetchTicketMessages = async (ticketId: string) => {
     const { data } = await supabase
       .from("support_messages" as any)
-      .select("*, profiles!sender_id(display_name, username)")
+      .select("*")
       .eq("ticket_id", ticketId)
       .order("created_at");
-    setTicketMessages((data as any[]) || []);
+    const messages = (data as any[]) || [];
+    // Manually fetch profile info for message senders
+    if (messages.length > 0) {
+      const senderIds = [...new Set(messages.map((m: any) => m.sender_id))];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, display_name, username")
+        .in("user_id", senderIds);
+      const profileMap: Record<string, any> = {};
+      ((profiles as any[]) || []).forEach((p: any) => { profileMap[p.user_id] = p; });
+      messages.forEach((m: any) => { m.profiles = profileMap[m.sender_id] || null; });
+    }
+    setTicketMessages(messages);
   };
 
   const fetchSiteSettings = async () => {
@@ -1542,7 +1554,7 @@ const Admin = () => {
                           >
                             {!msg.is_admin && (
                               <p className="text-xs font-bold mb-1 opacity-70">
-                                {msg.profiles?.display_name || "Χρήστης"}
+                                {msg.profiles?.display_name || msg.profiles?.username || "Χρήστης"}
                               </p>
                             )}
                             {msg.content}
@@ -2196,6 +2208,7 @@ const Admin = () => {
         <DialogContent className="bg-card border-border">
           <DialogHeader>
             <DialogTitle className="font-display text-foreground">Νέα Κατηγορία</DialogTitle>
+            <DialogDescription className="text-muted-foreground text-xs">Πρόσθεσε κατηγορία άρθρων ή forum</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <select
@@ -2246,6 +2259,7 @@ const Admin = () => {
         <DialogContent className="bg-card border-border">
           <DialogHeader>
             <DialogTitle className="font-display text-foreground">Επεξεργασία Προφίλ</DialogTitle>
+            <DialogDescription className="text-muted-foreground text-xs">Ενημέρωσε τα στοιχεία του χρήστη</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <Input
@@ -2303,6 +2317,9 @@ const Admin = () => {
             <DialogTitle className="font-display text-foreground">
               {editingProduct ? "Επεξεργασία Προϊόντος" : "Νέο Προϊόν"}
             </DialogTitle>
+            <DialogDescription className="text-muted-foreground text-xs">
+              {editingProduct ? "Ενημέρωσε τα στοιχεία του προϊόντος" : "Συμπλήρωσε τα στοιχεία του νέου προϊόντος"}
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <Input
