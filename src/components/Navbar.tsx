@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, LogIn, LogOut, Shield, ChevronDown, Newspaper, MessageSquare, Trophy, Bell } from "lucide-react";
+import { Menu, X, LogIn, LogOut, Shield, ChevronDown, Newspaper, MessageSquare, Trophy, Bell, User } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import gsrLogo from "@/assets/gsr-logo.png";
@@ -86,13 +86,8 @@ const CommunityDropdown = ({ onNavigate }: { onNavigate?: () => void }) => {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const handleEnter = () => {
-    clearTimeout(timeoutRef.current);
-    setOpen(true);
-  };
-  const handleLeave = () => {
-    timeoutRef.current = setTimeout(() => setOpen(false), 150);
-  };
+  const handleEnter = () => { clearTimeout(timeoutRef.current); setOpen(true); };
+  const handleLeave = () => { timeoutRef.current = setTimeout(() => setOpen(false), 150); };
 
   return (
     <div ref={ref} className="relative" onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
@@ -133,25 +128,16 @@ const CommunityDropdown = ({ onNavigate }: { onNavigate?: () => void }) => {
                 const Icon = item.icon;
                 const active = location.pathname.startsWith(item.href);
                 return (
-                  <motion.div
-                    key={item.href}
-                    initial={{ opacity: 0, x: -12 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.05, duration: 0.2 }}
-                  >
+                  <motion.div key={item.href} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05, duration: 0.2 }}>
                     <Link
                       to={item.href}
                       onClick={() => { setOpen(false); onNavigate?.(); }}
                       className={`group/item flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200 ${
-                        active
-                          ? "bg-primary/15 text-primary"
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                        active ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
                       }`}
                     >
                       <div className={`flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 ${
-                        active
-                          ? "bg-primary/20 text-primary"
-                          : "bg-muted/50 text-muted-foreground group-hover/item:bg-primary/10 group-hover/item:text-primary"
+                        active ? "bg-primary/20 text-primary" : "bg-muted/50 text-muted-foreground group-hover/item:bg-primary/10 group-hover/item:text-primary"
                       }`}>
                         <Icon className="h-4 w-4" />
                       </div>
@@ -159,12 +145,7 @@ const CommunityDropdown = ({ onNavigate }: { onNavigate?: () => void }) => {
                         <span className="text-sm font-medium leading-tight">{item.label}</span>
                         <span className="text-[11px] text-muted-foreground leading-tight">{item.desc}</span>
                       </div>
-                      {active && (
-                        <motion.div
-                          layoutId="dropdown-active"
-                          className="ml-auto w-1.5 h-1.5 rounded-full bg-primary"
-                        />
-                      )}
+                      {active && <motion.div layoutId="dropdown-active" className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />}
                     </Link>
                   </motion.div>
                 );
@@ -192,7 +173,6 @@ const Navbar = () => {
       supabase.from("user_roles" as any).select("role").eq("user_id", user.id).eq("role", "admin").single()
         .then(({ data }) => setIsAdmin(!!data));
       fetchNotifications();
-      // Subscribe to realtime notifications
       const channel = supabase.channel('notifications')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, () => {
           fetchNotifications();
@@ -258,7 +238,7 @@ const Navbar = () => {
           </motion.div>
         </Link>
 
-        <div className="hidden items-center gap-1 md:flex">
+        <div className="hidden items-center gap-1 lg:flex">
           {navItems.map((item) =>
             item.dropdown ? (
               <CommunityDropdown key={item.label} />
@@ -268,7 +248,7 @@ const Navbar = () => {
           )}
         </div>
 
-        <div className="hidden md:flex items-center gap-2">
+        <div className="hidden lg:flex items-center gap-2">
           <div className="flex items-center gap-1.5 mr-3 border-r border-border/50 pr-3">
             {socials.map((s) => (
               <SocialIcon key={s.label} href={s.href} label={s.label} icon={s.icon} hoverColor={s.hoverColor} size="sm" />
@@ -328,8 +308,9 @@ const Navbar = () => {
                 </AnimatePresence>
               </div>
 
-              <Link to="/profile" className="text-sm text-muted-foreground hover:text-foreground transition-colors truncate max-w-[150px]">
-                {user.user_metadata?.full_name || user.email?.split("@")[0]}
+              <Link to="/profile" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors truncate max-w-[150px]">
+                <User className="h-3.5 w-3.5 flex-shrink-0" />
+                <span className="truncate">{user.user_metadata?.full_name || user.email?.split("@")[0]}</span>
               </Link>
               {isAdmin && (
                 <Link to="/admin" className="flex items-center gap-1.5 rounded-lg border border-primary/40 bg-primary/10 px-3 py-2 text-xs font-medium text-primary transition-all hover:bg-primary/20">
@@ -356,65 +337,79 @@ const Navbar = () => {
           )}
         </div>
 
-        <button onClick={() => setIsOpen(!isOpen)} className="text-foreground md:hidden">
+        <button onClick={() => setIsOpen(!isOpen)} className="text-foreground lg:hidden">
           {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
       </div>
 
-      {isOpen && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          className="border-t border-border/50 bg-background/95 backdrop-blur-xl md:hidden"
-        >
-          <div className="flex flex-col gap-1 px-4 py-4">
-            {navItems.filter(i => !i.dropdown).map((item) => (
-              <NavLinkItem key={item.label} item={item} active={isActive(item.href)} onClick={() => setIsOpen(false)} />
-            ))}
-            {/* Mobile community items inline */}
-            <div className="px-4 py-1 text-xs font-display text-muted-foreground uppercase tracking-wider">Κοινότητα</div>
-            {communityItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.href}
-                  to={item.href}
-                  onClick={() => setIsOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    location.pathname.startsWith(item.href) ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                  {item.label}
-                </Link>
-              );
-            })}
-            <div className="mt-2 pt-2 border-t border-border/50 flex items-center gap-2 px-4">
-              {socials.map((s) => (
-                <SocialIcon key={s.label} href={s.href} label={s.label} icon={s.icon} hoverColor={s.hoverColor} size="sm" />
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="border-t border-border/50 bg-background/95 backdrop-blur-xl lg:hidden overflow-hidden"
+          >
+            <div className="flex flex-col gap-1 px-4 py-4 max-h-[80vh] overflow-y-auto">
+              {navItems.filter(i => !i.dropdown).map((item) => (
+                <NavLinkItem key={item.label} item={item} active={isActive(item.href)} onClick={() => setIsOpen(false)} />
               ))}
-            </div>
-            <div className="mt-2 pt-2 border-t border-border/50 flex flex-col gap-2">
-              {user ? (
-                <>
-                  {isAdmin && (
-                    <Link to="/admin" onClick={() => setIsOpen(false)} className="flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/10 px-4 py-2.5 text-sm font-medium text-primary">
-                      <Shield className="h-4 w-4" /> Admin Panel
+              {/* Mobile community items inline */}
+              <div className="px-4 py-1 text-xs font-display text-muted-foreground uppercase tracking-wider">Κοινότητα</div>
+              {communityItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.href}
+                    to={item.href}
+                    onClick={() => setIsOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                      location.pathname.startsWith(item.href) ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {item.label}
+                  </Link>
+                );
+              })}
+              <div className="mt-2 pt-2 border-t border-border/50 flex items-center gap-2 px-4">
+                {socials.map((s) => (
+                  <SocialIcon key={s.label} href={s.href} label={s.label} icon={s.icon} hoverColor={s.hoverColor} size="sm" />
+                ))}
+              </div>
+              <div className="mt-2 pt-2 border-t border-border/50 flex flex-col gap-2">
+                {user ? (
+                  <>
+                    <Link to="/profile" onClick={() => setIsOpen(false)} className="flex items-center gap-2 rounded-lg border border-border/60 px-4 py-2.5 text-sm font-medium text-foreground">
+                      <User className="h-4 w-4" /> Προφίλ
                     </Link>
-                  )}
-                  <button onClick={() => { signOut(); setIsOpen(false); }} className="w-full rounded-lg border border-border/60 px-4 py-3 text-center font-body text-sm text-muted-foreground">
-                    Αποσύνδεση
-                  </button>
-                </>
-              ) : (
-                <Link to="/auth" onClick={() => setIsOpen(false)} className="block rounded-lg bg-gradient-racing px-4 py-3 text-center font-body text-sm font-medium text-primary-foreground">
-                  Σύνδεση
-                </Link>
-              )}
+                    <Link to="/notifications" onClick={() => setIsOpen(false)} className="flex items-center gap-2 rounded-lg border border-border/60 px-4 py-2.5 text-sm font-medium text-foreground">
+                      <Bell className="h-4 w-4" /> Ειδοποιήσεις
+                      {unreadCount > 0 && (
+                        <span className="ml-auto flex items-center justify-center h-5 min-w-[20px] rounded-full bg-primary text-[10px] font-bold text-primary-foreground px-1">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </Link>
+                    {isAdmin && (
+                      <Link to="/admin" onClick={() => setIsOpen(false)} className="flex items-center gap-2 rounded-lg border border-primary/40 bg-primary/10 px-4 py-2.5 text-sm font-medium text-primary">
+                        <Shield className="h-4 w-4" /> Admin Panel
+                      </Link>
+                    )}
+                    <button onClick={() => { signOut(); setIsOpen(false); }} className="w-full rounded-lg border border-border/60 px-4 py-3 text-center font-body text-sm text-muted-foreground">
+                      Αποσύνδεση
+                    </button>
+                  </>
+                ) : (
+                  <Link to="/auth" onClick={() => setIsOpen(false)} className="block rounded-lg bg-gradient-racing px-4 py-3 text-center font-body text-sm font-medium text-primary-foreground">
+                    Σύνδεση
+                  </Link>
+                )}
+              </div>
             </div>
-          </div>
-        </motion.div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.nav>
   );
 };
