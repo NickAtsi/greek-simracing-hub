@@ -744,16 +744,62 @@ const Profile = () => {
 
             {/* Social Links */}
             <div className="border-t border-border pt-4">
-              <p className="text-xs font-display font-bold text-muted-foreground uppercase tracking-wider mb-3">Social Links</p>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-display font-bold text-muted-foreground uppercase tracking-wider">Social Links</p>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 text-xs gap-1 text-primary"
+                  onClick={() => setEditForm(p => ({ ...p, social_links: [...p.social_links, { label: "", url: "" }] }))}
+                >
+                  <Plus className="h-3 w-3" /> Προσθήκη
+                </Button>
+              </div>
               <div className="space-y-3">
                 <div>
                   <label className="text-xs text-muted-foreground mb-1 block">Discord Username</label>
                   <Input value={editForm.discord_username} onChange={(e) => setEditForm(p => ({ ...p, discord_username: e.target.value }))} className="bg-secondary/50" placeholder="username#0000 ή username..." />
                 </div>
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Website / Twitch / YouTube</label>
-                  <Input value={editForm.website_url} onChange={(e) => setEditForm(p => ({ ...p, website_url: e.target.value }))} className="bg-secondary/50" placeholder="https://..." />
-                </div>
+                {editForm.social_links.map((link, i) => (
+                  <div key={i} className="flex gap-2 items-end">
+                    <div className="flex-1">
+                      <label className="text-xs text-muted-foreground mb-1 block">{i === 0 && editForm.social_links.length > 0 ? "Τίτλος" : ""}</label>
+                      <Input
+                        value={link.label}
+                        onChange={(e) => {
+                          const updated = [...editForm.social_links];
+                          updated[i] = { ...updated[i], label: e.target.value };
+                          setEditForm(p => ({ ...p, social_links: updated }));
+                        }}
+                        className="bg-secondary/50"
+                        placeholder="π.χ. YouTube, Twitch, X..."
+                      />
+                    </div>
+                    <div className="flex-[2]">
+                      <label className="text-xs text-muted-foreground mb-1 block">{i === 0 && editForm.social_links.length > 0 ? "URL" : ""}</label>
+                      <Input
+                        value={link.url}
+                        onChange={(e) => {
+                          const updated = [...editForm.social_links];
+                          updated[i] = { ...updated[i], url: e.target.value };
+                          setEditForm(p => ({ ...p, social_links: updated }));
+                        }}
+                        className="bg-secondary/50"
+                        placeholder="https://..."
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="h-9 w-9 p-0 text-destructive hover:bg-destructive/10"
+                      onClick={() => setEditForm(p => ({ ...p, social_links: p.social_links.filter((_, idx) => idx !== i) }))}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))}
               </div>
             </div>
 
