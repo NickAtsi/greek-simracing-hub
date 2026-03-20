@@ -514,7 +514,7 @@ const Profile = () => {
               </motion.div>
 
               {/* Social / Links */}
-              {(profile.discord_username || profile.website_url) && (
+              {(profile.discord_username || profile.website_url || (Array.isArray(profile.social_links) && profile.social_links.length > 0)) && (
                 <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="rounded-xl border border-border bg-card p-5">
                   <h3 className="font-display text-sm font-bold text-foreground mb-3 flex items-center gap-2">
                     <Hash className="h-4 w-4 text-primary" /> Links
@@ -535,6 +535,14 @@ const Profile = () => {
                         <ExternalLink className="h-3.5 w-3.5" /> {profile.website_url}
                       </a>
                     )}
+                    {Array.isArray(profile.social_links) && profile.social_links.map((link: any, i: number) => (
+                      link.url && (
+                        <a key={i} href={link.url.startsWith("http") ? link.url : `https://${link.url}`} target="_blank" rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-xs text-primary hover:underline">
+                          <ExternalLink className="h-3.5 w-3.5" /> {link.label || link.url}
+                        </a>
+                      )
+                    ))}
                   </div>
                 </motion.div>
               )}
