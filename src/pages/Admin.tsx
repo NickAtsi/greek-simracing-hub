@@ -402,9 +402,21 @@ const Admin = () => {
   const fetchShopOrders = async () => {
     const { data } = await supabase
       .from("shop_orders" as any)
-      .select("*, shop_order_items(*), profiles!user_id(display_name, username)")
+      .select("*, shop_order_items(*)")
       .order("created_at", { ascending: false });
-    setShopOrders((data as any[]) || []);
+    const orders = (data as any[]) || [];
+    // Fetch profile info for each order
+    if (orders.length > 0) {
+      const userIds = [...new Set(orders.map((o: any) => o.user_id))];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, display_name, username")
+        .in("user_id", userIds);
+      const profileMap: Record<string, any> = {};
+      ((profiles as any[]) || []).forEach((p: any) => { profileMap[p.user_id] = p; });
+      orders.forEach((o: any) => { o.profiles = profileMap[o.user_id] || null; });
+    }
+    setShopOrders(orders);
   };
 
   const saveProduct = async () => {
