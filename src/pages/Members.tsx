@@ -409,6 +409,7 @@ const MemberCard = forwardRef<HTMLDivElement, MemberCardProps>(({ member, index,
       </Link>
     </motion.div>
   );
-};
+});
+MemberCard.displayName = "MemberCard";
 
 export default Members;
