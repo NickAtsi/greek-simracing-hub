@@ -2004,7 +2004,26 @@ const Admin = () => {
                 </div>
               </div>
 
-              {/* Info Box */}
+              {/* Footer Custom Links */}
+              <div className="mt-6">
+                <h3 className="font-display text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                  <LinkIcon className="h-4 w-4 text-primary" /> Custom Footer Links
+                </h3>
+                <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+                  <p className="text-xs text-muted-foreground">Πρόσθεσε custom links στο footer. Μορφή JSON: [{"{"}"label":"Κείμενο","url":"https://..."{"}"}, ...]</p>
+                  <textarea
+                    value={siteSettings.footer_custom_links || "[]"}
+                    onChange={(e) => setSiteSettings((p) => ({ ...p, footer_custom_links: e.target.value }))}
+                    placeholder='[{"label":"ATSIWorks","url":"https://atsiworks.online"}]'
+                    rows={3}
+                    className="w-full rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm text-foreground font-mono resize-none"
+                  />
+                  <Button size="sm" onClick={() => saveSiteSetting("footer_custom_links", siteSettings.footer_custom_links || "[]")} className="bg-primary hover:bg-primary/90 gap-1">
+                    <Check className="h-4 w-4" /> Αποθήκευση Links
+                  </Button>
+                </div>
+              </div>
+
               <div className="mt-6 rounded-xl border border-primary/20 bg-primary/5 p-4 max-w-2xl">
                 <p className="text-xs font-display font-bold text-primary uppercase tracking-wider mb-1">
                   💡 Πληροφορία
