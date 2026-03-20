@@ -160,7 +160,7 @@ const Admin = () => {
   );
   const [shopProducts, setShopProducts] = useState<any[]>([]);
   const [shopOrders, setShopOrders] = useState<any[]>([]);
-  const [shopTab, setShopTab] = useState<"products" | "orders">("orders");
+  const [shopTab, setShopTab] = useState<"products" | "orders" | "analytics">("orders");
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [productForm, setProductForm] = useState({
