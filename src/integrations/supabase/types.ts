@@ -581,6 +581,7 @@ export type Database = {
           nationality: string | null
           setup_type: string | null
           show_online: boolean
+          social_links: Json | null
           updated_at: string
           user_id: string
           username: string | null
@@ -602,6 +603,7 @@ export type Database = {
           nationality?: string | null
           setup_type?: string | null
           show_online?: boolean
+          social_links?: Json | null
           updated_at?: string
           user_id: string
           username?: string | null
@@ -623,6 +625,7 @@ export type Database = {
           nationality?: string | null
           setup_type?: string | null
           show_online?: boolean
+          social_links?: Json | null
           updated_at?: string
           user_id?: string
           username?: string | null

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Heart, MessageCircle, UserPlus, UserCheck, UserX, X, Trophy, Gamepad2, Flag, Calendar, Users, Camera, Save, Edit2, Globe, MapPin, Hash, Clock3, ExternalLink, Mail, Lock } from "lucide-react";
+import { Heart, MessageCircle, UserPlus, UserCheck, UserX, X, Trophy, Gamepad2, Flag, Calendar, Users, Camera, Save, Edit2, Globe, MapPin, Hash, Clock3, ExternalLink, Mail, Lock, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -35,7 +35,7 @@ const Profile = () => {
   const [followingList, setFollowingList] = useState<any[]>([]);
   const [loadingFollowList, setLoadingFollowList] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
-  const [editForm, setEditForm] = useState({ display_name: "", username: "", favorite_sim: "", favorite_track: "", setup_type: "", bio: "", location: "", discord_username: "", nationality: "", years_simracing: "", website_url: "", show_online: true });
+  const [editForm, setEditForm] = useState({ display_name: "", username: "", favorite_sim: "", favorite_track: "", setup_type: "", bio: "", location: "", discord_username: "", nationality: "", years_simracing: "", website_url: "", show_online: true, social_links: [] as { label: string; url: string }[] });
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [saving, setSaving] = useState(false);
   const [newEmail, setNewEmail] = useState("");
@@ -260,6 +260,7 @@ const Profile = () => {
       years_simracing: profile?.years_simracing || "",
       website_url: profile?.website_url || "",
       show_online: profile?.show_online !== false,
+      social_links: Array.isArray(profile?.social_links) ? profile.social_links : [],
     });
     setNewEmail(user?.email || "");
     setNewPassword("");
@@ -513,7 +514,7 @@ const Profile = () => {
               </motion.div>
 
               {/* Social / Links */}
-              {(profile.discord_username || profile.website_url) && (
+              {(profile.discord_username || profile.website_url || (Array.isArray(profile.social_links) && profile.social_links.length > 0)) && (
                 <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }} className="rounded-xl border border-border bg-card p-5">
                   <h3 className="font-display text-sm font-bold text-foreground mb-3 flex items-center gap-2">
                     <Hash className="h-4 w-4 text-primary" /> Links
@@ -534,6 +535,14 @@ const Profile = () => {
                         <ExternalLink className="h-3.5 w-3.5" /> {profile.website_url}
                       </a>
                     )}
+                    {Array.isArray(profile.social_links) && profile.social_links.map((link: any, i: number) => (
+                      link.url && (
+                        <a key={i} href={link.url.startsWith("http") ? link.url : `https://${link.url}`} target="_blank" rel="noopener noreferrer"
+                          className="flex items-center gap-2 text-xs text-primary hover:underline">
+                          <ExternalLink className="h-3.5 w-3.5" /> {link.label || link.url}
+                        </a>
+                      )
+                    ))}
                   </div>
                 </motion.div>
               )}
@@ -743,16 +752,62 @@ const Profile = () => {
 
             {/* Social Links */}
             <div className="border-t border-border pt-4">
-              <p className="text-xs font-display font-bold text-muted-foreground uppercase tracking-wider mb-3">Social Links</p>
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-xs font-display font-bold text-muted-foreground uppercase tracking-wider">Social Links</p>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="h-7 text-xs gap-1 text-primary"
+                  onClick={() => setEditForm(p => ({ ...p, social_links: [...p.social_links, { label: "", url: "" }] }))}
+                >
+                  <Plus className="h-3 w-3" /> Προσθήκη
+                </Button>
+              </div>
               <div className="space-y-3">
                 <div>
                   <label className="text-xs text-muted-foreground mb-1 block">Discord Username</label>
                   <Input value={editForm.discord_username} onChange={(e) => setEditForm(p => ({ ...p, discord_username: e.target.value }))} className="bg-secondary/50" placeholder="username#0000 ή username..." />
                 </div>
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Website / Twitch / YouTube</label>
-                  <Input value={editForm.website_url} onChange={(e) => setEditForm(p => ({ ...p, website_url: e.target.value }))} className="bg-secondary/50" placeholder="https://..." />
-                </div>
+                {editForm.social_links.map((link, i) => (
+                  <div key={i} className="flex gap-2 items-end">
+                    <div className="flex-1">
+                      <label className="text-xs text-muted-foreground mb-1 block">{i === 0 && editForm.social_links.length > 0 ? "Τίτλος" : ""}</label>
+                      <Input
+                        value={link.label}
+                        onChange={(e) => {
+                          const updated = [...editForm.social_links];
+                          updated[i] = { ...updated[i], label: e.target.value };
+                          setEditForm(p => ({ ...p, social_links: updated }));
+                        }}
+                        className="bg-secondary/50"
+                        placeholder="π.χ. YouTube, Twitch, X..."
+                      />
+                    </div>
+                    <div className="flex-[2]">
+                      <label className="text-xs text-muted-foreground mb-1 block">{i === 0 && editForm.social_links.length > 0 ? "URL" : ""}</label>
+                      <Input
+                        value={link.url}
+                        onChange={(e) => {
+                          const updated = [...editForm.social_links];
+                          updated[i] = { ...updated[i], url: e.target.value };
+                          setEditForm(p => ({ ...p, social_links: updated }));
+                        }}
+                        className="bg-secondary/50"
+                        placeholder="https://..."
+                      />
+                    </div>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="h-9 w-9 p-0 text-destructive hover:bg-destructive/10"
+                      onClick={() => setEditForm(p => ({ ...p, social_links: p.social_links.filter((_, idx) => idx !== i) }))}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                ))}
               </div>
             </div>
 
