@@ -259,6 +259,7 @@ const Profile = () => {
       nationality: profile?.nationality || "",
       years_simracing: profile?.years_simracing || "",
       website_url: profile?.website_url || "",
+      show_online: profile?.show_online !== false,
     });
     setNewEmail(user?.email || "");
     setNewPassword("");
