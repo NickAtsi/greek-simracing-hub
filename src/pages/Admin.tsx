@@ -2208,6 +2208,7 @@ const Admin = () => {
         <DialogContent className="bg-card border-border">
           <DialogHeader>
             <DialogTitle className="font-display text-foreground">Νέα Κατηγορία</DialogTitle>
+            <DialogDescription className="text-muted-foreground text-xs">Πρόσθεσε κατηγορία άρθρων ή forum</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <select
