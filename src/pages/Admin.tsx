@@ -1554,7 +1554,7 @@ const Admin = () => {
                           >
                             {!msg.is_admin && (
                               <p className="text-xs font-bold mb-1 opacity-70">
-                                {msg.profiles?.display_name || "Χρήστης"}
+                                {msg.profiles?.display_name || msg.profiles?.username || "Χρήστης"}
                               </p>
                             )}
                             {msg.content}
