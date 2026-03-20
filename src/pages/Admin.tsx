@@ -2334,12 +2334,58 @@ const Admin = () => {
                 className="bg-secondary/50"
               />
             </div>
-            <Input
-              placeholder="Image URL ή key (π.χ. tshirt-black)"
-              value={productForm.image_url}
-              onChange={(e) => setProductForm((p) => ({ ...p, image_url: e.target.value }))}
-              className="bg-secondary/50"
-            />
+            {/* Image Upload */}
+            <div className="space-y-2">
+              <label className="text-xs text-muted-foreground block">Εικόνα Προϊόντος</label>
+              {productForm.image_url && (
+                <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-border">
+                  <img src={productForm.image_url} alt="Preview" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setProductForm((p) => ({ ...p, image_url: "" }))}
+                    className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full h-5 w-5 flex items-center justify-center text-xs"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              )}
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5"
+                  onClick={() => {
+                    const input = document.createElement("input");
+                    input.type = "file";
+                    input.accept = "image/*";
+                    input.onchange = async (e: any) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const ext = file.name.split(".").pop();
+                      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+                      const { error } = await supabase.storage.from("product-images").upload(fileName, file);
+                      if (error) {
+                        toast({ title: "Σφάλμα upload", description: error.message, variant: "destructive" });
+                        return;
+                      }
+                      const { data: urlData } = supabase.storage.from("product-images").getPublicUrl(fileName);
+                      setProductForm((p) => ({ ...p, image_url: urlData.publicUrl }));
+                      toast({ title: "Εικόνα ανέβηκε! ✅" });
+                    };
+                    input.click();
+                  }}
+                >
+                  <Upload className="h-3.5 w-3.5" /> Upload εικόνας
+                </Button>
+                <Input
+                  placeholder="ή βάλε URL εικόνας"
+                  value={productForm.image_url}
+                  onChange={(e) => setProductForm((p) => ({ ...p, image_url: e.target.value }))}
+                  className="bg-secondary/50 flex-1"
+                />
+              </div>
+            </div>
             <div className="grid grid-cols-3 gap-3">
               <select
                 value={productForm.category}
