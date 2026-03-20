@@ -2,6 +2,7 @@ import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ChevronRight, Users, Flag, Zap, Mic, MessageSquare } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import gsrLogo from "@/assets/gsr-logo.png";
 
 const HeroSection = () => {
