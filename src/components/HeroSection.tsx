@@ -6,6 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import gsrLogo from "@/assets/gsr-logo.png";
 
 const HeroSection = () => {
+  const { user } = useAuth();
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
 
