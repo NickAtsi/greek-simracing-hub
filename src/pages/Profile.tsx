@@ -390,7 +390,9 @@ const Profile = () => {
                     <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
                   </>
                 )}
-                <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-green-500 border-2 border-background" />
+                {profile?.show_online && profile?.last_seen && (Date.now() - new Date(profile.last_seen).getTime() < 5 * 60 * 1000) && (
+                  <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-green-500 border-2 border-background" />
+                )}
               </motion.div>
 
               <div className="flex-1 pb-2">
