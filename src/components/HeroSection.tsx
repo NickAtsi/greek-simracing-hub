@@ -141,6 +141,7 @@ const HeroSection = () => {
           transition={{ duration: 0.5, delay: 0.7 }}
           className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row"
         >
+          {!user ? (
           <Link
             to="/auth"
             className="bg-gradient-racing group relative flex items-center gap-2.5 rounded-xl px-9 py-4 font-display text-sm font-semibold tracking-wider text-primary-foreground shadow-racing overflow-hidden transition-all hover:scale-105 hover:brightness-110"
@@ -150,6 +151,17 @@ const HeroSection = () => {
             ΓΙΝΕ ΜΕΛΟΣ
             <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
+          ) : (
+          <Link
+            to="/profile"
+            className="bg-gradient-racing group relative flex items-center gap-2.5 rounded-xl px-9 py-4 font-display text-sm font-semibold tracking-wider text-primary-foreground shadow-racing overflow-hidden transition-all hover:scale-105 hover:brightness-110"
+          >
+            <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+            <Users className="h-4 w-4" />
+            ΤΟ ΠΡΟΦΙΛ ΜΟΥ
+            <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </Link>
+          )}
           <Link
             to="/forum"
             className="flex items-center gap-2 rounded-xl border border-border/60 bg-card/50 px-8 py-4 font-display text-sm font-semibold tracking-wider text-secondary-foreground backdrop-blur-sm transition-all hover:border-primary/40 hover:bg-card/80 hover:text-primary"
