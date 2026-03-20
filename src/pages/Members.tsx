@@ -354,6 +354,9 @@ const MemberCard = forwardRef<HTMLDivElement, MemberCardProps>(({ member, index,
                     {getInitials(member.display_name)}
                   </AvatarFallback>
                 </Avatar>
+                {member.show_online && member.last_seen && (Date.now() - new Date(member.last_seen).getTime() < 5 * 60 * 1000) && (
+                  <div className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-green-500 border-2 border-card" />
+                )}
               </div>
 
               {!isOwnProfile && currentUserId && (
