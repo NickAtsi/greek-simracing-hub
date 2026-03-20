@@ -326,11 +326,12 @@ const MemberCard = forwardRef<HTMLDivElement, MemberCardProps>(({ member, index,
 
   return (
     <motion.div
+      ref={ref}
       layout
-      initial={{ opacity: 0, y: 30, scale: 0.95 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      transition={{ duration: 0.4, delay: Math.min(index * 0.05, 0.4) }}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
+      transition={{ duration: 0.35, delay: Math.min(index * 0.04, 0.3) }}
     >
       <Link to={`/profile/${member.user_id}`} className="block group">
         <div className="relative rounded-2xl bg-card border border-border overflow-hidden transition-all duration-500 hover:border-primary/40 hover:shadow-[0_0_30px_-5px_hsl(var(--primary)/0.2)]">
