@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, forwardRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Search, Users, MapPin, Gamepad2, Trophy, UserPlus, UserCheck, Clock, X, Filter, SlidersHorizontal } from "lucide-react";
 import { Link } from "react-router-dom";

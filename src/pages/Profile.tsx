@@ -137,11 +137,22 @@ const Profile = () => {
     if (!user) return;
     const { data } = await supabase
       .from("follows" as any)
-      .select("*, profiles!follower_id(display_name, username, avatar_url, user_id)")
+      .select("*")
       .eq("following_id", user.id)
       .eq("status", "pending")
       .order("created_at", { ascending: false });
-    setPendingRequests((data as any[]) || []);
+    const requests = (data as any[]) || [];
+    if (requests.length > 0) {
+      const followerIds = requests.map((r: any) => r.follower_id);
+      const { data: profilesData } = await supabase
+        .from("profiles")
+        .select("user_id, display_name, username, avatar_url")
+        .in("user_id", followerIds);
+      const profileMap: Record<string, any> = {};
+      ((profilesData as any[]) || []).forEach((p: any) => { profileMap[p.user_id] = p; });
+      requests.forEach((r: any) => { r.profiles = profileMap[r.follower_id] || null; });
+    }
+    setPendingRequests(requests);
   };
 
   const acceptFollow = async (followId: string) => {
