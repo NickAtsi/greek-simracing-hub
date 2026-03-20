@@ -300,9 +300,21 @@ const Admin = () => {
   const fetchSupportTickets = async () => {
     const { data } = await supabase
       .from("support_tickets" as any)
-      .select("*, profiles!user_id(display_name, username, avatar_url)")
+      .select("*")
       .order("updated_at", { ascending: false });
-    setSupportTickets((data as any[]) || []);
+    const tickets = (data as any[]) || [];
+    // Fetch profile info for each ticket
+    if (tickets.length > 0) {
+      const userIds = [...new Set(tickets.map((t: any) => t.user_id))];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, display_name, username, avatar_url")
+        .in("user_id", userIds);
+      const profileMap: Record<string, any> = {};
+      ((profiles as any[]) || []).forEach((p: any) => { profileMap[p.user_id] = p; });
+      tickets.forEach((t: any) => { t.profiles = profileMap[t.user_id] || null; });
+    }
+    setSupportTickets(tickets);
   };
 
   const fetchTicketMessages = async (ticketId: string) => {
