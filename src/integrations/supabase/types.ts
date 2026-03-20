@@ -576,9 +576,11 @@ export type Database = {
           favorite_track: string | null
           id: string
           is_approved: boolean
+          last_seen: string | null
           location: string | null
           nationality: string | null
           setup_type: string | null
+          show_online: boolean
           updated_at: string
           user_id: string
           username: string | null
@@ -595,9 +597,11 @@ export type Database = {
           favorite_track?: string | null
           id?: string
           is_approved?: boolean
+          last_seen?: string | null
           location?: string | null
           nationality?: string | null
           setup_type?: string | null
+          show_online?: boolean
           updated_at?: string
           user_id: string
           username?: string | null
@@ -614,9 +618,11 @@ export type Database = {
           favorite_track?: string | null
           id?: string
           is_approved?: boolean
+          last_seen?: string | null
           location?: string | null
           nationality?: string | null
           setup_type?: string | null
+          show_online?: boolean
           updated_at?: string
           user_id?: string
           username?: string | null

@@ -35,7 +35,7 @@ const Profile = () => {
   const [followingList, setFollowingList] = useState<any[]>([]);
   const [loadingFollowList, setLoadingFollowList] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
-  const [editForm, setEditForm] = useState({ display_name: "", username: "", favorite_sim: "", favorite_track: "", setup_type: "", bio: "", location: "", discord_username: "", nationality: "", years_simracing: "", website_url: "" });
+  const [editForm, setEditForm] = useState({ display_name: "", username: "", favorite_sim: "", favorite_track: "", setup_type: "", bio: "", location: "", discord_username: "", nationality: "", years_simracing: "", website_url: "", show_online: true });
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [saving, setSaving] = useState(false);
   const [newEmail, setNewEmail] = useState("");
@@ -259,6 +259,7 @@ const Profile = () => {
       nationality: profile?.nationality || "",
       years_simracing: profile?.years_simracing || "",
       website_url: profile?.website_url || "",
+      show_online: profile?.show_online !== false,
     });
     setNewEmail(user?.email || "");
     setNewPassword("");
@@ -390,7 +391,9 @@ const Profile = () => {
                     <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
                   </>
                 )}
-                <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-green-500 border-2 border-background" />
+                {profile?.show_online && profile?.last_seen && (Date.now() - new Date(profile.last_seen).getTime() < 5 * 60 * 1000) && (
+                  <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-green-500 border-2 border-background" />
+                )}
               </motion.div>
 
               <div className="flex-1 pb-2">
@@ -750,6 +753,23 @@ const Profile = () => {
                   <label className="text-xs text-muted-foreground mb-1 block">Website / Twitch / YouTube</label>
                   <Input value={editForm.website_url} onChange={(e) => setEditForm(p => ({ ...p, website_url: e.target.value }))} className="bg-secondary/50" placeholder="https://..." />
                 </div>
+              </div>
+            </div>
+
+            {/* Online Visibility */}
+            <div className="border-t border-border pt-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-foreground">Online Status</p>
+                  <p className="text-xs text-muted-foreground">Δείξε αν είσαι συνδεδεμένος</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditForm(p => ({ ...p, show_online: !p.show_online }))}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${editForm.show_online ? 'bg-primary' : 'bg-muted'}`}
+                >
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${editForm.show_online ? 'translate-x-6' : 'translate-x-1'}`} />
+                </button>
               </div>
             </div>
 

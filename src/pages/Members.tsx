@@ -27,6 +27,8 @@ interface MemberProfile {
   setup_type: string | null;
   years_simracing: string | null;
   created_at: string;
+  last_seen: string | null;
+  show_online: boolean;
 }
 
 interface FollowStatus {
@@ -57,7 +59,7 @@ const Members = () => {
   const fetchProfiles = async () => {
     const { data } = await supabase
       .from("profiles")
-      .select("id, user_id, display_name, username, avatar_url, bio, location, nationality, favorite_sim, setup_type, years_simracing, created_at")
+      .select("id, user_id, display_name, username, avatar_url, bio, location, nationality, favorite_sim, setup_type, years_simracing, created_at, last_seen, show_online")
       .eq("is_approved", true);
     if (data) setProfiles(data);
     setLoading(false);
@@ -352,6 +354,9 @@ const MemberCard = forwardRef<HTMLDivElement, MemberCardProps>(({ member, index,
                     {getInitials(member.display_name)}
                   </AvatarFallback>
                 </Avatar>
+                {member.show_online && member.last_seen && (Date.now() - new Date(member.last_seen).getTime() < 5 * 60 * 1000) && (
+                  <div className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full bg-green-500 border-2 border-card" />
+                )}
               </div>
 
               {!isOwnProfile && currentUserId && (

@@ -49,6 +49,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return true;
   };
 
+  const updateLastSeen = async (userId: string) => {
+    await supabase.from("profiles").update({ last_seen: new Date().toISOString() } as any).eq("user_id", userId);
+  };
+
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
@@ -57,6 +61,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         
         if (session?.user) {
           setTimeout(() => checkApproval(session.user.id), 0);
+          updateLastSeen(session.user.id);
         } else {
           setIsApproved(false);
         }
@@ -69,12 +74,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(session?.user ?? null);
       if (session?.user) {
         setTimeout(() => checkApproval(session.user.id), 0);
+        updateLastSeen(session.user.id);
       }
       setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Heartbeat: update last_seen every 2 minutes
+  useEffect(() => {
+    if (!user) return;
+    const interval = setInterval(() => updateLastSeen(user.id), 2 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   const signOut = async () => {
     await supabase.auth.signOut();
