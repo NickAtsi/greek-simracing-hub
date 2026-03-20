@@ -27,6 +27,8 @@ interface MemberProfile {
   setup_type: string | null;
   years_simracing: string | null;
   created_at: string;
+  last_seen: string | null;
+  show_online: boolean;
 }
 
 interface FollowStatus {
