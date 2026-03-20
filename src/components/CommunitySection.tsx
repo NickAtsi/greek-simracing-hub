@@ -4,6 +4,7 @@ import { MessageSquare, TrendingUp, Users, Shield, ChevronRight, Star, Trophy, E
 import { Link } from "react-router-dom";
 import DiscordWidget from "@/components/DiscordWidget";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ForumThread {
   id: string;
@@ -30,6 +31,7 @@ const perks = [
 ];
 
 const CommunitySection = () => {
+  const { user } = useAuth();
   const [threads, setThreads] = useState<(ForumThread & { category?: ForumCategory; reply_count: number })[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -211,7 +213,8 @@ const CommunitySection = () => {
           </div>
         </div>
 
-        {/* Join CTA */}
+        {/* Join CTA - only for non-logged-in users */}
+        {!user && (
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -219,7 +222,6 @@ const CommunitySection = () => {
           transition={{ duration: 0.7, delay: 0.2 }}
           className="mt-16 mx-auto max-w-2xl overflow-hidden rounded-2xl border border-primary/20 bg-gradient-to-br from-card to-card/60 backdrop-blur-sm"
         >
-          {/* Top gradient bar */}
           <div className="h-1 w-full bg-gradient-racing" />
           <div className="p-10 text-center">
             <motion.div
@@ -235,8 +237,6 @@ const CommunitySection = () => {
             <p className="mb-8 font-body text-sm text-muted-foreground max-w-sm mx-auto">
               Δημιούργησε το προφίλ σου και ξεκίνα να αγωνίζεσαι με την ελληνική SimRacing κοινότητα
             </p>
-
-            {/* Perks */}
             <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
               {perks.map((p, i) => (
                 <div key={i} className="flex flex-col items-center gap-2 rounded-xl border border-border/60 bg-secondary/30 py-3 px-2">
@@ -245,7 +245,6 @@ const CommunitySection = () => {
                 </div>
               ))}
             </div>
-
             <Link
               to="/auth"
               className="bg-gradient-racing group relative inline-flex items-center gap-2 rounded-xl px-10 py-4 font-display text-sm font-bold tracking-widest text-primary-foreground shadow-racing overflow-hidden transition-all hover:scale-105 hover:brightness-110"
@@ -255,6 +254,7 @@ const CommunitySection = () => {
             </Link>
           </div>
         </motion.div>
+        )}
       </div>
     </section>
   );
