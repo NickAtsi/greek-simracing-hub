@@ -260,6 +260,7 @@ const Profile = () => {
       years_simracing: profile?.years_simracing || "",
       website_url: profile?.website_url || "",
       show_online: profile?.show_online !== false,
+      social_links: Array.isArray(profile?.social_links) ? profile.social_links : [],
     });
     setNewEmail(user?.email || "");
     setNewPassword("");
