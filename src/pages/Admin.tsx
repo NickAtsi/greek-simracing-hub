@@ -2317,6 +2317,9 @@ const Admin = () => {
             <DialogTitle className="font-display text-foreground">
               {editingProduct ? "Επεξεργασία Προϊόντος" : "Νέο Προϊόν"}
             </DialogTitle>
+            <DialogDescription className="text-muted-foreground text-xs">
+              {editingProduct ? "Ενημέρωσε τα στοιχεία του προϊόντος" : "Συμπλήρωσε τα στοιχεία του νέου προϊόντος"}
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <Input
