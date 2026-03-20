@@ -4,6 +4,7 @@ import { MessageSquare, TrendingUp, Users, Shield, ChevronRight, Star, Trophy, E
 import { Link } from "react-router-dom";
 import DiscordWidget from "@/components/DiscordWidget";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ForumThread {
   id: string;
