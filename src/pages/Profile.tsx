@@ -35,7 +35,7 @@ const Profile = () => {
   const [followingList, setFollowingList] = useState<any[]>([]);
   const [loadingFollowList, setLoadingFollowList] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
-  const [editForm, setEditForm] = useState({ display_name: "", username: "", favorite_sim: "", favorite_track: "", setup_type: "", bio: "", location: "", discord_username: "", nationality: "", years_simracing: "", website_url: "" });
+  const [editForm, setEditForm] = useState({ display_name: "", username: "", favorite_sim: "", favorite_track: "", setup_type: "", bio: "", location: "", discord_username: "", nationality: "", years_simracing: "", website_url: "", show_online: true });
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [saving, setSaving] = useState(false);
   const [newEmail, setNewEmail] = useState("");
