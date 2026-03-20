@@ -6,6 +6,14 @@ import { useSiteSettings } from "@/hooks/useSiteSettings";
 const Footer = () => {
   const { settings } = useSiteSettings();
 
+  // Parse custom footer links from site_settings
+  let customLinks: { label: string; url: string }[] = [];
+  try {
+    if (settings.footer_custom_links) {
+      customLinks = JSON.parse(settings.footer_custom_links);
+    }
+  } catch { /* ignore parse errors */ }
+
   const socials = [
     {
       label: "Discord",
@@ -51,10 +59,10 @@ const Footer = () => {
 
   return (
     <footer className="relative border-t border-border/50 bg-background">
-      <div className="container mx-auto px-4 py-16">
-        <div className="grid gap-10 md:grid-cols-5">
+      <div className="container mx-auto px-4 py-12 sm:py-16">
+        <div className="grid gap-8 sm:gap-10 grid-cols-2 sm:grid-cols-3 md:grid-cols-5">
           {/* Brand */}
-          <div className="md:col-span-2">
+          <div className="col-span-2 sm:col-span-3 md:col-span-2">
             <div className="mb-4 flex items-center gap-2.5">
               <img src={gsrLogo} alt={settings.site_name} className="h-9 w-9 object-contain" />
               <span className="font-display text-base font-bold tracking-wider text-foreground">
@@ -130,7 +138,24 @@ const Footer = () => {
           ))}
         </div>
 
-        <div className="mt-12 border-t border-border/40 pt-6 pb-14 sm:pb-0 flex flex-col items-center justify-between gap-4 sm:flex-row">
+        {/* Custom Links from Admin */}
+        {customLinks.length > 0 && (
+          <div className="mt-8 pt-6 border-t border-border/40 flex flex-wrap gap-4 justify-center">
+            {customLinks.map((link, i) => (
+              <a
+                key={i}
+                href={link.url}
+                target={link.url.startsWith("http") ? "_blank" : undefined}
+                rel={link.url.startsWith("http") ? "noopener noreferrer" : undefined}
+                className="font-body text-sm text-muted-foreground transition-colors hover:text-primary"
+              >
+                {link.label}
+              </a>
+            ))}
+          </div>
+        )}
+
+        <div className="mt-8 border-t border-border/40 pt-6 pb-14 sm:pb-0 flex flex-col items-center justify-between gap-4 sm:flex-row">
           <p className="font-body text-xs text-muted-foreground">
             © {new Date().getFullYear()} {settings.site_name || "GreekSimRacers"}. Όλα τα δικαιώματα κατοχυρωμένα.
           </p>

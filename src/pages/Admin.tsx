@@ -34,6 +34,11 @@ import {
   Music,
   ShoppingCart,
   Package,
+  Download,
+  AlertTriangle,
+  DollarSign,
+  LinkIcon,
+  Truck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -155,7 +160,7 @@ const Admin = () => {
   );
   const [shopProducts, setShopProducts] = useState<any[]>([]);
   const [shopOrders, setShopOrders] = useState<any[]>([]);
-  const [shopTab, setShopTab] = useState<"products" | "orders">("orders");
+  const [shopTab, setShopTab] = useState<"products" | "orders" | "analytics">("orders");
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [productForm, setProductForm] = useState({
@@ -1552,7 +1557,15 @@ const Admin = () => {
             <div>
               <div className="flex items-center justify-between mb-4">
                 <h1 className="font-display text-2xl font-black text-foreground">Shop Management</h1>
-                <div className="flex gap-2">
+                <div className="flex gap-2 flex-wrap">
+                  <Button
+                    variant={shopTab === "analytics" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setShopTab("analytics")}
+                    className="gap-1"
+                  >
+                    <DollarSign className="h-3.5 w-3.5" /> Analytics
+                  </Button>
                   <Button
                     variant={shopTab === "orders" ? "default" : "outline"}
                     size="sm"
@@ -1573,18 +1586,7 @@ const Admin = () => {
                     size="sm"
                     onClick={() => {
                       setEditingProduct(null);
-                      setProductForm({
-                        name: "",
-                        description: "",
-                        price: "",
-                        original_price: "",
-                        image_url: "",
-                        category: "Ρούχα",
-                        badge: "",
-                        sizes: "",
-                        stock: "10",
-                        active: true,
-                      });
+                      setProductForm({ name: "", description: "", price: "", original_price: "", image_url: "", category: "Ρούχα", badge: "", sizes: "", stock: "10", active: true });
                       setShowProductForm(true);
                     }}
                     className="gap-1 bg-primary hover:bg-primary/90"
@@ -1594,54 +1596,201 @@ const Admin = () => {
                 </div>
               </div>
 
+              {/* Analytics Tab */}
+              {shopTab === "analytics" && (() => {
+                const totalRevenue = shopOrders.reduce((s: number, o: any) => s + Number(o.total || 0), 0);
+                const pendingOrders = shopOrders.filter((o: any) => o.status === "pending").length;
+                const shippedOrders = shopOrders.filter((o: any) => o.status === "shipped").length;
+                const deliveredOrders = shopOrders.filter((o: any) => o.status === "delivered").length;
+                const lowStockProducts = shopProducts.filter((p: any) => p.stock <= 5 && p.active);
+                
+                // Top products by order count
+                const productCounts: Record<string, { name: string; count: number; revenue: number }> = {};
+                shopOrders.forEach((o: any) => {
+                  (o.shop_order_items || []).forEach((item: any) => {
+                    const key = item.product_name;
+                    if (!productCounts[key]) productCounts[key] = { name: key, count: 0, revenue: 0 };
+                    productCounts[key].count += item.quantity;
+                    productCounts[key].revenue += Number(item.price) * item.quantity;
+                  });
+                });
+                const topProducts = Object.values(productCounts).sort((a, b) => b.count - a.count).slice(0, 5);
+
+                return (
+                  <div className="space-y-6">
+                    {/* Revenue stats */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="rounded-xl border border-border bg-card p-5">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-xl bg-green-500/20 flex items-center justify-center">
+                            <DollarSign className="h-5 w-5 text-green-500" />
+                          </div>
+                          <div>
+                            <p className="text-xl font-display font-black text-foreground">€{totalRevenue.toFixed(2)}</p>
+                            <p className="text-xs text-muted-foreground">Συνολικά Έσοδα</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="rounded-xl border border-border bg-card p-5">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-xl bg-amber-500/20 flex items-center justify-center">
+                            <Clock className="h-5 w-5 text-amber-500" />
+                          </div>
+                          <div>
+                            <p className="text-xl font-display font-black text-amber-500">{pendingOrders}</p>
+                            <p className="text-xs text-muted-foreground">Σε Αναμονή</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="rounded-xl border border-border bg-card p-5">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                            <Truck className="h-5 w-5 text-primary" />
+                          </div>
+                          <div>
+                            <p className="text-xl font-display font-black text-foreground">{shippedOrders}</p>
+                            <p className="text-xs text-muted-foreground">Σε Μεταφορά</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="rounded-xl border border-border bg-card p-5">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-xl bg-green-500/20 flex items-center justify-center">
+                            <CheckCircle className="h-5 w-5 text-green-500" />
+                          </div>
+                          <div>
+                            <p className="text-xl font-display font-black text-foreground">{deliveredOrders}</p>
+                            <p className="text-xs text-muted-foreground">Παραδόθηκαν</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Low Stock Alerts */}
+                    {lowStockProducts.length > 0 && (
+                      <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4">
+                        <h3 className="font-display text-sm font-bold text-amber-500 mb-3 flex items-center gap-2">
+                          <AlertTriangle className="h-4 w-4" /> Χαμηλό Απόθεμα ({lowStockProducts.length})
+                        </h3>
+                        <div className="space-y-2">
+                          {lowStockProducts.map((p: any) => (
+                            <div key={p.id} className="flex items-center justify-between rounded-lg bg-card border border-border px-3 py-2">
+                              <span className="text-sm text-foreground">{p.name}</span>
+                              <span className={`text-xs font-bold ${p.stock === 0 ? "text-destructive" : "text-amber-500"}`}>
+                                {p.stock === 0 ? "ΕΞΑΝΤΛΗΘΗΚΕ" : `${p.stock} τεμ.`}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Top Products */}
+                    {topProducts.length > 0 && (
+                      <div className="rounded-xl border border-border bg-card p-4">
+                        <h3 className="font-display text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                          <TrendingUp className="h-4 w-4 text-primary" /> Top Προϊόντα
+                        </h3>
+                        <div className="space-y-2">
+                          {topProducts.map((p, i) => (
+                            <div key={p.name} className="flex items-center gap-3 rounded-lg bg-secondary/30 px-3 py-2">
+                              <span className="text-xs font-display font-bold text-primary w-6">#{i + 1}</span>
+                              <span className="text-sm text-foreground flex-1">{p.name}</span>
+                              <span className="text-xs text-muted-foreground">{p.count} πωλ.</span>
+                              <span className="text-xs font-bold text-primary">€{p.revenue.toFixed(2)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
               {shopTab === "orders" && (
                 <div className="space-y-3">
+                  {/* Export CSV button */}
+                  <div className="flex justify-end mb-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5"
+                      onClick={() => {
+                        const headers = ["ID","Ημ/νία","Ονοματεπώνυμο","Email","Τηλ","Διεύθυνση","Πόλη","ΤΚ","Σύνολο","Status","Προϊόντα"];
+                        const rows = shopOrders.map((o: any) => [
+                          o.id.slice(0, 8),
+                          new Date(o.created_at).toLocaleDateString("el-GR"),
+                          o.full_name, o.email, o.phone || "",
+                          o.address, o.city, o.postal_code,
+                          Number(o.total).toFixed(2), o.status,
+                          (o.shop_order_items || []).map((it: any) => `${it.product_name}${it.size ? ` (${it.size})` : ""} x${it.quantity}`).join(" | "),
+                        ]);
+                        const csv = [headers.join(","), ...rows.map((r: any) => r.map((c: any) => `"${String(c).replace(/"/g, '""')}"`).join(","))].join("\n");
+                        const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+                        const a = document.createElement("a");
+                        a.href = URL.createObjectURL(blob);
+                        a.download = `orders_${new Date().toISOString().slice(0, 10)}.csv`;
+                        a.click();
+                      }}
+                    >
+                      <Download className="h-3.5 w-3.5" /> Εξαγωγή CSV
+                    </Button>
+                  </div>
                   {shopOrders.length === 0 ? (
                     <p className="text-muted-foreground text-center py-12">Δεν υπάρχουν παραγγελίες ακόμα.</p>
                   ) : (
-                    shopOrders.map((order: any) => (
-                      <div key={order.id} className="rounded-xl border border-border bg-card p-4">
-                        <div className="flex items-center justify-between mb-2">
-                          <div className="flex items-center gap-3">
-                            <span className="text-xs text-muted-foreground font-mono">#{order.id.slice(0, 8)}</span>
-                            <span className="text-sm font-medium text-foreground">{order.full_name}</span>
-                            <span className="text-xs text-muted-foreground">{order.email}</span>
+                    shopOrders.map((order: any) => {
+                      const statusColors: Record<string, string> = {
+                        pending: "text-amber-500 bg-amber-500/10 border-amber-500/30",
+                        confirmed: "text-blue-500 bg-blue-500/10 border-blue-500/30",
+                        shipped: "text-primary bg-primary/10 border-primary/30",
+                        delivered: "text-green-500 bg-green-500/10 border-green-500/30",
+                        cancelled: "text-destructive bg-destructive/10 border-destructive/30",
+                      };
+                      return (
+                        <div key={order.id} className="rounded-xl border border-border bg-card p-4">
+                          <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+                            <div className="flex items-center gap-3 flex-wrap">
+                              <span className="text-xs text-muted-foreground font-mono">#{order.id.slice(0, 8)}</span>
+                              <span className="text-sm font-medium text-foreground">{order.full_name}</span>
+                              <span className="text-xs text-muted-foreground">{order.email}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <select
+                                value={order.status}
+                                onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                                className={`h-7 rounded-md border px-2 text-xs font-bold ${statusColors[order.status] || "border-border bg-secondary/50 text-foreground"}`}
+                              >
+                                <option value="pending">Σε αναμονή</option>
+                                <option value="confirmed">Επιβεβαιωμένη</option>
+                                <option value="shipped">Απεστάλη</option>
+                                <option value="delivered">Παραδόθηκε</option>
+                                <option value="cancelled">Ακυρώθηκε</option>
+                              </select>
+                              <span className="font-display text-sm font-bold text-primary">
+                                €{Number(order.total).toFixed(2)}
+                              </span>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <select
-                              value={order.status}
-                              onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                              className="h-7 rounded-md border border-border bg-secondary/50 px-2 text-xs text-foreground"
-                            >
-                              <option value="pending">Σε αναμονή</option>
-                              <option value="confirmed">Επιβεβαιωμένη</option>
-                              <option value="shipped">Απεστάλη</option>
-                              <option value="delivered">Παραδόθηκε</option>
-                              <option value="cancelled">Ακυρώθηκε</option>
-                            </select>
-                            <span className="font-display text-sm font-bold text-primary">
-                              €{Number(order.total).toFixed(2)}
-                            </span>
+                          <div className="text-xs text-muted-foreground mb-1">
+                            📍 {order.address}, {order.city} {order.postal_code} {order.phone ? `| 📞 ${order.phone}` : ""}
+                          </div>
+                          {order.notes && (
+                            <div className="text-xs text-muted-foreground/80 italic mb-1">📝 {order.notes}</div>
+                          )}
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {(order.shop_order_items || []).map((item: any) => (
+                              <span key={item.id} className="text-[10px] bg-secondary/50 text-foreground px-2 py-1 rounded-lg">
+                                {item.product_name} {item.size ? `(${item.size})` : ""} ×{item.quantity} — €{(Number(item.price) * item.quantity).toFixed(2)}
+                              </span>
+                            ))}
+                          </div>
+                          <div className="text-[10px] text-muted-foreground mt-2">
+                            {new Date(order.created_at).toLocaleString("el-GR")}
                           </div>
                         </div>
-                        <div className="text-xs text-muted-foreground mb-1">
-                          {order.address}, {order.city} {order.postal_code} {order.phone ? `| ${order.phone}` : ""}
-                        </div>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {(order.shop_order_items || []).map((item: any) => (
-                            <span
-                              key={item.id}
-                              className="text-[10px] bg-secondary/50 text-foreground px-2 py-1 rounded-lg"
-                            >
-                              {item.product_name} {item.size ? `(${item.size})` : ""} ×{item.quantity}
-                            </span>
-                          ))}
-                        </div>
-                        <div className="text-[10px] text-muted-foreground mt-2">
-                          {new Date(order.created_at).toLocaleString("el-GR")}
-                        </div>
-                      </div>
-                    ))
+                      );
+                    })
                   )}
                 </div>
               )}
@@ -1654,13 +1803,12 @@ const Admin = () => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="font-medium text-foreground text-sm">{p.name}</p>
-                          {!p.active && (
-                            <span className="text-[10px] bg-secondary px-1.5 rounded text-muted-foreground">
-                              Ανενεργό
+                          {!p.active && <span className="text-[10px] bg-secondary px-1.5 rounded text-muted-foreground">Ανενεργό</span>}
+                          {p.badge && <span className="text-[10px] bg-primary/20 text-primary px-1.5 rounded">{p.badge}</span>}
+                          {p.stock <= 5 && p.active && (
+                            <span className={`text-[10px] px-1.5 rounded font-bold ${p.stock === 0 ? "bg-destructive/20 text-destructive" : "bg-amber-500/20 text-amber-500"}`}>
+                              {p.stock === 0 ? "ΕΞΑΝΤΛΗΘΗΚΕ" : `${p.stock} τεμ.`}
                             </span>
-                          )}
-                          {p.badge && (
-                            <span className="text-[10px] bg-primary/20 text-primary px-1.5 rounded">{p.badge}</span>
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground">
@@ -1668,20 +1816,10 @@ const Admin = () => {
                         </p>
                       </div>
                       <div className="flex gap-1">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => openEditProduct(p)}
-                          className="h-7 px-2 text-xs"
-                        >
+                        <Button size="sm" variant="outline" onClick={() => openEditProduct(p)} className="h-7 px-2 text-xs">
                           <Edit className="h-3 w-3" />
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => deleteProduct(p.id)}
-                          className="h-7 px-2 text-xs text-destructive border-destructive/30"
-                        >
+                        <Button size="sm" variant="outline" onClick={() => deleteProduct(p.id)} className="h-7 px-2 text-xs text-destructive border-destructive/30">
                           <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
@@ -1866,7 +2004,26 @@ const Admin = () => {
                 </div>
               </div>
 
-              {/* Info Box */}
+              {/* Footer Custom Links */}
+              <div className="mt-6">
+                <h3 className="font-display text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                  <LinkIcon className="h-4 w-4 text-primary" /> Custom Footer Links
+                </h3>
+                <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+                  <p className="text-xs text-muted-foreground">Πρόσθεσε custom links στο footer. Μορφή JSON: [{"{"}"label":"Κείμενο","url":"https://..."{"}"}, ...]</p>
+                  <textarea
+                    value={siteSettings.footer_custom_links || "[]"}
+                    onChange={(e) => setSiteSettings((p) => ({ ...p, footer_custom_links: e.target.value }))}
+                    placeholder='[{"label":"ATSIWorks","url":"https://atsiworks.online"}]'
+                    rows={3}
+                    className="w-full rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm text-foreground font-mono resize-none"
+                  />
+                  <Button size="sm" onClick={() => saveSiteSetting("footer_custom_links", siteSettings.footer_custom_links || "[]")} className="bg-primary hover:bg-primary/90 gap-1">
+                    <Check className="h-4 w-4" /> Αποθήκευση Links
+                  </Button>
+                </div>
+              </div>
+
               <div className="mt-6 rounded-xl border border-primary/20 bg-primary/5 p-4 max-w-2xl">
                 <p className="text-xs font-display font-bold text-primary uppercase tracking-wider mb-1">
                   💡 Πληροφορία
