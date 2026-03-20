@@ -7,7 +7,15 @@ import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
 
 // Equalizer bar animation component
-const EqualizerBars = ({ count = 12, className = "", height = 60 }: { count?: number; className?: string; height?: number }) => {
+const EqualizerBars = ({
+  count = 12,
+  className = "",
+  height = 60,
+}: {
+  count?: number;
+  className?: string;
+  height?: number;
+}) => {
   return (
     <div className={`flex items-end gap-[3px] ${className}`} style={{ height, minHeight: height }}>
       {Array.from({ length: count }).map((_, i) => (
@@ -16,7 +24,13 @@ const EqualizerBars = ({ count = 12, className = "", height = 60 }: { count?: nu
           className="w-[3px] rounded-t-sm bg-primary"
           style={{ originY: 1 }}
           animate={{
-            height: ["8px", `${Math.min(20 + Math.random() * 40, height)}px`, "8px", `${Math.min(15 + Math.random() * 35, height)}px`, "8px"],
+            height: [
+              "8px",
+              `${Math.min(20 + Math.random() * 40, height)}px`,
+              "8px",
+              `${Math.min(15 + Math.random() * 35, height)}px`,
+              "8px",
+            ],
             opacity: [0.4, 1, 0.6, 1, 0.4],
           }}
           transition={{
@@ -510,7 +524,7 @@ const Podcasts = () => {
               <Headphones className="h-10 w-10 text-primary mx-auto mb-4" />
               <h3 className="font-display text-2xl font-black text-foreground mb-2">Ακούστε μας παντού</h3>
               <p className="text-muted-foreground text-sm mb-6 max-w-sm mx-auto">
-                Διαθέσιμο σε Spotify, Apple Podcasts και YouTube. Subscribe για να μη χάσετε κανένα επεισόδιο.
+                Διαθέσιμο σε Spotify και Apple Podcasts. Subscribe για να μη χάσετε κανένα επεισόδιο.
               </p>
               <div className="flex items-center justify-center gap-3 flex-wrap">
                 {[
@@ -522,7 +536,6 @@ const Podcasts = () => {
                     name: "Apple Podcasts",
                     color: "bg-purple-600/20 border-purple-600/40 text-purple-400 hover:bg-purple-600/30",
                   },
-                  { name: "YouTube", color: "bg-red-600/20 border-red-600/40 text-red-400 hover:bg-red-600/30" },
                 ].map((p) => (
                   <button
                     key={p.name}
