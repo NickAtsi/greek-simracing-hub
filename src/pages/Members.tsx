@@ -321,7 +321,7 @@ interface MemberCardProps {
   getInitials: (name: string | null) => string;
 }
 
-const MemberCard = ({ member, index, currentUserId, followStatus, followLoading, onFollow, getInitials }: MemberCardProps) => {
+const MemberCard = forwardRef<HTMLDivElement, MemberCardProps>(({ member, index, currentUserId, followStatus, followLoading, onFollow, getInitials }, ref) => {
   const isOwnProfile = currentUserId === member.user_id;
 
   return (
