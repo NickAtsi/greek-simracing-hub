@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, LogIn, LogOut, Shield, ChevronDown, Newspaper, MessageSquare, Trophy, Bell, User, Sun, Moon } from "lucide-react";
+import { Menu, X, LogIn, LogOut, Shield, ChevronDown, Newspaper, MessageSquare, Trophy, Bell, User, Sun, Moon, Award } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -12,6 +12,7 @@ const communityItems = [
   { label: "Άρθρα", href: "/articles", icon: Newspaper, desc: "Νέα & αναλύσεις" },
   { label: "Forum", href: "/forum", icon: MessageSquare, desc: "Συζητήσεις" },
   { label: "Αγώνες", href: "/championships", icon: Trophy, desc: "Πρωταθλήματα" },
+  { label: "Οδηγός Μήνα", href: "/driver-of-the-month", icon: Award, desc: "Ψηφοφορία" },
 ];
 
 const navItems = [
@@ -159,6 +160,21 @@ const CommunityDropdown = ({ onNavigate }: { onNavigate?: () => void }) => {
   );
 };
 
+const ThemeToggle = () => {
+  const { theme, toggleTheme } = useTheme();
+  return (
+    <button
+      onClick={toggleTheme}
+      className="flex items-center justify-center h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+      aria-label="Toggle theme"
+    >
+      <motion.div key={theme} initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} transition={{ duration: 0.3 }}>
+        {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+      </motion.div>
+    </button>
+  );
+};
+
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, signOut } = useAuth();
@@ -255,6 +271,8 @@ const Navbar = () => {
               <SocialIcon key={s.label} href={s.href} label={s.label} icon={s.icon} hoverColor={s.hoverColor} size="sm" />
             ))}
           </div>
+
+          <ThemeToggle />
 
           {user ? (
             <>
@@ -377,6 +395,7 @@ const Navbar = () => {
                 {socials.map((s) => (
                   <SocialIcon key={s.label} href={s.href} label={s.label} icon={s.icon} hoverColor={s.hoverColor} size="sm" />
                 ))}
+                <div className="ml-auto"><ThemeToggle /></div>
               </div>
               <div className="mt-2 pt-2 border-t border-border/50 flex flex-col gap-2">
                 {user ? (
