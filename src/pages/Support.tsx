@@ -427,6 +427,7 @@ const Support = () => {
 
       <Footer />
     </div>
+    </PageTransition>
   );
 };
 
