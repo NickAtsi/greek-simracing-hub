@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-// @ts-ignore - Trophy already imported below
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Heart, MessageCircle, UserPlus, UserCheck, UserX, X, Trophy, Gamepad2, Flag, Calendar, Users, Camera, Save, Edit2, Globe, MapPin, Hash, Clock3, ExternalLink, Mail, Lock, Plus, Trash2 } from "lucide-react";
