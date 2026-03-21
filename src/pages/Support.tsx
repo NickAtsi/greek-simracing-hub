@@ -170,6 +170,7 @@ const Support = () => {
         </div>
         <Footer />
       </div>
+      </PageTransition>
     );
   }
 
