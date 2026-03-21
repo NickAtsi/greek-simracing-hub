@@ -12,6 +12,7 @@ const communityItems = [
   { label: "Άρθρα", href: "/articles", icon: Newspaper, desc: "Νέα & αναλύσεις" },
   { label: "Forum", href: "/forum", icon: MessageSquare, desc: "Συζητήσεις" },
   { label: "Αγώνες", href: "/championships", icon: Trophy, desc: "Πρωταθλήματα" },
+  { label: "Οδηγός Μήνα", href: "/driver-of-the-month", icon: Award, desc: "Ψηφοφορία" },
 ];
 
 const navItems = [
