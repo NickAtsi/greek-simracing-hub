@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Timer, Plus, Trophy, Search, ArrowUpDown } from "lucide-react";
+import { Timer, Plus, Trophy, Search, ArrowUpDown, Youtube, ExternalLink } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
@@ -35,7 +35,7 @@ const LapTimes = () => {
   const [filterTrack, setFilterTrack] = useState("");
   const [filterSim, setFilterSim] = useState("");
   const [sortBy, setSortBy] = useState<"time" | "date">("time");
-  const [form, setForm] = useState({ track_name: "", car_name: "", sim_name: "", lap_time: "", conditions: "dry" });
+  const [form, setForm] = useState({ track_name: "", car_name: "", sim_name: "", lap_time: "", conditions: "dry", video_url: "" });
 
   useEffect(() => { fetchData(); }, []);
 
@@ -70,13 +70,14 @@ const LapTimes = () => {
       sim_name: form.sim_name.trim(),
       lap_time_ms: ms,
       conditions: form.conditions,
+      video_url: form.video_url.trim() || null,
     } as any);
 
     if (error) {
       toast({ title: "Σφάλμα", variant: "destructive" });
     } else {
       toast({ title: "Ο χρόνος καταχωρήθηκε! ⏱️" });
-      setForm({ track_name: "", car_name: "", sim_name: "", lap_time: "", conditions: "dry" });
+      setForm({ track_name: "", car_name: "", sim_name: "", lap_time: "", conditions: "dry", video_url: "" });
       setShowAdd(false);
       fetchData();
     }
@@ -132,19 +133,11 @@ const LapTimes = () => {
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input placeholder="Αναζήτηση..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9 w-48" />
                 </div>
-                <select
-                  value={filterTrack}
-                  onChange={(e) => setFilterTrack(e.target.value)}
-                  className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
-                >
+                <select value={filterTrack} onChange={(e) => setFilterTrack(e.target.value)} className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground">
                   <option value="">Όλες οι πίστες</option>
                   {tracks.map((t) => <option key={t} value={t}>{t}</option>)}
                 </select>
-                <select
-                  value={filterSim}
-                  onChange={(e) => setFilterSim(e.target.value)}
-                  className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground"
-                >
+                <select value={filterSim} onChange={(e) => setFilterSim(e.target.value)} className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-foreground">
                   <option value="">Όλα τα sims</option>
                   {sims.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
@@ -175,6 +168,15 @@ const LapTimes = () => {
                   <option value="wet">Wet</option>
                   <option value="mixed">Mixed</option>
                 </select>
+                <div className="relative">
+                  <Youtube className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="YouTube URL (προαιρετικό)"
+                    value={form.video_url}
+                    onChange={(e) => setForm({ ...form, video_url: e.target.value })}
+                    className="pl-10"
+                  />
+                </div>
                 <div className="flex gap-2">
                   <Button onClick={handleAdd} className="flex-1">Καταχώρηση</Button>
                   <Button variant="outline" onClick={() => setShowAdd(false)}>Ακύρωση</Button>
@@ -192,7 +194,7 @@ const LapTimes = () => {
               <p className="text-muted-foreground text-lg">Δεν υπάρχουν χρόνοι ακόμα</p>
             </div>
           ) : (
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-5xl mx-auto">
               <div className="rounded-xl border border-border/60 overflow-hidden">
                 <table className="w-full text-sm">
                   <thead>
@@ -204,6 +206,7 @@ const LapTimes = () => {
                       <th className="px-4 py-3 text-left font-display text-xs text-muted-foreground">Sim</th>
                       <th className="px-4 py-3 text-right font-display text-xs text-muted-foreground">Χρόνος</th>
                       <th className="px-4 py-3 text-center font-display text-xs text-muted-foreground">Συνθήκες</th>
+                      <th className="px-4 py-3 text-center font-display text-xs text-muted-foreground">Video</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -239,6 +242,15 @@ const LapTimes = () => {
                             }`}>
                               {lap.conditions}
                             </span>
+                          </td>
+                          <td className="px-4 py-3 text-center">
+                            {lap.video_url ? (
+                              <a href={lap.video_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-primary hover:text-primary/80">
+                                <Youtube className="h-4 w-4" />
+                              </a>
+                            ) : (
+                              <span className="text-muted-foreground/30">—</span>
+                            )}
                           </td>
                         </motion.tr>
                       );

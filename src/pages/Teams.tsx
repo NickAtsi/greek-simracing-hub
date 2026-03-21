@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Users, Plus, Crown, Shield, User, ExternalLink } from "lucide-react";
+import { Users, Plus, Crown, Shield, User, Edit, Upload, UserPlus, X, Check } from "lucide-react";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -11,10 +11,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-
-const roleIcons: Record<string, any> = { owner: Crown, captain: Shield, member: User };
-const roleLabels: Record<string, string> = { owner: "Owner", captain: "Captain", member: "Member" };
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const Teams = () => {
   const { user } = useAuth();
@@ -22,33 +21,35 @@ const Teams = () => {
   const [teams, setTeams] = useState<any[]>([]);
   const [members, setMembers] = useState<any[]>([]);
   const [profiles, setProfiles] = useState<Record<string, any>>({});
+  const [allProfiles, setAllProfiles] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState({ name: "", tag: "", description: "" });
+  const [editTeam, setEditTeam] = useState<any>(null);
+  const [editForm, setEditForm] = useState({ name: "", tag: "", description: "" });
+  const [showManage, setShowManage] = useState<any>(null);
+  const [memberSearch, setMemberSearch] = useState("");
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   useEffect(() => { fetchData(); }, []);
 
   const fetchData = async () => {
     setLoading(true);
-    const { data: t } = await supabase.from("teams" as any).select("*").order("created_at", { ascending: false });
-    const teamsList = (t as any[]) || [];
-    setTeams(teamsList);
-
-    const { data: m } = await supabase.from("team_members" as any).select("*");
-    const membersList = (m as any[]) || [];
-    setMembers(membersList);
-
-    // Fetch profiles for team owners and members
-    const allUserIds = new Set([
-      ...teamsList.map((tm: any) => tm.owner_id),
-      ...membersList.map((mm: any) => mm.user_id),
+    const [{ data: t }, { data: m }, { data: ap }] = await Promise.all([
+      supabase.from("teams" as any).select("*").order("created_at", { ascending: false }),
+      supabase.from("team_members" as any).select("*"),
+      supabase.from("profiles").select("user_id, display_name, username, avatar_url"),
     ]);
-    if (allUserIds.size > 0) {
-      const { data: p } = await supabase.from("profiles").select("user_id, display_name, username, avatar_url").in("user_id", [...allUserIds]);
-      const pMap: Record<string, any> = {};
-      ((p as any[]) || []).forEach((pr: any) => { pMap[pr.user_id] = pr; });
-      setProfiles(pMap);
-    }
+    const teamsList = (t as any[]) || [];
+    const membersList = (m as any[]) || [];
+    const allP = (ap as any[]) || [];
+    setTeams(teamsList);
+    setMembers(membersList);
+    setAllProfiles(allP);
+
+    const pMap: Record<string, any> = {};
+    allP.forEach((pr: any) => { pMap[pr.user_id] = pr; });
+    setProfiles(pMap);
     setLoading(false);
   };
 
@@ -66,11 +67,8 @@ const Teams = () => {
     if (error) {
       toast({ title: "Σφάλμα δημιουργίας", variant: "destructive" });
     } else {
-      // Add owner as member
       await supabase.from("team_members" as any).insert({
-        team_id: (data as any).id,
-        user_id: user.id,
-        role: "owner",
+        team_id: (data as any).id, user_id: user.id, role: "owner",
       } as any);
       toast({ title: "Η ομάδα δημιουργήθηκε! 🏎️" });
       setForm({ name: "", tag: "", description: "" });
@@ -79,7 +77,51 @@ const Teams = () => {
     }
   };
 
+  const handleEditSave = async () => {
+    if (!editTeam) return;
+    await supabase.from("teams" as any).update({
+      name: editForm.name.trim(),
+      tag: editForm.tag.trim() || null,
+      description: editForm.description.trim() || null,
+    } as any).eq("id", editTeam.id);
+    toast({ title: "Ομάδα ενημερώθηκε!" });
+    setEditTeam(null);
+    fetchData();
+  };
+
+  const handleLogoUpload = async (teamId: string, file: File) => {
+    setUploadingLogo(true);
+    const ext = file.name.split(".").pop();
+    const path = `teams/${teamId}/logo.${ext}`;
+    const { error } = await supabase.storage.from("avatars").upload(path, file, { upsert: true });
+    if (error) { toast({ title: "Σφάλμα upload", variant: "destructive" }); setUploadingLogo(false); return; }
+    const { data: { publicUrl } } = supabase.storage.from("avatars").getPublicUrl(path);
+    await supabase.from("teams" as any).update({ logo_url: publicUrl } as any).eq("id", teamId);
+    toast({ title: "Logo ανέβηκε! ✅" });
+    setUploadingLogo(false);
+    fetchData();
+  };
+
+  const addMember = async (teamId: string, userId: string) => {
+    const exists = members.find((m: any) => m.team_id === teamId && m.user_id === userId);
+    if (exists) { toast({ title: "Ήδη μέλος", variant: "destructive" }); return; }
+    await supabase.from("team_members" as any).insert({ team_id: teamId, user_id: userId, role: "member" } as any);
+    toast({ title: "Μέλος προστέθηκε!" });
+    fetchData();
+  };
+
+  const removeMember = async (memberId: string) => {
+    await supabase.from("team_members" as any).delete().eq("id", memberId);
+    toast({ title: "Μέλος αφαιρέθηκε" });
+    fetchData();
+  };
+
   const getTeamMembers = (teamId: string) => members.filter((m: any) => m.team_id === teamId);
+  const isOwner = (team: any) => user && team.owner_id === user.id;
+
+  const filteredProfiles = memberSearch
+    ? allProfiles.filter((p: any) => (p.display_name || p.username || "").toLowerCase().includes(memberSearch.toLowerCase()))
+    : [];
 
   return (
     <PageTransition>
@@ -151,13 +193,34 @@ const Teams = () => {
                       )}
                     </div>
                     <div className="p-5 -mt-6">
-                      <div className="w-12 h-12 rounded-xl bg-card border-2 border-border flex items-center justify-center text-2xl mb-3">
-                        🏎️
+                      <div className="flex items-start gap-3 mb-3">
+                        <div className="relative group">
+                          <div className="w-12 h-12 rounded-xl bg-card border-2 border-border flex items-center justify-center text-2xl overflow-hidden">
+                            {team.logo_url ? (
+                              <img src={team.logo_url} alt={team.name} className="w-full h-full object-cover" />
+                            ) : "🏎️"}
+                          </div>
+                          {isOwner(team) && (
+                            <button
+                              className="absolute inset-0 rounded-xl bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                              onClick={() => {
+                                const input = document.createElement("input");
+                                input.type = "file"; input.accept = "image/*";
+                                input.onchange = (e: any) => { const f = e.target.files?.[0]; if (f) handleLogoUpload(team.id, f); };
+                                input.click();
+                              }}
+                            >
+                              <Upload className="h-4 w-4 text-white" />
+                            </button>
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-display font-bold text-foreground text-lg">{team.name}</h3>
+                          {team.description && <p className="text-muted-foreground text-xs mt-1 line-clamp-2">{team.description}</p>}
+                        </div>
                       </div>
-                      <h3 className="font-display font-bold text-foreground text-lg">{team.name}</h3>
-                      {team.description && <p className="text-muted-foreground text-xs mt-1 line-clamp-2">{team.description}</p>}
 
-                      <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Users className="h-3.5 w-3.5" />
                         <span>{tmembers.length} μέλη</span>
                         {owner && (
@@ -174,9 +237,12 @@ const Teams = () => {
                         {tmembers.slice(0, 5).map((m: any) => {
                           const p = profiles[m.user_id];
                           return (
-                            <div key={m.id} className="w-7 h-7 rounded-full bg-muted border-2 border-card flex items-center justify-center text-[10px] font-bold text-muted-foreground" title={p?.display_name || "Member"}>
-                              {p?.display_name?.charAt(0) || "?"}
-                            </div>
+                            <Avatar key={m.id} className="w-7 h-7 border-2 border-card">
+                              <AvatarImage src={p?.avatar_url || ""} />
+                              <AvatarFallback className="bg-muted text-[10px] font-bold text-muted-foreground">
+                                {p?.display_name?.charAt(0) || "?"}
+                              </AvatarFallback>
+                            </Avatar>
                           );
                         })}
                         {tmembers.length > 5 && (
@@ -185,6 +251,21 @@ const Teams = () => {
                           </div>
                         )}
                       </div>
+
+                      {/* Owner actions */}
+                      {isOwner(team) && (
+                        <div className="flex gap-2 mt-4">
+                          <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={() => {
+                            setEditTeam(team);
+                            setEditForm({ name: team.name, tag: team.tag || "", description: team.description || "" });
+                          }}>
+                            <Edit className="h-3 w-3" /> Επεξεργασία
+                          </Button>
+                          <Button size="sm" variant="outline" className="gap-1 text-xs" onClick={() => { setShowManage(team); setMemberSearch(""); }}>
+                            <UserPlus className="h-3 w-3" /> Μέλη
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </motion.div>
                 );
@@ -192,6 +273,85 @@ const Teams = () => {
             </div>
           )}
         </div>
+
+        {/* Edit Team Dialog */}
+        <Dialog open={!!editTeam} onOpenChange={v => { if (!v) setEditTeam(null); }}>
+          <DialogContent className="max-w-md bg-card border-border">
+            <DialogHeader><DialogTitle className="font-display text-foreground">Επεξεργασία Ομάδας</DialogTitle></DialogHeader>
+            <div className="space-y-3">
+              <Input placeholder="Όνομα *" value={editForm.name} onChange={e => setEditForm({ ...editForm, name: e.target.value })} className="bg-secondary/50" />
+              <Input placeholder="Tag" value={editForm.tag} onChange={e => setEditForm({ ...editForm, tag: e.target.value })} className="bg-secondary/50" />
+              <Textarea placeholder="Περιγραφή" value={editForm.description} onChange={e => setEditForm({ ...editForm, description: e.target.value })} rows={3} className="bg-secondary/50" />
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setEditTeam(null)}>Ακύρωση</Button>
+                <Button onClick={handleEditSave}>Αποθήκευση</Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Manage Members Dialog */}
+        <Dialog open={!!showManage} onOpenChange={v => { if (!v) setShowManage(null); }}>
+          <DialogContent className="max-w-md bg-card border-border">
+            <DialogHeader><DialogTitle className="font-display text-foreground">Διαχείριση Μελών — {showManage?.name}</DialogTitle></DialogHeader>
+            <div className="space-y-4">
+              {/* Current members */}
+              <div>
+                <h4 className="text-xs font-bold text-muted-foreground uppercase mb-2">Τρέχοντα Μέλη</h4>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {showManage && getTeamMembers(showManage.id).map((m: any) => {
+                    const p = profiles[m.user_id];
+                    return (
+                      <div key={m.id} className="flex items-center gap-2 rounded-lg bg-secondary/30 p-2">
+                        <Avatar className="h-7 w-7">
+                          <AvatarImage src={p?.avatar_url || ""} />
+                          <AvatarFallback className="bg-primary/20 text-primary text-[10px]">{(p?.display_name || "?")[0]}</AvatarFallback>
+                        </Avatar>
+                        <span className="text-xs font-medium text-foreground flex-1">{p?.display_name || p?.username || "—"}</span>
+                        <span className="text-[10px] text-muted-foreground capitalize">{m.role}</span>
+                        {m.role !== "owner" && (
+                          <Button size="sm" variant="ghost" onClick={() => removeMember(m.id)} className="h-6 w-6 p-0 text-destructive">
+                            <X className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Add member */}
+              <div>
+                <h4 className="text-xs font-bold text-muted-foreground uppercase mb-2">Πρόσθεσε Μέλος</h4>
+                <Input placeholder="Αναζήτηση χρήστη..." value={memberSearch} onChange={e => setMemberSearch(e.target.value)} className="bg-secondary/50 mb-2" />
+                {memberSearch && (
+                  <div className="space-y-1 max-h-32 overflow-y-auto">
+                    {filteredProfiles.slice(0, 10).map((p: any) => {
+                      const alreadyMember = showManage && members.some((m: any) => m.team_id === showManage.id && m.user_id === p.user_id);
+                      return (
+                        <div key={p.user_id} className="flex items-center gap-2 rounded-lg bg-secondary/20 p-2">
+                          <Avatar className="h-6 w-6">
+                            <AvatarImage src={p.avatar_url || ""} />
+                            <AvatarFallback className="bg-primary/20 text-primary text-[9px]">{(p.display_name || "?")[0]}</AvatarFallback>
+                          </Avatar>
+                          <span className="text-xs text-foreground flex-1">{p.display_name || p.username}</span>
+                          {alreadyMember ? (
+                            <Check className="h-3 w-3 text-green-400" />
+                          ) : (
+                            <Button size="sm" variant="ghost" onClick={() => showManage && addMember(showManage.id, p.user_id)} className="h-6 px-2 text-xs text-primary">
+                              <UserPlus className="h-3 w-3" />
+                            </Button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
         <Footer />
         <ScrollToTop />
       </div>
