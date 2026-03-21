@@ -9,6 +9,7 @@ import Footer from "@/components/Footer";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import PageTransition from "@/components/PageTransition";
 
 const Contact = () => {
   const { toast } = useToast();
