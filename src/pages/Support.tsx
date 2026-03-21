@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
+import PageTransition from "@/components/PageTransition";
 
 const priorityConfig: Record<string, { label: string; color: string }> = {
   low: { label: "Χαμηλή", color: "bg-secondary text-muted-foreground" },
