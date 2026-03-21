@@ -8,6 +8,7 @@ import PageTransition from "@/components/PageTransition";
 
 const About = () => {
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="pt-24 pb-16">
