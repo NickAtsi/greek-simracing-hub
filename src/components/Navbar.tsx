@@ -25,7 +25,8 @@ const racingItems = [
 
 const navItems = [
   { label: "Αρχική", href: "/home" },
-  { label: "Κοινότητα", href: "#", dropdown: true },
+  { label: "Κοινότητα", href: "#", dropdown: "community" },
+  { label: "Racing", href: "#", dropdown: "racing" },
   { label: "Μέλη", href: "/members" },
   { label: "Games Hub", href: "/games-hub" },
   { label: "Podcasts", href: "/podcasts" },
