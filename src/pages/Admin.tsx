@@ -77,6 +77,7 @@ type AdminTab =
   | "forum"
   | "podcasts"
   | "categories"
+  | "championships"
   | "support"
   | "shop"
   | "settings";
