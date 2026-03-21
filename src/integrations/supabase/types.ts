@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      achievement_badges: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          icon: string
+          id: string
+          name: string
+          requirement: string | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          name: string
+          requirement?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          name?: string
+          requirement?: string | null
+        }
+        Relationships: []
+      }
       article_categories: {
         Row: {
           color: string | null
@@ -193,6 +223,68 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      driver_of_month_nominations: {
+        Row: {
+          created_at: string
+          driver_name: string
+          driver_user_id: string | null
+          id: string
+          month_year: string
+          nominated_by: string
+          reason: string | null
+        }
+        Insert: {
+          created_at?: string
+          driver_name: string
+          driver_user_id?: string | null
+          id?: string
+          month_year: string
+          nominated_by: string
+          reason?: string | null
+        }
+        Update: {
+          created_at?: string
+          driver_name?: string
+          driver_user_id?: string | null
+          id?: string
+          month_year?: string
+          nominated_by?: string
+          reason?: string | null
+        }
+        Relationships: []
+      }
+      driver_of_month_votes: {
+        Row: {
+          created_at: string
+          id: string
+          month_year: string
+          nomination_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          month_year: string
+          nomination_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          month_year?: string
+          nomination_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_of_month_votes_nomination_id_fkey"
+            columns: ["nomination_id"]
+            isOneToOne: false
+            referencedRelation: "driver_of_month_nominations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       fantasy_categories: {
         Row: {
@@ -484,6 +576,95 @@ export type Database = {
           },
         ]
       }
+      incident_reports: {
+        Row: {
+          admin_notes: string | null
+          championship_id: string | null
+          created_at: string
+          description: string
+          drivers_involved: string[] | null
+          id: string
+          race_name: string | null
+          reporter_id: string
+          status: string
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          championship_id?: string | null
+          created_at?: string
+          description: string
+          drivers_involved?: string[] | null
+          id?: string
+          race_name?: string | null
+          reporter_id: string
+          status?: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          championship_id?: string | null
+          created_at?: string
+          description?: string
+          drivers_involved?: string[] | null
+          id?: string
+          race_name?: string | null
+          reporter_id?: string
+          status?: string
+          updated_at?: string
+          video_url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incident_reports_championship_id_fkey"
+            columns: ["championship_id"]
+            isOneToOne: false
+            referencedRelation: "championships"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lap_times: {
+        Row: {
+          car_name: string
+          conditions: string | null
+          created_at: string
+          id: string
+          lap_time_ms: number
+          screenshot_url: string | null
+          sim_name: string
+          track_name: string
+          user_id: string
+          verified: boolean | null
+        }
+        Insert: {
+          car_name: string
+          conditions?: string | null
+          created_at?: string
+          id?: string
+          lap_time_ms: number
+          screenshot_url?: string | null
+          sim_name: string
+          track_name: string
+          user_id: string
+          verified?: boolean | null
+        }
+        Update: {
+          car_name?: string
+          conditions?: string | null
+          created_at?: string
+          id?: string
+          lap_time_ms?: number
+          screenshot_url?: string | null
+          sim_name?: string
+          track_name?: string
+          user_id?: string
+          verified?: boolean | null
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
@@ -561,6 +742,85 @@ export type Database = {
           title?: string
         }
         Relationships: []
+      }
+      prediction_entries: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          points_earned: number | null
+          predictions: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          points_earned?: number | null
+          predictions: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          points_earned?: number | null
+          predictions?: Json
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prediction_entries_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "prediction_events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      prediction_events: {
+        Row: {
+          championship_id: string | null
+          created_at: string
+          deadline: string
+          description: string | null
+          event_date: string | null
+          id: string
+          results: Json | null
+          status: string
+          title: string
+        }
+        Insert: {
+          championship_id?: string | null
+          created_at?: string
+          deadline: string
+          description?: string | null
+          event_date?: string | null
+          id?: string
+          results?: Json | null
+          status?: string
+          title: string
+        }
+        Update: {
+          championship_id?: string | null
+          created_at?: string
+          deadline?: string
+          description?: string | null
+          event_date?: string | null
+          id?: string
+          results?: Json | null
+          status?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "prediction_events_championship_id_fkey"
+            columns: ["championship_id"]
+            isOneToOne: false
+            referencedRelation: "championships"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profile_comments: {
         Row: {
@@ -929,6 +1189,106 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      team_members: {
+        Row: {
+          id: string
+          joined_at: string
+          role: string
+          team_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          role?: string
+          team_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          role?: string
+          team_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_members_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      teams: {
+        Row: {
+          banner_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          logo_url: string | null
+          name: string
+          owner_id: string
+          tag: string | null
+          updated_at: string
+        }
+        Insert: {
+          banner_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name: string
+          owner_id: string
+          tag?: string | null
+          updated_at?: string
+        }
+        Update: {
+          banner_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name?: string
+          owner_id?: string
+          tag?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      user_achievements: {
+        Row: {
+          awarded_at: string
+          awarded_by: string | null
+          badge_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          awarded_at?: string
+          awarded_by?: string | null
+          badge_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          awarded_at?: string
+          awarded_by?: string | null
+          badge_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_achievements_badge_id_fkey"
+            columns: ["badge_id"]
+            isOneToOne: false
+            referencedRelation: "achievement_badges"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

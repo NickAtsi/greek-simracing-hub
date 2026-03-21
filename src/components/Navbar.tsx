@@ -256,6 +256,8 @@ const Navbar = () => {
             ))}
           </div>
 
+          <ThemeToggle />
+
           {user ? (
             <>
               {/* Notifications Bell */}
