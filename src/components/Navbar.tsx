@@ -81,13 +81,13 @@ const NavLinkItem = ({ item, active, onClick }: { item: typeof navItems[0]; acti
   );
 };
 
-const CommunityDropdown = ({ onNavigate }: { onNavigate?: () => void }) => {
+const NavDropdown = ({ label, items, onNavigate }: { label: string; items: typeof communityItems; onNavigate?: () => void }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const timeoutRef = useRef<NodeJS.Timeout>();
 
-  const isActive = communityItems.some(i => location.pathname.startsWith(i.href));
+  const isActive = items.some(i => location.pathname.startsWith(i.href));
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -113,9 +113,9 @@ const CommunityDropdown = ({ onNavigate }: { onNavigate?: () => void }) => {
           <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12" />
         </span>
         <motion.span className="relative" whileHover={{ rotate: [0, -3, 3, -2, 2, 0], transition: { duration: 0.4 } }}>
-          Κοινότητα
+          {label}
           {isActive && (
-            <motion.div layoutId="nav-underline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-racing rounded-full"
+            <motion.div layoutId={`nav-underline-${label}`} className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-racing rounded-full"
               transition={{ type: "spring", bounce: 0.2, duration: 0.5 }} />
           )}
         </motion.span>
@@ -135,7 +135,7 @@ const CommunityDropdown = ({ onNavigate }: { onNavigate?: () => void }) => {
           >
             <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
             <div className="p-1.5 relative">
-              {communityItems.map((item, i) => {
+              {items.map((item, i) => {
                 const Icon = item.icon;
                 const active = location.pathname.startsWith(item.href);
                 return (
@@ -156,7 +156,7 @@ const CommunityDropdown = ({ onNavigate }: { onNavigate?: () => void }) => {
                         <span className="text-sm font-medium leading-tight">{item.label}</span>
                         <span className="text-[11px] text-muted-foreground leading-tight">{item.desc}</span>
                       </div>
-                      {active && <motion.div layoutId="dropdown-active" className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />}
+                      {active && <motion.div layoutId={`dropdown-active-${label}`} className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />}
                     </Link>
                   </motion.div>
                 );
