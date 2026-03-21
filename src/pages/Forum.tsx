@@ -214,7 +214,7 @@ const CategoryThreads = ({ categoryId }: { categoryId: string }) => {
               </div>
             ) : threads.map((thread: any) => (
               <Link key={thread.id} to={`/forum/thread/${thread.id}`}>
-                <div className="grid grid-cols-[1fr_80px_80px_160px] gap-4 items-center px-5 py-4 border-b border-border/50 hover:bg-secondary/20 transition-all group">
+                <div className="flex flex-col md:grid md:grid-cols-[1fr_80px_80px_160px] gap-2 md:gap-4 items-start md:items-center px-5 py-4 border-b border-border/50 hover:bg-secondary/20 transition-all group">
                   <div className="flex items-start gap-3 min-w-0">
                     <div className="flex-shrink-0 mt-0.5">
                       {thread.pinned ? <Pin className="h-4 w-4 text-amber-400" /> : <MessageSquare className="h-4 w-4 text-muted-foreground" />}
