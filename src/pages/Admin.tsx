@@ -83,6 +83,11 @@ type AdminTab =
   | "championships"
   | "support"
   | "shop"
+  | "badges"
+  | "predictions"
+  | "incidents"
+  | "teams"
+  | "laptimes"
   | "settings";
 
 const StatCard = ({ icon: Icon, label, value, color }: any) => (
