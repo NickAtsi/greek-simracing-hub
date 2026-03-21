@@ -11,8 +11,16 @@ import { supabase } from "@/integrations/supabase/client";
 const communityItems = [
   { label: "Άρθρα", href: "/articles", icon: Newspaper, desc: "Νέα & αναλύσεις" },
   { label: "Forum", href: "/forum", icon: MessageSquare, desc: "Συζητήσεις" },
-  { label: "Αγώνες", href: "/championships", icon: Trophy, desc: "Πρωταθλήματα" },
+  { label: "Ομάδες", href: "/teams", icon: UsersIcon, desc: "Racing teams" },
   { label: "Οδηγός Μήνα", href: "/driver-of-the-month", icon: Award, desc: "Ψηφοφορία" },
+];
+
+const racingItems = [
+  { label: "Αγώνες", href: "/championships", icon: Trophy, desc: "Πρωταθλήματα" },
+  { label: "Predictions", href: "/predictions", icon: Gamepad2, desc: "Πρόβλεψε & κέρδισε" },
+  { label: "Lap Times", href: "/lap-times", icon: Timer, desc: "Χρόνοι γύρου" },
+  { label: "Incidents", href: "/incidents", icon: AlertTriangle, desc: "Αναφορές" },
+  { label: "Badges", href: "/achievements", icon: Flag, desc: "Επιτεύγματα" },
 ];
 
 const navItems = [
