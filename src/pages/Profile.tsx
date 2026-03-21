@@ -42,6 +42,7 @@ const Profile = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [savingAccount, setSavingAccount] = useState(false);
+  const [userBadges, setUserBadges] = useState<any[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const profileUserId = userId || user?.id;
