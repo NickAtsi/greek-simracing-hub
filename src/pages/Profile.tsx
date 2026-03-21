@@ -54,11 +54,22 @@ const Profile = () => {
     fetchComments();
     fetchLikes();
     fetchFollowData();
+    fetchUserBadges();
     if (user) {
       checkAdminStatus();
       if (isOwnProfile) fetchPendingRequests();
     }
   }, [profileUserId, user]);
+
+  const fetchUserBadges = async () => {
+    if (!profileUserId) return;
+    const { data } = await supabase
+      .from("user_achievements")
+      .select("*, achievement_badges(*)")
+      .eq("user_id", profileUserId)
+      .order("awarded_at", { ascending: false });
+    setUserBadges((data as any[]) || []);
+  };
 
   const checkAdminStatus = async () => {
     if (!user) return;
