@@ -4,9 +4,11 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import PageTransition from "@/components/PageTransition";
 
 const About = () => {
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="pt-24 pb-16">
@@ -105,6 +107,7 @@ const About = () => {
       </div>
       <Footer />
     </div>
+    </PageTransition>
   );
 };
 

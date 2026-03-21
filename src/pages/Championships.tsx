@@ -4,6 +4,7 @@ import { Trophy, Calendar, Users, Flag, ChevronRight, Timer, MapPin } from "luci
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
+import PageTransition from "@/components/PageTransition";
 
 type ChampionshipStatus = "all" | "active" | "upcoming" | "completed";
 
@@ -198,6 +199,7 @@ const Championships = () => {
   const filtered = filter === "all" ? championships : championships.filter(c => c.status === filter);
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background">
       <Navbar />
       <ScrollToTop />
@@ -317,6 +319,7 @@ const Championships = () => {
 
       <Footer />
     </div>
+    </PageTransition>
   );
 };
 

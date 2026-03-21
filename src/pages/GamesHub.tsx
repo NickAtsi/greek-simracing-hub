@@ -8,6 +8,7 @@ import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import PageTransition from "@/components/PageTransition";
 // FantasyLeague coming soon
 
 type GameState = "idle" | "countdown" | "waiting" | "go" | "result" | "too-early";
@@ -348,6 +349,7 @@ const ReactionTimeGame = () => {
 
 const GamesHub = () => {
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background">
       <Navbar />
 
@@ -359,8 +361,8 @@ const GamesHub = () => {
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
             <Zap className="mx-auto h-10 w-10 text-accent mb-4" />
             <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-3">Games Hub</h1>
-            <p className="text-muted-foreground max-w-lg mx-auto">
-              Τέστας τον αντανακλάστικων σου και διαχειρίσου την fantasy ομάδα σου!
+            <p className="text-muted-foreground max-w-lg mx-auto mt-2">
+              Τέσταρε τα αντανακλαστικά σου και διαχειρίσου την fantasy ομάδα σου!
             </p>
           </motion.div>
         </div>
@@ -396,6 +398,7 @@ const GamesHub = () => {
 
       <Footer />
     </div>
+    </PageTransition>
   );
 };
 

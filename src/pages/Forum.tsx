@@ -201,7 +201,7 @@ const CategoryThreads = ({ categoryId }: { categoryId: string }) => {
 
           {/* Threads table (XenForo style) */}
           <div className="rounded-xl border border-border overflow-hidden bg-card">
-            <div className="grid grid-cols-[1fr_80px_80px_160px] gap-4 px-5 py-3 bg-secondary/30 border-b border-border text-xs font-display font-bold text-muted-foreground uppercase tracking-wider">
+            <div className="hidden md:grid grid-cols-[1fr_80px_80px_160px] gap-4 px-5 py-3 bg-secondary/30 border-b border-border text-xs font-display font-bold text-muted-foreground uppercase tracking-wider">
               <span>Thread</span>
               <span className="text-center">Replies</span>
               <span className="text-center">Views</span>
@@ -214,7 +214,7 @@ const CategoryThreads = ({ categoryId }: { categoryId: string }) => {
               </div>
             ) : threads.map((thread: any) => (
               <Link key={thread.id} to={`/forum/thread/${thread.id}`}>
-                <div className="grid grid-cols-[1fr_80px_80px_160px] gap-4 items-center px-5 py-4 border-b border-border/50 hover:bg-secondary/20 transition-all group">
+                <div className="flex flex-col md:grid md:grid-cols-[1fr_80px_80px_160px] gap-2 md:gap-4 items-start md:items-center px-5 py-4 border-b border-border/50 hover:bg-secondary/20 transition-all group">
                   <div className="flex items-start gap-3 min-w-0">
                     <div className="flex-shrink-0 mt-0.5">
                       {thread.pinned ? <Pin className="h-4 w-4 text-amber-400" /> : <MessageSquare className="h-4 w-4 text-muted-foreground" />}
@@ -230,9 +230,15 @@ const CategoryThreads = ({ categoryId }: { categoryId: string }) => {
                       <p className="text-xs text-muted-foreground mt-0.5">{new Date(thread.created_at).toLocaleDateString("el-GR")}</p>
                     </div>
                   </div>
-                  <span className="text-center text-sm font-bold text-foreground">{thread.forum_posts?.[0]?.count || 0}</span>
-                  <span className="text-center text-sm text-muted-foreground">{thread.views || 0}</span>
-                  <span className="text-right text-xs text-muted-foreground">{new Date(thread.updated_at).toLocaleDateString("el-GR")}</span>
+                  <span className="hidden md:block text-center text-sm font-bold text-foreground">{thread.forum_posts?.[0]?.count || 0}</span>
+                  <span className="hidden md:block text-center text-sm text-muted-foreground">{thread.views || 0}</span>
+                  <span className="hidden md:block text-right text-xs text-muted-foreground">{new Date(thread.updated_at).toLocaleDateString("el-GR")}</span>
+                  {/* Mobile meta */}
+                  <div className="flex md:hidden items-center gap-3 text-xs text-muted-foreground ml-7">
+                    <span className="flex items-center gap-1"><MessageSquare className="h-3 w-3" />{thread.forum_posts?.[0]?.count || 0}</span>
+                    <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{thread.views || 0}</span>
+                    <span>{new Date(thread.updated_at).toLocaleDateString("el-GR")}</span>
+                  </div>
                 </div>
               </Link>
             ))}

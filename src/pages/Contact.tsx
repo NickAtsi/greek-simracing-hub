@@ -9,6 +9,7 @@ import Footer from "@/components/Footer";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import PageTransition from "@/components/PageTransition";
 
 const Contact = () => {
   const { toast } = useToast();
@@ -31,6 +32,7 @@ const Contact = () => {
   };
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="pt-24 pb-16">
@@ -194,6 +196,7 @@ const Contact = () => {
       </div>
       <Footer />
     </div>
+    </PageTransition>
   );
 };
 

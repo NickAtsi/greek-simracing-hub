@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
+import PageTransition from "@/components/PageTransition";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -147,6 +148,7 @@ const Members = () => {
   };
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background text-foreground">
       <Navbar />
       <ScrollToTop />
@@ -310,6 +312,7 @@ const Members = () => {
 
       <Footer />
     </div>
+    </PageTransition>
   );
 };
 

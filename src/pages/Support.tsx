@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
+import PageTransition from "@/components/PageTransition";
 
 const priorityConfig: Record<string, { label: string; color: string }> = {
   low: { label: "Χαμηλή", color: "bg-secondary text-muted-foreground" },
@@ -96,10 +97,19 @@ const Support = () => {
   const fetchMessages = async (ticketId: string) => {
     const { data } = await supabase
       .from("support_messages" as any)
-      .select("*, profiles!sender_id(display_name, username, avatar_url)")
+      .select("*")
       .eq("ticket_id", ticketId)
       .order("created_at");
-    setMessages((data as any[]) || []);
+    const msgs = (data as any[]) || [];
+    // Manual join for profiles since there's no FK
+    const senderIds = [...new Set(msgs.map((m: any) => m.sender_id))];
+    if (senderIds.length > 0) {
+      const { data: profiles } = await supabase.from("profiles").select("user_id, display_name, username, avatar_url").in("user_id", senderIds);
+      const profileMap: Record<string, any> = {};
+      ((profiles as any[]) || []).forEach((p: any) => { profileMap[p.user_id] = p; });
+      msgs.forEach((m: any) => { m.profiles = profileMap[m.sender_id] || null; });
+    }
+    setMessages(msgs);
   };
 
 
@@ -149,6 +159,7 @@ const Support = () => {
 
   if (!user) {
     return (
+      <PageTransition>
       <div className="min-h-screen bg-background">
         <Navbar />
         <div className="pt-24 pb-16 flex flex-col items-center justify-center min-h-[60vh] gap-4">
@@ -159,10 +170,12 @@ const Support = () => {
         </div>
         <Footer />
       </div>
+      </PageTransition>
     );
   }
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="pt-24 pb-16">
@@ -414,6 +427,7 @@ const Support = () => {
 
       <Footer />
     </div>
+    </PageTransition>
   );
 };
 

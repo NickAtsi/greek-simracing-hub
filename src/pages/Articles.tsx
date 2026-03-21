@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Plus, Search, Heart, MessageCircle, Eye, Pin, BookOpen } from "lucide-react";
@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import RichTextEditor from "@/components/RichTextEditor";
+import PageTransition from "@/components/PageTransition";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
@@ -99,6 +100,7 @@ const Articles = () => {
   };
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="pt-24 pb-16">
@@ -189,6 +191,12 @@ const Articles = () => {
                         className="group rounded-xl border border-border bg-card hover:border-primary/40 transition-all p-5"
                       >
                         <div className="flex items-start gap-4">
+                          {/* Cover image */}
+                          {article.cover_url && (
+                            <Link to={`/articles/${article.id}`} className="flex-shrink-0 hidden sm:block">
+                              <img src={article.cover_url} alt="" className="w-32 h-24 object-cover rounded-lg" />
+                            </Link>
+                          )}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-2 flex-wrap">
                               {article.pinned && (
@@ -280,6 +288,7 @@ const Articles = () => {
 
       <Footer />
     </div>
+    </PageTransition>
   );
 };
 
