@@ -163,6 +163,14 @@ const Admin = () => {
   );
   const [shopProducts, setShopProducts] = useState<any[]>([]);
   const [shopOrders, setShopOrders] = useState<any[]>([]);
+  const [champList, setChampList] = useState<any[]>([]);
+  const [showChampForm, setShowChampForm] = useState(false);
+  const [editingChamp, setEditingChamp] = useState<any>(null);
+  const [champForm, setChampForm] = useState({
+    title: "", description: "", status: "upcoming", category: "GT3",
+    races_completed: "0", races_total: "0", participants: "0",
+    start_date: "", image_url: "",
+  });
   const [shopTab, setShopTab] = useState<"products" | "orders" | "analytics">("orders");
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
