@@ -45,7 +45,6 @@
     --sidebar-border: 210 25% 16%;
     --sidebar-ring: 214 89% 40%;
 
-    /* Greek colors: Blue & White */
     --greek-blue: 214 89% 40%;
     --greek-blue-light: 214 89% 52%;
     --greek-white: 0 0% 96%;
@@ -63,6 +62,60 @@
     --gradient-card: linear-gradient(145deg, hsl(210, 35%, 11%) 0%, hsl(210, 35%, 7%) 100%);
     --shadow-racing: 0 0 30px -5px hsl(214 89% 40% / 0.4);
     --shadow-glow: 0 0 20px hsl(214 89% 52% / 0.25);
+  }
+
+  .light {
+    --background: 210 20% 98%;
+    --foreground: 210 40% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 210 40% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 40% 10%;
+
+    --primary: 214 89% 40%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 20% 93%;
+    --secondary-foreground: 210 30% 20%;
+
+    --muted: 210 15% 92%;
+    --muted-foreground: 210 10% 40%;
+
+    --accent: 214 89% 52%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 15% 85%;
+    --input: 210 15% 85%;
+    --ring: 214 89% 40%;
+
+    --sidebar-background: 210 20% 96%;
+    --sidebar-foreground: 210 30% 20%;
+    --sidebar-primary: 214 89% 40%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 20% 93%;
+    --sidebar-accent-foreground: 210 30% 20%;
+    --sidebar-border: 210 15% 85%;
+    --sidebar-ring: 214 89% 40%;
+
+    --greek-blue: 214 89% 40%;
+    --greek-blue-light: 214 89% 52%;
+    --greek-white: 0 0% 96%;
+    --racing-blue: 214 89% 40%;
+    --racing-dark: 210 20% 96%;
+    --racing-carbon: 210 15% 92%;
+    --racing-glow: 214 89% 52%;
+
+    --gradient-racing: linear-gradient(135deg, hsl(214, 89%, 35%), hsl(214, 89%, 55%), hsl(210, 20%, 95%));
+    --gradient-greek: linear-gradient(135deg, hsl(214, 89%, 35%) 0%, hsl(214, 89%, 52%) 50%, hsl(210, 20%, 95%) 100%);
+    --gradient-dark: linear-gradient(180deg, hsl(210, 20%, 98%) 0%, hsl(210, 20%, 95%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(0, 0%, 100%) 0%, hsl(210, 20%, 97%) 100%);
+    --shadow-racing: 0 0 30px -5px hsl(214 89% 40% / 0.2);
+    --shadow-glow: 0 0 20px hsl(214 89% 52% / 0.15);
   }
 }
 
