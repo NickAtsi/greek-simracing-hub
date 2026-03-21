@@ -199,6 +199,7 @@ const Championships = () => {
   const filtered = filter === "all" ? championships : championships.filter(c => c.status === filter);
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background">
       <Navbar />
       <ScrollToTop />
