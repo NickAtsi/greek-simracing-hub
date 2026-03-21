@@ -510,7 +510,7 @@ const Admin = () => {
     setShowChampForm(true);
   };
 
-
+  const saveProduct = async () => {
     const payload = {
       name: productForm.name,
       description: productForm.description || null,
