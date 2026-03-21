@@ -41,6 +41,9 @@ import {
   Truck,
   Upload,
   Image,
+  Trophy,
+  Flag,
+  Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,6 +80,7 @@ type AdminTab =
   | "forum"
   | "podcasts"
   | "categories"
+  | "championships"
   | "support"
   | "shop"
   | "settings";
@@ -162,6 +166,14 @@ const Admin = () => {
   );
   const [shopProducts, setShopProducts] = useState<any[]>([]);
   const [shopOrders, setShopOrders] = useState<any[]>([]);
+  const [champList, setChampList] = useState<any[]>([]);
+  const [showChampForm, setShowChampForm] = useState(false);
+  const [editingChamp, setEditingChamp] = useState<any>(null);
+  const [champForm, setChampForm] = useState({
+    title: "", description: "", status: "upcoming", category: "GT3",
+    races_completed: "0", races_total: "0", participants: "0",
+    start_date: "", image_url: "",
+  });
   const [shopTab, setShopTab] = useState<"products" | "orders" | "analytics">("orders");
   const [showProductForm, setShowProductForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
@@ -197,6 +209,7 @@ const Admin = () => {
         fetchForumCats();
       }
       if (tab === "support") fetchSupportTickets();
+      if (tab === "championships") fetchChampionships();
       if (tab === "shop") {
         fetchShopProducts();
         fetchShopOrders();
@@ -431,6 +444,70 @@ const Admin = () => {
       orders.forEach((o: any) => { o.profiles = profileMap[o.user_id] || null; });
     }
     setShopOrders(orders);
+  };
+
+  const fetchChampionships = async () => {
+    const { data } = await supabase
+      .from("championships" as any)
+      .select("*")
+      .order("created_at", { ascending: false });
+    setChampList((data as any[]) || []);
+  };
+
+  const saveChampionship = async () => {
+    const payload = {
+      title: champForm.title,
+      description: champForm.description || null,
+      status: champForm.status,
+      category: champForm.category,
+      races_completed: parseInt(champForm.races_completed) || 0,
+      races_total: parseInt(champForm.races_total) || 0,
+      participants: parseInt(champForm.participants) || 0,
+      start_date: champForm.start_date || null,
+      image_url: champForm.image_url || null,
+    };
+    if (editingChamp) {
+      await supabase.from("championships" as any).update(payload as any).eq("id", editingChamp.id);
+      toast({ title: "Πρωτάθλημα ενημερώθηκε!" });
+    } else {
+      await supabase.from("championships" as any).insert(payload as any);
+      toast({ title: "Πρωτάθλημα προστέθηκε!" });
+    }
+    setShowChampForm(false);
+    setEditingChamp(null);
+    fetchChampionships();
+  };
+
+  const deleteChampionship = async (id: string) => {
+    await supabase.from("championships" as any).delete().eq("id", id);
+    toast({ title: "Πρωτάθλημα διαγράφηκε" });
+    fetchChampionships();
+  };
+
+  const openEditChamp = (c: any) => {
+    setEditingChamp(c);
+    setChampForm({
+      title: c.title || "",
+      description: c.description || "",
+      status: c.status || "upcoming",
+      category: c.category || "GT3",
+      races_completed: c.races_completed?.toString() || "0",
+      races_total: c.races_total?.toString() || "0",
+      participants: c.participants?.toString() || "0",
+      start_date: c.start_date || "",
+      image_url: c.image_url || "",
+    });
+    setShowChampForm(true);
+  };
+
+  const openNewChamp = () => {
+    setEditingChamp(null);
+    setChampForm({
+      title: "", description: "", status: "upcoming", category: "GT3",
+      races_completed: "0", races_total: "0", participants: "0",
+      start_date: "", image_url: "",
+    });
+    setShowChampForm(true);
   };
 
   const saveProduct = async () => {
@@ -727,6 +804,7 @@ const Admin = () => {
     { key: "forum", icon: MessageSquare, label: "Forum" },
     { key: "podcasts", icon: Headphones, label: "Podcasts" },
     { key: "categories", icon: BookOpen, label: "Κατηγορίες" },
+    { key: "championships", icon: Trophy, label: "Πρωταθλήματα" },
     { key: "support", icon: Ticket, label: "Support Tickets" },
     { key: "shop", icon: ShoppingCart, label: "Shop" },
     { key: "settings", icon: Settings, label: "Ρυθμίσεις" },
@@ -1587,6 +1665,167 @@ const Admin = () => {
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Championships */}
+          {tab === "championships" && (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h1 className="font-display text-2xl font-black text-foreground flex items-center gap-2">
+                  <Trophy className="h-6 w-6 text-primary" /> Πρωταθλήματα
+                </h1>
+                <Button onClick={openNewChamp} size="sm" className="gap-2">
+                  <Plus className="h-4 w-4" /> Νέο Πρωτάθλημα
+                </Button>
+              </div>
+
+              <div className="rounded-xl border border-border bg-card overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-border bg-secondary/30">
+                      <th className="text-left px-4 py-3 font-display text-xs text-muted-foreground">Τίτλος</th>
+                      <th className="text-left px-4 py-3 font-display text-xs text-muted-foreground">Κατηγορία</th>
+                      <th className="text-left px-4 py-3 font-display text-xs text-muted-foreground">Κατάσταση</th>
+                      <th className="text-left px-4 py-3 font-display text-xs text-muted-foreground">Αγώνες</th>
+                      <th className="text-left px-4 py-3 font-display text-xs text-muted-foreground">Οδηγοί</th>
+                      <th className="text-left px-4 py-3 font-display text-xs text-muted-foreground">Ημ/νία</th>
+                      <th className="text-right px-4 py-3 font-display text-xs text-muted-foreground">Ενέργειες</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/50">
+                    {champList.map((c: any) => (
+                      <tr key={c.id} className="hover:bg-secondary/20 transition-colors">
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            {c.image_url && (
+                              <img src={c.image_url} alt="" className="w-10 h-10 rounded-lg object-cover" />
+                            )}
+                            <span className="font-medium text-foreground">{c.title}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground">{c.category}</td>
+                        <td className="px-4 py-3">
+                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium border ${
+                            c.status === "active" ? "bg-green-500/15 text-green-500 border-green-500/30" :
+                            c.status === "upcoming" ? "bg-accent/15 text-accent border-accent/30" :
+                            "bg-muted-foreground/15 text-muted-foreground border-muted-foreground/30"
+                          }`}>
+                            {c.status === "active" ? "Ενεργό" : c.status === "upcoming" ? "Ερχόμενο" : "Ολοκληρωμένο"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground">{c.races_completed}/{c.races_total}</td>
+                        <td className="px-4 py-3 text-muted-foreground">{c.participants}</td>
+                        <td className="px-4 py-3 text-muted-foreground">
+                          {c.start_date ? new Date(c.start_date).toLocaleDateString("el-GR") : "—"}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Button variant="ghost" size="sm" onClick={() => openEditChamp(c)}>
+                              <Edit className="h-3.5 w-3.5" />
+                            </Button>
+                            <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive"
+                              onClick={() => setConfirmAction({
+                                title: "Διαγραφή Πρωταθλήματος",
+                                description: `Σίγουρα θέλεις να διαγράψεις το "${c.title}";`,
+                                action: () => deleteChampionship(c.id),
+                              })}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {champList.length === 0 && (
+                      <tr>
+                        <td colSpan={7} className="px-4 py-12 text-center text-muted-foreground">
+                          Δεν υπάρχουν πρωταθλήματα ακόμα. Πάτησε "Νέο Πρωτάθλημα" για να ξεκινήσεις.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Championship Form Dialog */}
+              <Dialog open={showChampForm} onOpenChange={setShowChampForm}>
+                <DialogContent className="bg-card border-border max-w-lg">
+                  <DialogHeader>
+                    <DialogTitle className="font-display text-foreground">
+                      {editingChamp ? "Επεξεργασία Πρωταθλήματος" : "Νέο Πρωτάθλημα"}
+                    </DialogTitle>
+                    <DialogDescription className="text-muted-foreground">
+                      Συμπλήρωσε τα στοιχεία του πρωταθλήματος
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground">Τίτλος *</label>
+                      <Input value={champForm.title} onChange={e => setChampForm(p => ({ ...p, title: e.target.value }))}
+                        className="bg-secondary/50 border-border" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground">Περιγραφή</label>
+                      <Textarea value={champForm.description} onChange={e => setChampForm(p => ({ ...p, description: e.target.value }))}
+                        className="bg-secondary/50 border-border" rows={2} />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-medium text-muted-foreground">Κατάσταση</label>
+                        <select value={champForm.status} onChange={e => setChampForm(p => ({ ...p, status: e.target.value }))}
+                          className="w-full rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm text-foreground">
+                          <option value="upcoming">Ερχόμενο</option>
+                          <option value="active">Ενεργό</option>
+                          <option value="completed">Ολοκληρωμένο</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-muted-foreground">Κατηγορία</label>
+                        <Input value={champForm.category} onChange={e => setChampForm(p => ({ ...p, category: e.target.value }))}
+                          className="bg-secondary/50 border-border" placeholder="GT3, Formula..." />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <label className="text-xs font-medium text-muted-foreground">Αγώνες (ολοκ.)</label>
+                        <Input type="number" value={champForm.races_completed}
+                          onChange={e => setChampForm(p => ({ ...p, races_completed: e.target.value }))}
+                          className="bg-secondary/50 border-border" />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-muted-foreground">Αγώνες (σύνολο)</label>
+                        <Input type="number" value={champForm.races_total}
+                          onChange={e => setChampForm(p => ({ ...p, races_total: e.target.value }))}
+                          className="bg-secondary/50 border-border" />
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-muted-foreground">Οδηγοί</label>
+                        <Input type="number" value={champForm.participants}
+                          onChange={e => setChampForm(p => ({ ...p, participants: e.target.value }))}
+                          className="bg-secondary/50 border-border" />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground">Ημ/νία Έναρξης</label>
+                      <Input type="date" value={champForm.start_date}
+                        onChange={e => setChampForm(p => ({ ...p, start_date: e.target.value }))}
+                        className="bg-secondary/50 border-border" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-muted-foreground">URL Εικόνας</label>
+                      <Input value={champForm.image_url} onChange={e => setChampForm(p => ({ ...p, image_url: e.target.value }))}
+                        className="bg-secondary/50 border-border" placeholder="https://..." />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <Button variant="outline" onClick={() => setShowChampForm(false)}>Ακύρωση</Button>
+                    <Button onClick={saveChampionship} disabled={!champForm.title.trim()}>
+                      {editingChamp ? "Αποθήκευση" : "Δημιουργία"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           )}
 
