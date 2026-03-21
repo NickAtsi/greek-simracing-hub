@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import PageTransition from "@/components/PageTransition";
 
 // Fallback images for seeded products
 import tshirtBlack from "@/assets/shop/tshirt-black.png";
