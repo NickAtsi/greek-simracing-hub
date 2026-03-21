@@ -29,6 +29,7 @@ const Shop = lazy(() => import("./pages/Shop"));
 const Members = lazy(() => import("./pages/Members"));
 const Championships = lazy(() => import("./pages/Championships"));
 const Notifications = lazy(() => import("./pages/Notifications"));
+const DriverOfTheMonth = lazy(() => import("./pages/DriverOfTheMonth"));
 
 const queryClient = new QueryClient();
 
