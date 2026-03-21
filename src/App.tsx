@@ -30,6 +30,11 @@ const Members = lazy(() => import("./pages/Members"));
 const Championships = lazy(() => import("./pages/Championships"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const DriverOfTheMonth = lazy(() => import("./pages/DriverOfTheMonth"));
+const Achievements = lazy(() => import("./pages/Achievements"));
+const Predictions = lazy(() => import("./pages/Predictions"));
+const IncidentReports = lazy(() => import("./pages/IncidentReports"));
+const Teams = lazy(() => import("./pages/Teams"));
+const LapTimes = lazy(() => import("./pages/LapTimes"));
 
 const queryClient = new QueryClient();
 
