@@ -312,6 +312,7 @@ const Members = () => {
 
       <Footer />
     </div>
+    </PageTransition>
   );
 };
 
