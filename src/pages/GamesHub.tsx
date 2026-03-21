@@ -398,6 +398,7 @@ const GamesHub = () => {
 
       <Footer />
     </div>
+    </PageTransition>
   );
 };
 

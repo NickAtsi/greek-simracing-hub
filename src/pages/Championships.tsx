@@ -319,6 +319,7 @@ const Championships = () => {
 
       <Footer />
     </div>
+    </PageTransition>
   );
 };
 
