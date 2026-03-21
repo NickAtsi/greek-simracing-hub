@@ -191,6 +191,12 @@ const Articles = () => {
                         className="group rounded-xl border border-border bg-card hover:border-primary/40 transition-all p-5"
                       >
                         <div className="flex items-start gap-4">
+                          {/* Cover image */}
+                          {article.cover_url && (
+                            <Link to={`/articles/${article.id}`} className="flex-shrink-0 hidden sm:block">
+                              <img src={article.cover_url} alt="" className="w-32 h-24 object-cover rounded-lg" />
+                            </Link>
+                          )}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-2 flex-wrap">
                               {article.pinned && (
