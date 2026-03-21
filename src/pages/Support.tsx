@@ -97,10 +97,19 @@ const Support = () => {
   const fetchMessages = async (ticketId: string) => {
     const { data } = await supabase
       .from("support_messages" as any)
-      .select("*, profiles!sender_id(display_name, username, avatar_url)")
+      .select("*")
       .eq("ticket_id", ticketId)
       .order("created_at");
-    setMessages((data as any[]) || []);
+    const msgs = (data as any[]) || [];
+    // Manual join for profiles since there's no FK
+    const senderIds = [...new Set(msgs.map((m: any) => m.sender_id))];
+    if (senderIds.length > 0) {
+      const { data: profiles } = await supabase.from("profiles").select("user_id, display_name, username, avatar_url").in("user_id", senderIds);
+      const profileMap: Record<string, any> = {};
+      ((profiles as any[]) || []).forEach((p: any) => { profileMap[p.user_id] = p; });
+      msgs.forEach((m: any) => { m.profiles = profileMap[m.sender_id] || null; });
+    }
+    setMessages(msgs);
   };
 
 
