@@ -4,6 +4,7 @@ import { Trophy, Calendar, Users, Flag, ChevronRight, Timer, MapPin } from "luci
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ScrollToTop from "@/components/ScrollToTop";
+import PageTransition from "@/components/PageTransition";
 
 type ChampionshipStatus = "all" | "active" | "upcoming" | "completed";
 
