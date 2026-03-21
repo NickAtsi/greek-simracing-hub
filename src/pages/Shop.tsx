@@ -167,6 +167,7 @@ const Shop = () => {
   };
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background">
       <Navbar />
 
