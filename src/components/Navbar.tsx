@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, LogIn, LogOut, Shield, ChevronDown, Newspaper, MessageSquare, Trophy, Bell, User, Sun, Moon, Award } from "lucide-react";
+import { Menu, X, LogIn, LogOut, Shield, ChevronDown, Newspaper, MessageSquare, Trophy, Bell, User, Sun, Moon, Award, Timer, AlertTriangle, Gamepad2, Users as UsersIcon, Flag } from "lucide-react";
 import { useTheme } from "@/hooks/useTheme";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,13 +11,22 @@ import { supabase } from "@/integrations/supabase/client";
 const communityItems = [
   { label: "Άρθρα", href: "/articles", icon: Newspaper, desc: "Νέα & αναλύσεις" },
   { label: "Forum", href: "/forum", icon: MessageSquare, desc: "Συζητήσεις" },
-  { label: "Αγώνες", href: "/championships", icon: Trophy, desc: "Πρωταθλήματα" },
+  { label: "Ομάδες", href: "/teams", icon: UsersIcon, desc: "Racing teams" },
   { label: "Οδηγός Μήνα", href: "/driver-of-the-month", icon: Award, desc: "Ψηφοφορία" },
+];
+
+const racingItems = [
+  { label: "Αγώνες", href: "/championships", icon: Trophy, desc: "Πρωταθλήματα" },
+  { label: "Predictions", href: "/predictions", icon: Gamepad2, desc: "Πρόβλεψε & κέρδισε" },
+  { label: "Lap Times", href: "/lap-times", icon: Timer, desc: "Χρόνοι γύρου" },
+  { label: "Incidents", href: "/incidents", icon: AlertTriangle, desc: "Αναφορές" },
+  { label: "Badges", href: "/achievements", icon: Flag, desc: "Επιτεύγματα" },
 ];
 
 const navItems = [
   { label: "Αρχική", href: "/home" },
-  { label: "Κοινότητα", href: "#", dropdown: true },
+  { label: "Κοινότητα", href: "#", dropdown: "community" },
+  { label: "Racing", href: "#", dropdown: "racing" },
   { label: "Μέλη", href: "/members" },
   { label: "Games Hub", href: "/games-hub" },
   { label: "Podcasts", href: "/podcasts" },
@@ -72,13 +81,13 @@ const NavLinkItem = ({ item, active, onClick }: { item: typeof navItems[0]; acti
   );
 };
 
-const CommunityDropdown = ({ onNavigate }: { onNavigate?: () => void }) => {
+const NavDropdown = ({ label, items, onNavigate }: { label: string; items: typeof communityItems; onNavigate?: () => void }) => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const location = useLocation();
   const timeoutRef = useRef<NodeJS.Timeout>();
 
-  const isActive = communityItems.some(i => location.pathname.startsWith(i.href));
+  const isActive = items.some(i => location.pathname.startsWith(i.href));
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -104,9 +113,9 @@ const CommunityDropdown = ({ onNavigate }: { onNavigate?: () => void }) => {
           <span className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12" />
         </span>
         <motion.span className="relative" whileHover={{ rotate: [0, -3, 3, -2, 2, 0], transition: { duration: 0.4 } }}>
-          Κοινότητα
+          {label}
           {isActive && (
-            <motion.div layoutId="nav-underline" className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-racing rounded-full"
+            <motion.div layoutId={`nav-underline-${label}`} className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-racing rounded-full"
               transition={{ type: "spring", bounce: 0.2, duration: 0.5 }} />
           )}
         </motion.span>
@@ -126,7 +135,7 @@ const CommunityDropdown = ({ onNavigate }: { onNavigate?: () => void }) => {
           >
             <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none" />
             <div className="p-1.5 relative">
-              {communityItems.map((item, i) => {
+              {items.map((item, i) => {
                 const Icon = item.icon;
                 const active = location.pathname.startsWith(item.href);
                 return (
@@ -147,7 +156,7 @@ const CommunityDropdown = ({ onNavigate }: { onNavigate?: () => void }) => {
                         <span className="text-sm font-medium leading-tight">{item.label}</span>
                         <span className="text-[11px] text-muted-foreground leading-tight">{item.desc}</span>
                       </div>
-                      {active && <motion.div layoutId="dropdown-active" className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />}
+                      {active && <motion.div layoutId={`dropdown-active-${label}`} className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />}
                     </Link>
                   </motion.div>
                 );
@@ -257,8 +266,10 @@ const Navbar = () => {
 
         <div className="hidden items-center gap-1 lg:flex">
           {navItems.map((item) =>
-            item.dropdown ? (
-              <CommunityDropdown key={item.label} />
+            item.dropdown === "community" ? (
+              <NavDropdown key={item.label} label="Κοινότητα" items={communityItems} />
+            ) : item.dropdown === "racing" ? (
+              <NavDropdown key={item.label} label="Racing" items={racingItems} />
             ) : (
               <NavLinkItem key={item.label} item={item} active={isActive(item.href)} />
             )
@@ -378,16 +389,23 @@ const Navbar = () => {
               {communityItems.map((item) => {
                 const Icon = item.icon;
                 return (
-                  <Link
-                    key={item.href}
-                    to={item.href}
-                    onClick={() => setIsOpen(false)}
+                  <Link key={item.href} to={item.href} onClick={() => setIsOpen(false)}
                     className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                       location.pathname.startsWith(item.href) ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {item.label}
+                    }`}>
+                    <Icon className="h-4 w-4" />{item.label}
+                  </Link>
+                );
+              })}
+              <div className="px-4 py-1 text-xs font-display text-muted-foreground uppercase tracking-wider">Racing</div>
+              {racingItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link key={item.href} to={item.href} onClick={() => setIsOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                      location.pathname.startsWith(item.href) ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"
+                    }`}>
+                    <Icon className="h-4 w-4" />{item.label}
                   </Link>
                 );
               })}

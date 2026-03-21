@@ -30,6 +30,11 @@ const Members = lazy(() => import("./pages/Members"));
 const Championships = lazy(() => import("./pages/Championships"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const DriverOfTheMonth = lazy(() => import("./pages/DriverOfTheMonth"));
+const Achievements = lazy(() => import("./pages/Achievements"));
+const Predictions = lazy(() => import("./pages/Predictions"));
+const IncidentReports = lazy(() => import("./pages/IncidentReports"));
+const Teams = lazy(() => import("./pages/Teams"));
+const LapTimes = lazy(() => import("./pages/LapTimes"));
 
 const queryClient = new QueryClient();
 
@@ -66,6 +71,11 @@ const App = () => (
               <Route path="/championships" element={<Championships />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/driver-of-the-month" element={<DriverOfTheMonth />} />
+              <Route path="/achievements" element={<Achievements />} />
+              <Route path="/predictions" element={<Predictions />} />
+              <Route path="/incidents" element={<IncidentReports />} />
+              <Route path="/teams" element={<Teams />} />
+              <Route path="/lap-times" element={<LapTimes />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
