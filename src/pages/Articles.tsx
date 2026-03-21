@@ -288,6 +288,7 @@ const Articles = () => {
 
       <Footer />
     </div>
+    </PageTransition>
   );
 };
 
