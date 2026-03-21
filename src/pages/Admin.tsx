@@ -446,7 +446,71 @@ const Admin = () => {
     setShopOrders(orders);
   };
 
-  const saveProduct = async () => {
+  const fetchChampionships = async () => {
+    const { data } = await supabase
+      .from("championships" as any)
+      .select("*")
+      .order("created_at", { ascending: false });
+    setChampList((data as any[]) || []);
+  };
+
+  const saveChampionship = async () => {
+    const payload = {
+      title: champForm.title,
+      description: champForm.description || null,
+      status: champForm.status,
+      category: champForm.category,
+      races_completed: parseInt(champForm.races_completed) || 0,
+      races_total: parseInt(champForm.races_total) || 0,
+      participants: parseInt(champForm.participants) || 0,
+      start_date: champForm.start_date || null,
+      image_url: champForm.image_url || null,
+    };
+    if (editingChamp) {
+      await supabase.from("championships" as any).update(payload as any).eq("id", editingChamp.id);
+      toast({ title: "Πρωτάθλημα ενημερώθηκε!" });
+    } else {
+      await supabase.from("championships" as any).insert(payload as any);
+      toast({ title: "Πρωτάθλημα προστέθηκε!" });
+    }
+    setShowChampForm(false);
+    setEditingChamp(null);
+    fetchChampionships();
+  };
+
+  const deleteChampionship = async (id: string) => {
+    await supabase.from("championships" as any).delete().eq("id", id);
+    toast({ title: "Πρωτάθλημα διαγράφηκε" });
+    fetchChampionships();
+  };
+
+  const openEditChamp = (c: any) => {
+    setEditingChamp(c);
+    setChampForm({
+      title: c.title || "",
+      description: c.description || "",
+      status: c.status || "upcoming",
+      category: c.category || "GT3",
+      races_completed: c.races_completed?.toString() || "0",
+      races_total: c.races_total?.toString() || "0",
+      participants: c.participants?.toString() || "0",
+      start_date: c.start_date || "",
+      image_url: c.image_url || "",
+    });
+    setShowChampForm(true);
+  };
+
+  const openNewChamp = () => {
+    setEditingChamp(null);
+    setChampForm({
+      title: "", description: "", status: "upcoming", category: "GT3",
+      races_completed: "0", races_total: "0", participants: "0",
+      start_date: "", image_url: "",
+    });
+    setShowChampForm(true);
+  };
+
+
     const payload = {
       name: productForm.name,
       description: productForm.description || null,
