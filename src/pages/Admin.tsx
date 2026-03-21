@@ -737,6 +737,7 @@ const Admin = () => {
     { key: "forum", icon: MessageSquare, label: "Forum" },
     { key: "podcasts", icon: Headphones, label: "Podcasts" },
     { key: "categories", icon: BookOpen, label: "Κατηγορίες" },
+    { key: "championships", icon: Trophy, label: "Πρωταθλήματα" },
     { key: "support", icon: Ticket, label: "Support Tickets" },
     { key: "shop", icon: ShoppingCart, label: "Shop" },
     { key: "settings", icon: Settings, label: "Ρυθμίσεις" },
