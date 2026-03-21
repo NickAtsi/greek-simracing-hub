@@ -1,6 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
+
+const AdminBadges = lazy(() => import("@/components/admin/AdminBadges"));
+const AdminPredictions = lazy(() => import("@/components/admin/AdminPredictions"));
+const AdminIncidents = lazy(() => import("@/components/admin/AdminIncidents"));
+const AdminTeams = lazy(() => import("@/components/admin/AdminTeams"));
+const AdminLapTimes = lazy(() => import("@/components/admin/AdminLapTimes"));
 import {
   Users,
   FileText,
@@ -83,6 +89,11 @@ type AdminTab =
   | "championships"
   | "support"
   | "shop"
+  | "badges"
+  | "predictions"
+  | "incidents"
+  | "teams"
+  | "laptimes"
   | "settings";
 
 const StatCard = ({ icon: Icon, label, value, color }: any) => (
@@ -805,6 +816,11 @@ const Admin = () => {
     { key: "podcasts", icon: Headphones, label: "Podcasts" },
     { key: "categories", icon: BookOpen, label: "Κατηγορίες" },
     { key: "championships", icon: Trophy, label: "Πρωταθλήματα" },
+    { key: "badges", icon: Trophy, label: "Badges" },
+    { key: "predictions", icon: Flag, label: "Predictions" },
+    { key: "incidents", icon: AlertTriangle, label: "Incidents" },
+    { key: "teams", icon: Users, label: "Ομάδες" },
+    { key: "laptimes", icon: Clock, label: "Lap Times" },
     { key: "support", icon: Ticket, label: "Support Tickets" },
     { key: "shop", icon: ShoppingCart, label: "Shop" },
     { key: "settings", icon: Settings, label: "Ρυθμίσεις" },
@@ -2107,7 +2123,13 @@ const Admin = () => {
             </div>
           )}
 
-          {/* Settings */}
+          {/* Admin Sub-pages */}
+          {tab === "badges" && <Suspense fallback={<div className="text-center py-8 text-muted-foreground">Φόρτωση...</div>}><AdminBadges /></Suspense>}
+          {tab === "predictions" && <Suspense fallback={<div className="text-center py-8 text-muted-foreground">Φόρτωση...</div>}><AdminPredictions /></Suspense>}
+          {tab === "incidents" && <Suspense fallback={<div className="text-center py-8 text-muted-foreground">Φόρτωση...</div>}><AdminIncidents /></Suspense>}
+          {tab === "teams" && <Suspense fallback={<div className="text-center py-8 text-muted-foreground">Φόρτωση...</div>}><AdminTeams /></Suspense>}
+          {tab === "laptimes" && <Suspense fallback={<div className="text-center py-8 text-muted-foreground">Φόρτωση...</div>}><AdminLapTimes /></Suspense>}
+
           {tab === "settings" && (
             <div>
               <div className="flex items-center justify-between mb-6">

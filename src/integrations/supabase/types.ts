@@ -638,6 +638,7 @@ export type Database = {
           track_name: string
           user_id: string
           verified: boolean | null
+          video_url: string | null
         }
         Insert: {
           car_name: string
@@ -650,6 +651,7 @@ export type Database = {
           track_name: string
           user_id: string
           verified?: boolean | null
+          video_url?: string | null
         }
         Update: {
           car_name?: string
@@ -662,6 +664,7 @@ export type Database = {
           track_name?: string
           user_id?: string
           verified?: boolean | null
+          video_url?: string | null
         }
         Relationships: []
       }
