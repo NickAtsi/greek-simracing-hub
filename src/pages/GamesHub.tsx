@@ -8,6 +8,7 @@ import Footer from "@/components/Footer";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import PageTransition from "@/components/PageTransition";
 // FantasyLeague coming soon
 
 type GameState = "idle" | "countdown" | "waiting" | "go" | "result" | "too-early";
