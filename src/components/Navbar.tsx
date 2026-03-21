@@ -394,6 +394,7 @@ const Navbar = () => {
                 {socials.map((s) => (
                   <SocialIcon key={s.label} href={s.href} label={s.label} icon={s.icon} hoverColor={s.hoverColor} size="sm" />
                 ))}
+                <div className="ml-auto"><ThemeToggle /></div>
               </div>
               <div className="mt-2 pt-2 border-t border-border/50 flex flex-col gap-2">
                 {user ? (
