@@ -349,6 +349,7 @@ const ReactionTimeGame = () => {
 
 const GamesHub = () => {
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background">
       <Navbar />
 
