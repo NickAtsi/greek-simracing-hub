@@ -477,6 +477,26 @@ const Profile = () => {
                 </motion.div>
               )}
 
+              {/* Achievement Badges */}
+              {userBadges.length > 0 && (
+                <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.02 }} className="rounded-xl border border-border bg-card p-5">
+                  <h3 className="font-display text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                    <Trophy className="h-4 w-4 text-primary" /> Badges ({userBadges.length})
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {userBadges.map((ua: any) => {
+                      const badge = ua.achievement_badges;
+                      return badge ? (
+                        <div key={ua.id} className="flex items-center gap-1.5 rounded-lg bg-primary/10 border border-primary/20 px-2.5 py-1.5 hover:bg-primary/20 transition-colors" title={badge.description || badge.name}>
+                          <span className="text-lg">{badge.icon}</span>
+                          <span className="text-[11px] font-medium text-foreground">{badge.name}</span>
+                        </div>
+                      ) : null;
+                    })}
+                  </div>
+                </motion.div>
+              )}
+
               <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.05 }} className="rounded-xl border border-border bg-card p-5">
                 <h3 className="font-display text-sm font-bold text-foreground mb-4 flex items-center gap-2">
                   <Flag className="h-4 w-4 text-primary" /> Racing Info
