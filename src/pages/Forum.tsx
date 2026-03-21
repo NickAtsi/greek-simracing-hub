@@ -230,9 +230,15 @@ const CategoryThreads = ({ categoryId }: { categoryId: string }) => {
                       <p className="text-xs text-muted-foreground mt-0.5">{new Date(thread.created_at).toLocaleDateString("el-GR")}</p>
                     </div>
                   </div>
-                  <span className="text-center text-sm font-bold text-foreground">{thread.forum_posts?.[0]?.count || 0}</span>
-                  <span className="text-center text-sm text-muted-foreground">{thread.views || 0}</span>
-                  <span className="text-right text-xs text-muted-foreground">{new Date(thread.updated_at).toLocaleDateString("el-GR")}</span>
+                  <span className="hidden md:block text-center text-sm font-bold text-foreground">{thread.forum_posts?.[0]?.count || 0}</span>
+                  <span className="hidden md:block text-center text-sm text-muted-foreground">{thread.views || 0}</span>
+                  <span className="hidden md:block text-right text-xs text-muted-foreground">{new Date(thread.updated_at).toLocaleDateString("el-GR")}</span>
+                  {/* Mobile meta */}
+                  <div className="flex md:hidden items-center gap-3 text-xs text-muted-foreground ml-7">
+                    <span className="flex items-center gap-1"><MessageSquare className="h-3 w-3" />{thread.forum_posts?.[0]?.count || 0}</span>
+                    <span className="flex items-center gap-1"><Eye className="h-3 w-3" />{thread.views || 0}</span>
+                    <span>{new Date(thread.updated_at).toLocaleDateString("el-GR")}</span>
+                  </div>
                 </div>
               </Link>
             ))}

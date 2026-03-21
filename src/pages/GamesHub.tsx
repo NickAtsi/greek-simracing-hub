@@ -360,7 +360,7 @@ const GamesHub = () => {
             <Zap className="mx-auto h-10 w-10 text-accent mb-4" />
             <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-3">Games Hub</h1>
             <p className="text-muted-foreground max-w-lg mx-auto mt-2">
-              Τέστας τον αντανακλάστικων σου και διαχειρίσου την fantasy ομάδα σου!
+              Τέσταρε τα αντανακλαστικά σου και διαχειρίσου την fantasy ομάδα σου!
             </p>
           </motion.div>
         </div>
