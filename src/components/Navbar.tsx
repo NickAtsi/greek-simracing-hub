@@ -389,16 +389,23 @@ const Navbar = () => {
               {communityItems.map((item) => {
                 const Icon = item.icon;
                 return (
-                  <Link
-                    key={item.href}
-                    to={item.href}
-                    onClick={() => setIsOpen(false)}
+                  <Link key={item.href} to={item.href} onClick={() => setIsOpen(false)}
                     className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
                       location.pathname.startsWith(item.href) ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {item.label}
+                    }`}>
+                    <Icon className="h-4 w-4" />{item.label}
+                  </Link>
+                );
+              })}
+              <div className="px-4 py-1 text-xs font-display text-muted-foreground uppercase tracking-wider">Racing</div>
+              {racingItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <Link key={item.href} to={item.href} onClick={() => setIsOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                      location.pathname.startsWith(item.href) ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"
+                    }`}>
+                    <Icon className="h-4 w-4" />{item.label}
                   </Link>
                 );
               })}
