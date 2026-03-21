@@ -206,6 +206,7 @@ const Admin = () => {
         fetchForumCats();
       }
       if (tab === "support") fetchSupportTickets();
+      if (tab === "championships") fetchChampionships();
       if (tab === "shop") {
         fetchShopProducts();
         fetchShopOrders();
