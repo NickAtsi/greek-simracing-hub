@@ -148,6 +148,7 @@ const Members = () => {
   };
 
   return (
+    <PageTransition>
     <div className="min-h-screen bg-background text-foreground">
       <Navbar />
       <ScrollToTop />

@@ -496,6 +496,7 @@ const Shop = () => {
 
       <Footer />
     </div>
+    </PageTransition>
   );
 };
 
