@@ -41,6 +41,9 @@ import {
   Truck,
   Upload,
   Image,
+  Trophy,
+  Flag,
+  Calendar,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
