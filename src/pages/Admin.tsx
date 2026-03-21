@@ -1,6 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Navigate } from "react-router-dom";
 import { motion } from "framer-motion";
+
+const AdminBadges = lazy(() => import("@/components/admin/AdminBadges"));
+const AdminPredictions = lazy(() => import("@/components/admin/AdminPredictions"));
+const AdminIncidents = lazy(() => import("@/components/admin/AdminIncidents"));
+const AdminTeams = lazy(() => import("@/components/admin/AdminTeams"));
+const AdminLapTimes = lazy(() => import("@/components/admin/AdminLapTimes"));
 import {
   Users,
   FileText,
