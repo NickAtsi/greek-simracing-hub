@@ -201,7 +201,7 @@ const CategoryThreads = ({ categoryId }: { categoryId: string }) => {
 
           {/* Threads table (XenForo style) */}
           <div className="rounded-xl border border-border overflow-hidden bg-card">
-            <div className="grid grid-cols-[1fr_80px_80px_160px] gap-4 px-5 py-3 bg-secondary/30 border-b border-border text-xs font-display font-bold text-muted-foreground uppercase tracking-wider">
+            <div className="hidden md:grid grid-cols-[1fr_80px_80px_160px] gap-4 px-5 py-3 bg-secondary/30 border-b border-border text-xs font-display font-bold text-muted-foreground uppercase tracking-wider">
               <span>Thread</span>
               <span className="text-center">Replies</span>
               <span className="text-center">Views</span>
