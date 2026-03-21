@@ -2123,7 +2123,13 @@ const Admin = () => {
             </div>
           )}
 
-          {/* Settings */}
+          {/* Admin Sub-pages */}
+          {tab === "badges" && <Suspense fallback={<div className="text-center py-8 text-muted-foreground">Φόρτωση...</div>}><AdminBadges /></Suspense>}
+          {tab === "predictions" && <Suspense fallback={<div className="text-center py-8 text-muted-foreground">Φόρτωση...</div>}><AdminPredictions /></Suspense>}
+          {tab === "incidents" && <Suspense fallback={<div className="text-center py-8 text-muted-foreground">Φόρτωση...</div>}><AdminIncidents /></Suspense>}
+          {tab === "teams" && <Suspense fallback={<div className="text-center py-8 text-muted-foreground">Φόρτωση...</div>}><AdminTeams /></Suspense>}
+          {tab === "laptimes" && <Suspense fallback={<div className="text-center py-8 text-muted-foreground">Φόρτωση...</div>}><AdminLapTimes /></Suspense>}
+
           {tab === "settings" && (
             <div>
               <div className="flex items-center justify-between mb-6">
