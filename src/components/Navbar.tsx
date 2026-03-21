@@ -266,8 +266,10 @@ const Navbar = () => {
 
         <div className="hidden items-center gap-1 lg:flex">
           {navItems.map((item) =>
-            item.dropdown ? (
-              <CommunityDropdown key={item.label} />
+            item.dropdown === "community" ? (
+              <NavDropdown key={item.label} label="Κοινότητα" items={communityItems} />
+            ) : item.dropdown === "racing" ? (
+              <NavDropdown key={item.label} label="Racing" items={racingItems} />
             ) : (
               <NavLinkItem key={item.label} item={item} active={isActive(item.href)} />
             )
